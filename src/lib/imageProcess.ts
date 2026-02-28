@@ -1,10 +1,7 @@
 'use client'
 
-// Max dimension (width or height) after resize
 const MAX_DIMENSION = 1920
-// JPEG quality after resize (0–1)
 const JPEG_QUALITY = 0.85
-// Max file size before processing (25 MB — iPhones can shoot large HEIC)
 export const MAX_RAW_SIZE = 25 * 1024 * 1024
 
 export function isHeic(file: File): boolean {
@@ -16,43 +13,38 @@ export function isHeic(file: File): boolean {
 }
 
 /**
- * Convert HEIC → JPEG blob using heic2any (browser only).
+ * Try to decode a blob natively via Canvas (works for HEIC in Safari iOS/macOS).
+ * Returns null if the browser can't decode it.
  */
-export async function convertHeic(file: File): Promise<Blob> {
-  const heic2any = (await import('heic2any')).default
-  const result = await heic2any({ blob: file, toType: 'image/jpeg', quality: JPEG_QUALITY })
-  return Array.isArray(result) ? result[0] : result
+function tryNativeDecode(blob: Blob): Promise<HTMLImageElement | null> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob)
+    const img = new Image()
+    const timeout = setTimeout(() => {
+      URL.revokeObjectURL(url)
+      resolve(null)
+    }, 10000)
+    img.onload = () => {
+      clearTimeout(timeout)
+      URL.revokeObjectURL(url)
+      resolve(img)
+    }
+    img.onerror = () => {
+      clearTimeout(timeout)
+      URL.revokeObjectURL(url)
+      resolve(null)
+    }
+    img.src = url
+  })
 }
 
 /**
- * Resize and compress an image blob using the Canvas API.
- * Returns a new JPEG blob no larger than MAX_DIMENSION on either side.
+ * Draw an HTMLImageElement to canvas and return a resized JPEG blob.
  */
-export function resizeImage(blob: Blob): Promise<Blob> {
+function imageToJpeg(img: HTMLImageElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(blob)
-    const img = new Image()
-
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-
-      let { width, height } = img
-
-      if (width <= MAX_DIMENSION && height <= MAX_DIMENSION) {
-        // Already small enough — just re-encode as JPEG to normalise format
-        const canvas = document.createElement('canvas')
-        canvas.width = width
-        canvas.height = height
-        canvas.getContext('2d')!.drawImage(img, 0, 0)
-        canvas.toBlob(
-          (b) => (b ? resolve(b) : reject(new Error('Canvas toBlob failed'))),
-          'image/jpeg',
-          JPEG_QUALITY
-        )
-        return
-      }
-
-      // Scale down proportionally
+    let { width, height } = img
+    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
       if (width > height) {
         height = Math.round((height * MAX_DIMENSION) / width)
         width = MAX_DIMENSION
@@ -60,36 +52,56 @@ export function resizeImage(blob: Blob): Promise<Blob> {
         width = Math.round((width * MAX_DIMENSION) / height)
         height = MAX_DIMENSION
       }
-
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-      canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
-      canvas.toBlob(
-        (b) => (b ? resolve(b) : reject(new Error('Canvas toBlob failed'))),
-        'image/jpeg',
-        JPEG_QUALITY
-      )
     }
-
-    img.onerror = () => reject(new Error('Failed to load image for resizing'))
-    img.src = url
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error('Canvas toBlob returned null'))),
+      'image/jpeg',
+      JPEG_QUALITY
+    )
   })
 }
 
 /**
- * Full processing pipeline: HEIC conversion (if needed) → resize → return JPEG blob + filename.
+ * Full processing pipeline:
+ * 1. Try native Canvas decode (works for HEIC in Safari)
+ * 2. Fall back to heic2any for non-Safari browsers
+ * 3. Resize to max 1920px and re-encode as JPEG
  */
 export async function processImage(file: File): Promise<{ blob: Blob; filename: string }> {
-  let blob: Blob = file
+  const filename = file.name.replace(/\.(heic|heif|png|webp|gif)$/i, '') + '.jpg'
 
-  if (isHeic(file)) {
-    blob = await convertHeic(file)
+  // Try native decode first (fast path — works on all modern browsers for JPEG/PNG,
+  // and for HEIC on Safari iOS/macOS)
+  const img = await tryNativeDecode(file)
+  if (img) {
+    const blob = await imageToJpeg(img)
+    return { blob, filename }
   }
 
-  blob = await resizeImage(blob)
+  // Native decode failed — try heic2any (for HEIC on Chrome/Firefox)
+  if (isHeic(file)) {
+    try {
+      const heic2anyModule = await import('heic2any')
+      const heic2any = heic2anyModule.default ?? heic2anyModule
+      const result = await (heic2any as Function)({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: JPEG_QUALITY,
+      })
+      const converted: Blob = Array.isArray(result) ? result[0] : result
+      const convertedImg = await tryNativeDecode(converted)
+      if (convertedImg) {
+        const blob = await imageToJpeg(convertedImg)
+        return { blob, filename }
+      }
+    } catch (err) {
+      console.error('heic2any failed:', err)
+    }
+  }
 
-  // Always use .jpg extension after processing
-  const filename = file.name.replace(/\.(heic|heif|png|webp|gif)$/i, '') + '.jpg'
-  return { blob, filename }
+  throw new Error('Could not decode image. Try converting to JPEG first.')
 }

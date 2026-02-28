@@ -5,7 +5,7 @@ import type { Meal, WeekGroup } from '@/types'
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
     max: 1,
-    ssl: 'require',
+    ssl: { rejectUnauthorized: false },
     idle_timeout: 20,
     connect_timeout: 10,
   })

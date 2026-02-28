@@ -1,7 +1,7 @@
 import postgres from 'postgres'
 
 async function migrate() {
-  const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' })
+  const sql = postgres(process.env.DATABASE_URL!, { ssl: { rejectUnauthorized: false } })
 
   console.log('Running database migration...')
 
