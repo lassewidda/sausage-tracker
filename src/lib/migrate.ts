@@ -1,7 +1,7 @@
-import { neon } from '@neondatabase/serverless'
+import postgres from 'postgres'
 
 async function migrate() {
-  const sql = neon(process.env.DATABASE_URL!)
+  const sql = postgres(process.env.DATABASE_URL!, { ssl: 'require' })
 
   console.log('Running database migration...')
 
@@ -26,6 +26,7 @@ async function migrate() {
     CREATE INDEX IF NOT EXISTS idx_meals_created_at ON meals(created_at DESC)
   `
 
+  await sql.end()
   console.log('Migration complete.')
 }
 

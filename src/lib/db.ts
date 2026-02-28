@@ -1,13 +1,14 @@
-import { neon, NeonQueryFunction } from '@neondatabase/serverless'
+import postgres from 'postgres'
 import type { Meal, WeekGroup } from '@/types'
 
-let _sql: NeonQueryFunction<false, false> | null = null
-
-function getDb(): NeonQueryFunction<false, false> {
-  if (!_sql) {
-    _sql = neon(process.env.DATABASE_URL!)
-  }
-  return _sql
+// In serverless, limit connections and set a short idle timeout
+function getDb() {
+  return postgres(process.env.DATABASE_URL!, {
+    max: 1,
+    ssl: 'require',
+    idle_timeout: 20,
+    connect_timeout: 10,
+  })
 }
 
 /**
@@ -17,7 +18,6 @@ function getDb(): NeonQueryFunction<false, false> {
 export function getWeekKey(date: Date = new Date()): string {
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
-  // Set to nearest Thursday (makes ISO week calculation easier)
   d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7))
   const week1 = new Date(d.getFullYear(), 0, 4)
   const weekNum =
@@ -36,9 +36,8 @@ export function getWeekKey(date: Date = new Date()): string {
  */
 export function formatWeekLabel(weekKey: string): string {
   const [year, week] = weekKey.split('-W').map(Number)
-  // Find the Monday of that ISO week
-  const jan4 = new Date(year, 0, 4) // Jan 4 is always in week 1
-  const dayOfWeek = (jan4.getDay() + 6) % 7 // 0=Mon
+  const jan4 = new Date(year, 0, 4)
+  const dayOfWeek = (jan4.getDay() + 6) % 7
   const monday = new Date(jan4)
   monday.setDate(jan4.getDate() - dayOfWeek + (week - 1) * 7)
   return `Week of ${monday.toLocaleDateString('en-US', {
@@ -64,8 +63,8 @@ export async function insertMeal(data: {
     RETURNING id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, created_at, week_key
   `
 
-  const row = rows[0]
-  return rowToMeal(row)
+  await sql.end()
+  return rowToMeal(rows[0])
 }
 
 export async function getAllMeals(): Promise<Meal[]> {
@@ -75,6 +74,7 @@ export async function getAllMeals(): Promise<Meal[]> {
     FROM meals
     ORDER BY created_at DESC
   `
+  await sql.end()
   return rows.map(rowToMeal)
 }
 
@@ -93,7 +93,6 @@ export function groupByWeek(meals: Meal[]): WeekGroup[] {
     meals: weekMeals,
   }))
 
-  // Sort newest first
   weeks.sort((a, b) => b.weekKey.localeCompare(a.weekKey))
   return weeks
 }
