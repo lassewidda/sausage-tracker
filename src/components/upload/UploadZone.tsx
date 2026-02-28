@@ -4,11 +4,9 @@ import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { upload } from '@vercel/blob/client'
 import type { UploadState, AnalysisResult as IAnalysisResult } from '@/types'
+import { processImage, isHeic, MAX_RAW_SIZE } from '@/lib/imageProcess'
 import { Button } from '@/components/amiga/Button'
 import { AnalysisResult } from './AnalysisResult'
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 export function UploadZone() {
   const router = useRouter()
@@ -16,28 +14,42 @@ export function UploadZone() {
   const [isDragging, setIsDragging] = useState(false)
 
   const processFile = useCallback(async (file: File) => {
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      setState({ phase: 'idle', error: 'UNSUPPORTED FILE TYPE. USE JPEG, PNG, WEBP OR GIF.' })
+    const isImage =
+      file.type.startsWith('image/') || isHeic(file)
+    if (!isImage) {
+      setState({ phase: 'idle', error: 'UNSUPPORTED FILE TYPE. USE JPEG, PNG, HEIC OR WEBP.' })
       return
     }
-    if (file.size > MAX_FILE_SIZE) {
-      setState({ phase: 'idle', error: 'FILE TOO LARGE. MAX 5MB.' })
+    if (file.size > MAX_RAW_SIZE) {
+      setState({ phase: 'idle', error: 'FILE TOO LARGE. MAX 25MB.' })
       return
     }
 
+    // Show preview immediately from the raw file
     const preview = URL.createObjectURL(file)
     setState({ phase: 'uploading', preview })
+
+    // Convert HEIC + resize to JPEG
+    let processedBlob: Blob
+    let filename: string
+    try {
+      ;({ blob: processedBlob, filename } = await processImage(file))
+    } catch (err) {
+      setState({ phase: 'idle', error: 'FAILED TO PROCESS IMAGE. TRY A DIFFERENT FILE.' })
+      console.error('Process error:', err)
+      return
+    }
 
     let blobUrl: string
     let blobPath: string
 
     try {
-      const blob = await upload(`meals/${Date.now()}-${file.name}`, file, {
+      const result = await upload(`meals/${Date.now()}-${filename}`, processedBlob, {
         access: 'public',
         handleUploadUrl: '/api/blob-upload',
       })
-      blobUrl = blob.url
-      blobPath = blob.pathname
+      blobUrl = result.url
+      blobPath = result.pathname
     } catch (err) {
       setState({ phase: 'idle', error: 'UPLOAD FAILED. CHECK CONNECTION AND TRY AGAIN.' })
       console.error('Upload error:', err)
@@ -57,28 +69,19 @@ export function UploadZone() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       analysis = await res.json()
     } catch (err) {
-      setState({
-        phase: 'idle',
-        error: 'ANALYSIS FAILED. YOU CAN TRY AGAIN.',
-      })
+      setState({ phase: 'idle', error: 'ANALYSIS FAILED. YOU CAN TRY AGAIN.' })
       console.error('Analyze error:', err)
       return
     }
 
-    setState({
-      phase: 'confirming',
-      preview,
-      blobUrl,
-      blobPath,
-      analysis,
-    })
+    setState({ phase: 'confirming', preview, blobUrl, blobPath, analysis })
   }, [])
 
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
       if (file) processFile(file)
-      e.target.value = '' // reset so same file can be re-uploaded
+      e.target.value = ''
     },
     [processFile]
   )
@@ -113,10 +116,7 @@ export function UploadZone() {
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
-        setState({
-          phase: 'success',
-          confirmedCount,
-        })
+        setState({ phase: 'success', confirmedCount })
       } catch (err) {
         setState((s) => ({ ...s, phase: 'confirming', error: 'SAVE FAILED. TRY AGAIN.' }))
         console.error('Save error:', err)
@@ -134,9 +134,7 @@ export function UploadZone() {
   if (state.phase === 'success') {
     return (
       <div className="success-screen">
-        <div className="amiga-gauge amiga-gauge--large">
-          +{state.confirmedCount}
-        </div>
+        <div className="amiga-gauge amiga-gauge--large">+{state.confirmedCount}</div>
         <div className="success-score">
           SAUSAGE{state.confirmedCount !== 1 ? 'S' : ''} RECORDED!
           <br />
@@ -178,6 +176,8 @@ export function UploadZone() {
   }
 
   if (state.phase === 'uploading' || state.phase === 'analyzing') {
+    const label =
+      state.phase === 'uploading' ? 'CONVERTING & UPLOADING' : 'ANALYZING WITH AI'
     return (
       <div className="stack" style={{ alignItems: 'center', padding: '32px' }}>
         <div
@@ -189,7 +189,7 @@ export function UploadZone() {
             color: 'var(--amiga-black)',
           }}
         >
-          {state.phase === 'uploading' ? 'UPLOADING IMAGE' : 'ANALYZING WITH AI'}
+          {label}
           <span className="amiga-blink"> ...</span>
         </div>
         <div className="amiga-progress" style={{ width: '100%', maxWidth: '300px' }}>
@@ -236,21 +236,18 @@ export function UploadZone() {
       )}
       <label
         className={`amiga-dropzone ${isDragging ? 'amiga-dropzone--hover' : ''}`}
-        onDragOver={(e) => {
-          e.preventDefault()
-          setIsDragging(true)
-        }}
+        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
       >
-        <input type="file" accept="image/*" onChange={handleFileInput} />
+        <input type="file" accept="image/*,.heic,.heif" onChange={handleFileInput} />
         <div style={{ fontSize: '32px' }}>🌭</div>
         <div>DROP MEAL PHOTO HERE</div>
         <div style={{ color: 'var(--amiga-grey)', fontSize: '7px' }}>
           OR CLICK TO SELECT FILE
         </div>
         <div style={{ color: 'var(--amiga-dark-grey)', fontSize: '6px' }}>
-          JPEG / PNG / WEBP / GIF &mdash; MAX 5MB
+          JPEG / PNG / HEIC / WEBP &mdash; MAX 25MB
         </div>
       </label>
     </div>
