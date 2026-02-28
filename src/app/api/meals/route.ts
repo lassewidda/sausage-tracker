@@ -10,7 +10,7 @@ export async function GET(): Promise<NextResponse> {
     return NextResponse.json({ weeks, grandTotal })
   } catch (error) {
     console.error('GET /api/meals error:', error)
-    return NextResponse.json({ error: 'Failed to fetch meals' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch meals', details: String(error) }, { status: 500 })
   }
 }
 
@@ -57,6 +57,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json(meal, { status: 201 })
   } catch (error) {
     console.error('POST /api/meals error:', error)
-    return NextResponse.json({ error: 'Failed to save meal' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to save meal', details: String(error) }, { status: 500 })
   }
 }
