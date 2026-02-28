@@ -1,0 +1,580 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  /* Amiga Workbench 2.x palette */
+  --amiga-bg:         #0055AA;
+  --amiga-orange:     #FF8800;
+  --amiga-orange-dark:#CC6600;
+  --amiga-grey:       #AAAAAA;
+  --amiga-dark-grey:  #555555;
+  --amiga-black:      #000000;
+  --amiga-white:      #FFFFFF;
+
+  /* Bevel border colours */
+  --bevel-light:      #FFFFFF;
+  --bevel-mid:        #CCCCCC;
+  --bevel-shadow:     #555555;
+  --bevel-deep:       #000000;
+
+  /* CRT amber for gauges */
+  --crt-amber:        #FF6600;
+  --crt-amber-dim:    #883300;
+
+  /* Font */
+  --font-pixel: 'Press Start 2P', 'Courier New', monospace;
+
+  /* Spacing */
+  --window-pad: 8px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  image-rendering: pixelated;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-pixel);
+  background-color: var(--amiga-bg);
+  background-image:
+    repeating-linear-gradient(
+      180deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.06) 3px,
+      rgba(0, 0, 0, 0.06) 4px
+    );
+  color: var(--amiga-black);
+  min-height: 100vh;
+}
+
+/* =====================
+   AMIGA SCREEN WRAPPER
+   ===================== */
+.amiga-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =====================
+   MENU BAR
+   ===================== */
+.amiga-menubar {
+  background: var(--amiga-grey);
+  border-bottom: 2px solid var(--amiga-black);
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.amiga-menubar__title {
+  font-size: 8px;
+  font-family: var(--font-pixel);
+  color: var(--amiga-black);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: normal;
+}
+
+.amiga-menubar__item {
+  font-size: 8px;
+  font-family: var(--font-pixel);
+  color: var(--amiga-black);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.amiga-menubar__item:hover {
+  background: var(--amiga-black);
+  color: var(--amiga-white);
+  padding: 0 4px;
+}
+
+.amiga-menubar__spacer {
+  flex: 1;
+}
+
+/* =====================
+   WINDOW CHROME
+   ===================== */
+.amiga-window {
+  background: var(--amiga-grey);
+  border-top:    2px solid var(--bevel-light);
+  border-left:   2px solid var(--bevel-light);
+  border-right:  2px solid var(--bevel-deep);
+  border-bottom: 2px solid var(--bevel-deep);
+  display: flex;
+  flex-direction: column;
+}
+
+.amiga-window__titlebar {
+  background: var(--amiga-orange);
+  color: var(--amiga-white);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  height: 20px;
+  border-bottom: 2px solid var(--amiga-black);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.amiga-window__gadget {
+  width: 16px;
+  height: 14px;
+  background: var(--amiga-grey);
+  border-top:    1px solid var(--bevel-light);
+  border-left:   1px solid var(--bevel-light);
+  border-right:  1px solid var(--bevel-shadow);
+  border-bottom: 1px solid var(--bevel-shadow);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6px;
+  color: var(--amiga-black);
+}
+
+.amiga-window__title {
+  flex: 1;
+  text-align: center;
+  font-size: 8px;
+  font-family: var(--font-pixel);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+.amiga-window__body {
+  padding: var(--window-pad);
+  flex: 1;
+}
+
+/* Inset / sunken panel inside a window */
+.amiga-inset {
+  border-top:    2px solid var(--bevel-shadow);
+  border-left:   2px solid var(--bevel-shadow);
+  border-right:  2px solid var(--bevel-light);
+  border-bottom: 2px solid var(--bevel-light);
+  background: var(--amiga-dark-grey);
+  padding: 8px;
+}
+
+/* =====================
+   BUTTONS
+   ===================== */
+.amiga-btn {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: var(--amiga-grey);
+  color: var(--amiga-black);
+  border: none;
+  padding: 6px 14px;
+  cursor: pointer;
+  border-top:    2px solid var(--bevel-light);
+  border-left:   2px solid var(--bevel-light);
+  border-right:  2px solid var(--bevel-deep);
+  border-bottom: 2px solid var(--bevel-deep);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.amiga-btn:hover {
+  background: var(--bevel-mid);
+}
+
+.amiga-btn:active,
+.amiga-btn--pressed {
+  border-top:    2px solid var(--bevel-deep);
+  border-left:   2px solid var(--bevel-deep);
+  border-right:  2px solid var(--bevel-light);
+  border-bottom: 2px solid var(--bevel-light);
+}
+
+.amiga-btn:disabled {
+  color: var(--amiga-dark-grey);
+  cursor: not-allowed;
+}
+
+.amiga-btn--primary {
+  background: var(--amiga-orange);
+  color: var(--amiga-white);
+}
+
+.amiga-btn--primary:hover {
+  background: var(--amiga-orange-dark);
+}
+
+.amiga-btn--large {
+  font-size: 10px;
+  padding: 10px 20px;
+}
+
+/* =====================
+   GAUGE / NUMERIC DISPLAY
+   ===================== */
+.amiga-gauge {
+  background: var(--amiga-black);
+  color: var(--crt-amber);
+  font-family: var(--font-pixel);
+  font-size: 28px;
+  padding: 10px 20px;
+  border-top:    2px solid var(--bevel-shadow);
+  border-left:   2px solid var(--bevel-shadow);
+  border-right:  2px solid var(--bevel-light);
+  border-bottom: 2px solid var(--bevel-light);
+  min-width: 80px;
+  text-align: center;
+  text-shadow: 0 0 8px var(--crt-amber);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.amiga-gauge--small {
+  font-size: 16px;
+  padding: 6px 12px;
+  min-width: 48px;
+}
+
+.amiga-gauge--large {
+  font-size: 40px;
+  padding: 14px 28px;
+}
+
+/* =====================
+   UPLOAD ZONE
+   ===================== */
+.amiga-dropzone {
+  border: 3px dashed var(--amiga-dark-grey);
+  background: var(--amiga-dark-grey);
+  color: var(--amiga-white);
+  padding: 32px 24px;
+  text-align: center;
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  line-height: 2;
+  cursor: pointer;
+  transition: none;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.amiga-dropzone:hover,
+.amiga-dropzone--hover {
+  background: #333333;
+  border-color: var(--amiga-orange);
+  color: var(--amiga-orange);
+}
+
+.amiga-dropzone input[type="file"] {
+  display: none;
+}
+
+/* =====================
+   PROGRESS / STATUS BAR
+   ===================== */
+.amiga-statusbar {
+  background: var(--amiga-grey);
+  border-top: 2px solid var(--bevel-shadow);
+  padding: 4px 8px;
+  font-size: 7px;
+  font-family: var(--font-pixel);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--amiga-black);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.amiga-progress {
+  flex: 1;
+  height: 12px;
+  background: var(--amiga-dark-grey);
+  border-top:    1px solid var(--bevel-shadow);
+  border-left:   1px solid var(--bevel-shadow);
+  border-right:  1px solid var(--bevel-light);
+  border-bottom: 1px solid var(--bevel-light);
+  overflow: hidden;
+}
+
+.amiga-progress__bar {
+  height: 100%;
+  background: var(--amiga-orange);
+  transition: width 0.3s steps(10);
+}
+
+/* =====================
+   BADGE / TAG
+   ===================== */
+.amiga-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--amiga-black);
+  color: var(--crt-amber);
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 8px;
+  text-shadow: 0 0 4px var(--crt-amber);
+}
+
+.amiga-badge--orange {
+  background: var(--amiga-orange);
+  color: var(--amiga-white);
+  text-shadow: none;
+}
+
+/* =====================
+   INFO BOX (text display)
+   ===================== */
+.amiga-info {
+  background: var(--amiga-dark-grey);
+  color: var(--amiga-white);
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  line-height: 1.8;
+  padding: 8px;
+  border-top:    2px solid var(--bevel-shadow);
+  border-left:   2px solid var(--bevel-shadow);
+  border-right:  2px solid var(--bevel-light);
+  border-bottom: 2px solid var(--bevel-light);
+}
+
+/* =====================
+   MEAL CARD (gallery)
+   ===================== */
+.meal-card {
+  background: var(--amiga-grey);
+  border-top:    2px solid var(--bevel-light);
+  border-left:   2px solid var(--bevel-light);
+  border-right:  2px solid var(--bevel-deep);
+  border-bottom: 2px solid var(--bevel-deep);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.meal-card__image-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--amiga-black);
+  overflow: hidden;
+}
+
+.meal-card__image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.meal-card__score {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+}
+
+.meal-card__body {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.meal-card__desc {
+  font-family: var(--font-pixel);
+  font-size: 6px;
+  color: var(--amiga-black);
+  text-transform: uppercase;
+  line-height: 1.8;
+  letter-spacing: 0.5px;
+}
+
+.meal-card__date {
+  font-family: var(--font-pixel);
+  font-size: 6px;
+  color: var(--amiga-dark-grey);
+  text-transform: uppercase;
+}
+
+/* =====================
+   WEEK GROUP (gallery)
+   ===================== */
+.week-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.week-group__header {
+  background: var(--amiga-orange);
+  color: var(--amiga-white);
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top:    2px solid var(--bevel-light);
+  border-left:   2px solid var(--bevel-light);
+  border-right:  2px solid var(--bevel-deep);
+  border-bottom: 2px solid var(--bevel-deep);
+}
+
+.week-group__meals {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+/* =====================
+   LAYOUT HELPERS
+   ===================== */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.row--between {
+  justify-content: space-between;
+}
+
+.row--center {
+  justify-content: center;
+}
+
+.center {
+  text-align: center;
+}
+
+.page-content {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* =====================
+   STEP INDICATOR
+   ===================== */
+.amiga-steps {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  text-transform: uppercase;
+}
+
+.amiga-step {
+  padding: 3px 8px;
+  background: var(--amiga-dark-grey);
+  color: var(--amiga-white);
+}
+
+.amiga-step--active {
+  background: var(--amiga-orange);
+  color: var(--amiga-white);
+}
+
+.amiga-step--done {
+  background: var(--amiga-black);
+  color: var(--crt-amber);
+}
+
+/* =====================
+   LOADING SPINNER (pixel)
+   ===================== */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.amiga-blink {
+  animation: blink 1s steps(1) infinite;
+}
+
+/* Grand total banner */
+.grand-total {
+  background: var(--amiga-black);
+  color: var(--crt-amber);
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 12px 16px;
+  text-align: center;
+  text-shadow: 0 0 10px var(--crt-amber);
+  border-top:    2px solid var(--bevel-shadow);
+  border-left:   2px solid var(--bevel-shadow);
+  border-right:  2px solid var(--bevel-light);
+  border-bottom: 2px solid var(--bevel-light);
+}
+
+/* Success screen */
+.success-screen {
+  text-align: center;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.success-score {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: var(--amiga-black);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 2;
+}
+
+/* Confidence indicator */
+.confidence-high   { color: #00AA00; }
+.confidence-medium { color: var(--amiga-orange); }
+.confidence-low    { color: #AA0000; }
