@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import type { Meal } from '@/types'
+import { DeleteButton } from './DeleteButton'
 
 interface FeedCardProps {
   meal: Meal
@@ -70,15 +71,17 @@ export function FeedCard({ meal }: FeedCardProps) {
             </div>
           )}
 
-          {/* Timestamp */}
-          <div style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: '6px',
-            color: 'var(--amiga-dark-grey)',
-            textTransform: 'uppercase',
-            marginTop: 'auto',
-          }}>
-            {timeAgo(meal.createdAt)}
+          {/* Timestamp + delete */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
+            <div style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '6px',
+              color: 'var(--amiga-dark-grey)',
+              textTransform: 'uppercase',
+            }}>
+              {timeAgo(meal.createdAt)}
+            </div>
+            <DeleteButton mealId={meal.id} mealPlayerName={meal.playerName} />
           </div>
         </div>
       </div>

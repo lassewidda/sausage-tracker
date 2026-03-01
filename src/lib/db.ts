@@ -70,6 +70,19 @@ export async function getAllMeals(): Promise<Meal[]> {
   return rows.map(rowToMeal)
 }
 
+export async function deleteMeal(id: string, playerName: string): Promise<Meal | null> {
+  const sql = getDb()
+  // Allow deletion if playerName matches OR if the meal is 'Anonymous' (legacy test posts)
+  const rows = await sql`
+    DELETE FROM meals
+    WHERE id = ${id}
+      AND (player_name = ${playerName} OR player_name = 'Anonymous')
+    RETURNING id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, created_at, week_key, player_name
+  `
+  await sql.end()
+  return rows.length > 0 ? rowToMeal(rows[0]) : null
+}
+
 export async function getLeaderboard(): Promise<Leaderboard> {
   const sql = getDb()
   const weekKey = getWeekKey()
