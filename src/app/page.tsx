@@ -1,4 +1,6 @@
+import Link from 'next/link'
 import { Window } from '@/components/amiga/Window'
+import { Button } from '@/components/amiga/Button'
 import { UploadZone } from '@/components/upload/UploadZone'
 
 export default function HomePage() {
@@ -36,6 +38,11 @@ export default function HomePage() {
           </div>
 
           <UploadZone />
+
+          <div className="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
+            <Link href="/highscore"><Button variant="primary">🏆 HIGHSCORE</Button></Link>
+            <Link href="/feed"><Button>📋 FEED</Button></Link>
+          </div>
         </div>
       </Window>
 
