@@ -39,6 +39,11 @@ export function MealCard({ meal }: MealCardProps) {
               : meal.aiDescription}
           </p>
         )}
+        {meal.playerName && meal.playerName !== 'Anonymous' && (
+          <div className="amiga-badge amiga-badge--orange" style={{ fontSize: '6px', padding: '2px 6px' }}>
+            {meal.playerName.toUpperCase()}
+          </div>
+        )}
         <div className="row row--between">
           <span className="meal-card__date">{dateStr.toUpperCase()}</span>
           <span

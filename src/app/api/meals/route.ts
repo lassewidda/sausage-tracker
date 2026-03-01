@@ -6,8 +6,7 @@ export async function GET(): Promise<NextResponse> {
     const meals = await getAllMeals()
     const weeks = groupByWeek(meals)
     const grandTotal = meals.reduce((sum, m) => sum + m.sausageCount, 0)
-
-    return NextResponse.json({ weeks, grandTotal })
+    return NextResponse.json({ weeks, grandTotal, meals })
   } catch (error) {
     console.error('GET /api/meals error:', error)
     return NextResponse.json({ error: 'Failed to fetch meals', details: String(error) }, { status: 500 })
@@ -21,6 +20,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     sausageCount: number
     aiSuggestedCount?: number
     aiDescription?: string
+    playerName?: string
   }
 
   try {
@@ -29,7 +29,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { imageUrl, blobPath, sausageCount, aiSuggestedCount, aiDescription } = body
+  const { imageUrl, blobPath, sausageCount, aiSuggestedCount, aiDescription, playerName } = body
 
   if (!imageUrl || !blobPath || sausageCount === undefined) {
     return NextResponse.json(
@@ -52,8 +52,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       sausageCount,
       aiSuggestedCount: aiSuggestedCount ?? null,
       aiDescription: aiDescription ?? null,
+      playerName: (playerName ?? 'Anonymous').trim() || 'Anonymous',
     })
-
     return NextResponse.json(meal, { status: 201 })
   } catch (error) {
     console.error('POST /api/meals error:', error)

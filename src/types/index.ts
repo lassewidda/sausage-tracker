@@ -7,6 +7,19 @@ export interface Meal {
   aiDescription: string | null
   createdAt: string
   weekKey: string
+  playerName: string
+}
+
+export interface LeaderboardEntry {
+  playerName: string
+  totalSausages: number
+  rank: number
+}
+
+export interface Leaderboard {
+  allTime: LeaderboardEntry[]
+  thisWeek: LeaderboardEntry[]
+  weekKey: string
 }
 
 export interface AnalysisResult {

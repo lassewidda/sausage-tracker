@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { NameSetter } from '@/components/ui/NameSetter'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -12,19 +13,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <div className="amiga-screen">
-          {/* Workbench-style menu bar */}
           <nav className="amiga-menubar">
             <span className="amiga-menubar__title">SAUSAGE TRACKER v1.0</span>
             <div className="amiga-menubar__spacer" />
-            <Link href="/" className="amiga-menubar__item">
-              ADD MEAL
-            </Link>
-            <Link href="/gallery" className="amiga-menubar__item">
-              GALLERY
-            </Link>
+            <Link href="/" className="amiga-menubar__item">ADD MEAL</Link>
+            <Link href="/feed" className="amiga-menubar__item">FEED</Link>
+            <Link href="/highscore" className="amiga-menubar__item">HIGHSCORE</Link>
+            <div style={{ width: '1px', background: 'var(--amiga-dark-grey)', margin: '0 4px' }} />
+            <NameSetter />
           </nav>
-
-          {/* Page content */}
           {children}
         </div>
       </body>

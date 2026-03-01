@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation'
 import { upload } from '@vercel/blob/client'
 import type { UploadState, AnalysisResult as IAnalysisResult } from '@/types'
 import { processImage, isHeic, MAX_RAW_SIZE } from '@/lib/imageProcess'
+import { useName } from '@/lib/useName'
 import { Button } from '@/components/amiga/Button'
 import { AnalysisResult } from './AnalysisResult'
 
 export function UploadZone() {
   const router = useRouter()
+  const { name, setName } = useName()
+  const [nameInput, setNameInput] = useState('')
   const [state, setState] = useState<UploadState>({ phase: 'idle' })
   const [isDragging, setIsDragging] = useState(false)
 
@@ -112,6 +115,7 @@ export function UploadZone() {
             sausageCount: confirmedCount,
             aiSuggestedCount: state.analysis.count,
             aiDescription: state.analysis.description,
+            playerName: name || 'Anonymous',
           }),
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -223,7 +227,46 @@ export function UploadZone() {
     )
   }
 
-  // Idle state
+  // Idle state — if no name set, show name prompt first
+  if (!name) {
+    return (
+      <div className="stack" style={{ alignItems: 'center', padding: '24px' }}>
+        <div className="amiga-info" style={{ textAlign: 'center', maxWidth: '360px' }}>
+          ENTER YOUR NAME TO START TRACKING SAUSAGES
+        </div>
+        <div className="row row--center" style={{ gap: '8px' }}>
+          <input
+            autoFocus
+            type="text"
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && nameInput.trim()) setName(nameInput) }}
+            maxLength={20}
+            placeholder="YOUR NAME"
+            style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '8px',
+              textTransform: 'uppercase',
+              background: 'var(--amiga-black)',
+              color: 'var(--crt-amber)',
+              border: '2px solid var(--crt-amber)',
+              padding: '6px 12px',
+              width: '180px',
+              outline: 'none',
+            }}
+          />
+          <Button
+            variant="primary"
+            onClick={() => { if (nameInput.trim()) setName(nameInput) }}
+            disabled={!nameInput.trim()}
+          >
+            CONFIRM
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="stack">
       {state.error && (

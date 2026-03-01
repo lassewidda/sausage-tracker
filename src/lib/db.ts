@@ -1,7 +1,6 @@
 import postgres from 'postgres'
-import type { Meal, WeekGroup } from '@/types'
+import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry } from '@/types'
 
-// In serverless, limit connections and set a short idle timeout
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
     max: 1,
@@ -11,10 +10,6 @@ function getDb() {
   })
 }
 
-/**
- * Compute ISO 8601 week key, e.g. "2024-W03"
- * Week starts on Monday.
- */
 export function getWeekKey(date: Date = new Date()): string {
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
@@ -30,10 +25,6 @@ export function getWeekKey(date: Date = new Date()): string {
   return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`
 }
 
-/**
- * Format ISO week key to human-readable label
- * "2024-W03" → "Week of Jan 15, 2024"
- */
 export function formatWeekLabel(weekKey: string): string {
   const [year, week] = weekKey.split('-W').map(Number)
   const jan4 = new Date(year, 0, 4)
@@ -53,14 +44,15 @@ export async function insertMeal(data: {
   sausageCount: number
   aiSuggestedCount: number | null
   aiDescription: string | null
+  playerName: string
 }): Promise<Meal> {
   const sql = getDb()
   const weekKey = getWeekKey()
 
   const rows = await sql`
-    INSERT INTO meals (image_url, blob_path, sausage_count, ai_suggested_count, ai_description, week_key)
-    VALUES (${data.imageUrl}, ${data.blobPath}, ${data.sausageCount}, ${data.aiSuggestedCount}, ${data.aiDescription}, ${weekKey})
-    RETURNING id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, created_at, week_key
+    INSERT INTO meals (image_url, blob_path, sausage_count, ai_suggested_count, ai_description, week_key, player_name)
+    VALUES (${data.imageUrl}, ${data.blobPath}, ${data.sausageCount}, ${data.aiSuggestedCount}, ${data.aiDescription}, ${weekKey}, ${data.playerName})
+    RETURNING id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, created_at, week_key, player_name
   `
 
   await sql.end()
@@ -70,12 +62,48 @@ export async function insertMeal(data: {
 export async function getAllMeals(): Promise<Meal[]> {
   const sql = getDb()
   const rows = await sql`
-    SELECT id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, created_at, week_key
+    SELECT id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, created_at, week_key, player_name
     FROM meals
     ORDER BY created_at DESC
   `
   await sql.end()
   return rows.map(rowToMeal)
+}
+
+export async function getLeaderboard(): Promise<Leaderboard> {
+  const sql = getDb()
+  const weekKey = getWeekKey()
+
+  const [allTimeRows, weekRows] = await Promise.all([
+    sql`
+      SELECT player_name, SUM(sausage_count)::int AS total
+      FROM meals
+      GROUP BY player_name
+      ORDER BY total DESC
+    `,
+    sql`
+      SELECT player_name, SUM(sausage_count)::int AS total
+      FROM meals
+      WHERE week_key = ${weekKey}
+      GROUP BY player_name
+      ORDER BY total DESC
+    `,
+  ])
+
+  await sql.end()
+
+  const toEntries = (rows: typeof allTimeRows): LeaderboardEntry[] =>
+    rows.map((r, i) => ({
+      playerName: r.player_name as string,
+      totalSausages: r.total as number,
+      rank: i + 1,
+    }))
+
+  return {
+    allTime: toEntries(allTimeRows),
+    thisWeek: toEntries(weekRows),
+    weekKey,
+  }
 }
 
 export function groupByWeek(meals: Meal[]): WeekGroup[] {
@@ -108,5 +136,6 @@ function rowToMeal(row: any): Meal {
     aiDescription: row.ai_description,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
     weekKey: row.week_key,
+    playerName: row.player_name ?? 'Anonymous',
   }
 }
