@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { insertMeal, getAllMeals, groupByWeek } from '@/lib/db'
+import { rewriteDescriptionForCount } from '@/lib/claude'
 
 export async function GET(): Promise<NextResponse> {
   try {
@@ -45,13 +46,27 @@ export async function POST(request: Request): Promise<NextResponse> {
     )
   }
 
+  let finalDescription = aiDescription ?? null
+  if (
+    finalDescription &&
+    aiSuggestedCount !== undefined &&
+    aiSuggestedCount !== null &&
+    sausageCount !== aiSuggestedCount
+  ) {
+    try {
+      finalDescription = await rewriteDescriptionForCount(finalDescription, aiSuggestedCount, sausageCount)
+    } catch {
+      // keep original description if rewrite fails
+    }
+  }
+
   try {
     const meal = await insertMeal({
       imageUrl,
       blobPath,
       sausageCount,
       aiSuggestedCount: aiSuggestedCount ?? null,
-      aiDescription: aiDescription ?? null,
+      aiDescription: finalDescription,
       playerName: (playerName ?? 'Anonymous').trim() || 'Anonymous',
     })
     return NextResponse.json(meal, { status: 201 })

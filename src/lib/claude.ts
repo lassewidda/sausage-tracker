@@ -19,6 +19,29 @@ function getClient(): Anthropic {
   return _client
 }
 
+export async function rewriteDescriptionForCount(
+  description: string,
+  oldCount: number,
+  newCount: number,
+): Promise<string> {
+  const client = getClient()
+
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 128,
+    messages: [
+      {
+        role: 'user',
+        content: `The following meal description was written assuming there are ${oldCount} sausage(s): "${description}"\n\nRewrite ONLY that sentence so it correctly says there are ${newCount} sausage(s) instead. Return just the rewritten sentence, nothing else.`,
+      },
+    ],
+  })
+
+  const textBlock = message.content.find((b) => b.type === 'text')
+  if (!textBlock || textBlock.type !== 'text') return description
+  return textBlock.text.trim()
+}
+
 export async function analyzeSausages(imageUrl: string): Promise<AnalysisResult> {
   const client = getClient()
 
