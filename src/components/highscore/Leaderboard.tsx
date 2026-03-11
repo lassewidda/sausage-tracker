@@ -50,8 +50,21 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
                         {entry.playerName}
                       </span>
                     </div>
-                    <div className="amiga-gauge amiga-gauge--small">
-                      {entry.totalSausages}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {entry.totalGrams > 0 && (
+                        <span style={{
+                          fontFamily: 'var(--font-pixel)',
+                          fontSize: '6px',
+                          color: 'var(--amiga-dark-grey)',
+                          background: 'var(--amiga-light-grey)',
+                          padding: '2px 4px',
+                        }}>
+                          ~{entry.totalGrams}G
+                        </span>
+                      )}
+                      <div className="amiga-gauge amiga-gauge--small">
+                        {entry.totalSausages}
+                      </div>
                     </div>
                   </div>
 

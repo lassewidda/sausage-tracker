@@ -46,17 +46,32 @@ export function MealCard({ meal }: MealCardProps) {
         )}
         <div className="row row--between">
           <span className="meal-card__date">{dateStr.toUpperCase()}</span>
-          <span
-            style={{
-              fontFamily: 'var(--font-pixel)',
-              fontSize: '6px',
-              color: 'var(--crt-amber)',
-              background: 'var(--amiga-black)',
-              padding: '2px 4px',
-            }}
-          >
-            +{meal.sausageCount}PTS
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '6px',
+                color: 'var(--crt-amber)',
+                background: 'var(--amiga-black)',
+                padding: '2px 4px',
+              }}
+            >
+              +{meal.sausageCount}PTS
+            </span>
+            {meal.estimatedGrams != null && meal.estimatedGrams > 0 && (
+              <span
+                style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: '6px',
+                  color: 'var(--amiga-white)',
+                  background: 'var(--amiga-dark-grey)',
+                  padding: '2px 4px',
+                }}
+              >
+                ~{meal.estimatedGrams}G
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>

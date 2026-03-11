@@ -44,15 +44,16 @@ export async function insertMeal(data: {
   sausageCount: number
   aiSuggestedCount: number | null
   aiDescription: string | null
+  estimatedGrams: number | null
   playerName: string
 }): Promise<Meal> {
   const sql = getDb()
   const weekKey = getWeekKey()
 
   const rows = await sql`
-    INSERT INTO meals (image_url, blob_path, sausage_count, ai_suggested_count, ai_description, week_key, player_name)
-    VALUES (${data.imageUrl}, ${data.blobPath}, ${data.sausageCount}, ${data.aiSuggestedCount}, ${data.aiDescription}, ${weekKey}, ${data.playerName})
-    RETURNING id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, created_at, week_key, player_name
+    INSERT INTO meals (image_url, blob_path, sausage_count, ai_suggested_count, ai_description, estimated_grams, week_key, player_name)
+    VALUES (${data.imageUrl}, ${data.blobPath}, ${data.sausageCount}, ${data.aiSuggestedCount}, ${data.aiDescription}, ${data.estimatedGrams}, ${weekKey}, ${data.playerName})
+    RETURNING id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name
   `
 
   await sql.end()
@@ -62,7 +63,7 @@ export async function insertMeal(data: {
 export async function getAllMeals(): Promise<Meal[]> {
   const sql = getDb()
   const rows = await sql`
-    SELECT id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, created_at, week_key, player_name
+    SELECT id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name
     FROM meals
     ORDER BY created_at DESC
   `
@@ -89,13 +90,13 @@ export async function getLeaderboard(): Promise<Leaderboard> {
 
   const [allTimeRows, weekRows] = await Promise.all([
     sql`
-      SELECT player_name, SUM(sausage_count)::int AS total
+      SELECT player_name, SUM(sausage_count)::int AS total, COALESCE(SUM(estimated_grams), 0)::int AS total_grams
       FROM meals
       GROUP BY player_name
       ORDER BY total DESC
     `,
     sql`
-      SELECT player_name, SUM(sausage_count)::int AS total
+      SELECT player_name, SUM(sausage_count)::int AS total, COALESCE(SUM(estimated_grams), 0)::int AS total_grams
       FROM meals
       WHERE week_key = ${weekKey}
       GROUP BY player_name
@@ -109,6 +110,7 @@ export async function getLeaderboard(): Promise<Leaderboard> {
     rows.map((r, i) => ({
       playerName: r.player_name as string,
       totalSausages: r.total as number,
+      totalGrams: r.total_grams as number,
       rank: i + 1,
     }))
 
@@ -131,6 +133,7 @@ export function groupByWeek(meals: Meal[]): WeekGroup[] {
     weekKey,
     weekLabel: formatWeekLabel(weekKey),
     totalSausages: weekMeals.reduce((sum, m) => sum + m.sausageCount, 0),
+    totalGrams: weekMeals.reduce((sum, m) => sum + (m.estimatedGrams ?? 0), 0),
     meals: weekMeals,
   }))
 
@@ -147,6 +150,7 @@ function rowToMeal(row: any): Meal {
     sausageCount: row.sausage_count,
     aiSuggestedCount: row.ai_suggested_count,
     aiDescription: row.ai_description,
+    estimatedGrams: row.estimated_grams ?? null,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
     weekKey: row.week_key,
     playerName: row.player_name ?? 'Anonymous',

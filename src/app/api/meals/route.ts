@@ -21,6 +21,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     sausageCount: number
     aiSuggestedCount?: number
     aiDescription?: string
+    gramsPerSausage?: number
     playerName?: string
   }
 
@@ -30,7 +31,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { imageUrl, blobPath, sausageCount, aiSuggestedCount, aiDescription, playerName } = body
+  const { imageUrl, blobPath, sausageCount, aiSuggestedCount, aiDescription, gramsPerSausage, playerName } = body
 
   if (!imageUrl || !blobPath || sausageCount === undefined) {
     return NextResponse.json(
@@ -60,6 +61,9 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
   }
 
+  const estimatedGrams =
+    gramsPerSausage && gramsPerSausage > 0 ? gramsPerSausage * sausageCount : null
+
   try {
     const meal = await insertMeal({
       imageUrl,
@@ -67,6 +71,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       sausageCount,
       aiSuggestedCount: aiSuggestedCount ?? null,
       aiDescription: finalDescription,
+      estimatedGrams,
       playerName: (playerName ?? 'Anonymous').trim() || 'Anonymous',
     })
     return NextResponse.json(meal, { status: 201 })

@@ -115,6 +115,7 @@ export function UploadZone() {
             sausageCount: confirmedCount,
             aiSuggestedCount: state.analysis.count,
             aiDescription: state.analysis.description,
+            gramsPerSausage: state.analysis.gramsPerSausage,
             playerName: name || 'Anonymous',
           }),
         })

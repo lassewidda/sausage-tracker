@@ -1,14 +1,22 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { AnalysisResult } from '@/types'
 
-const SAUSAGE_SYSTEM_PROMPT = `You are a precise food analysis assistant specialized in identifying sausages in meal photographs. Your task is to count sausages and respond with valid JSON only.
+const SAUSAGE_SYSTEM_PROMPT = `You are a precise food analysis assistant specialized in identifying sausages in meal photographs. Your task is to count sausages, estimate their weight, and respond with valid JSON only.
 
 A "sausage" includes: bratwurst, frankfurters, hot dogs, chorizo, merguez, breakfast sausages, chipolatas, weisswurst, bangers, and any similar cylindrical cased meat product. Do NOT count meatballs, nuggets, or other non-sausage items.
 
-Always respond with ONLY a JSON object in this exact format, no other text, no markdown:
-{"count":<integer>,"description":"<one sentence describing the meal and sausages>","confidence":"<high|medium|low>","sausage_types":["<type>"]}
+Also estimate the weight of a single sausage in grams based on its apparent type and size. Use these reference weights:
+- Mini/cocktail sausage: 20-30g
+- Chipolata / breakfast sausage: 35-50g
+- Hot dog / frankfurter: 60-80g
+- Standard bratwurst / banger: 90-120g
+- Large bratwurst / thick sausage: 130-180g
+- Extra large / jumbo sausage: 200g+
 
-If you cannot determine whether sausages are present, set count to 0 and confidence to "low".`
+Always respond with ONLY a JSON object in this exact format, no other text, no markdown:
+{"count":<integer>,"description":"<one sentence describing the meal and sausages>","confidence":"<high|medium|low>","sausage_types":["<type>"],"grams_per_sausage":<integer>}
+
+If you cannot determine whether sausages are present, set count to 0, confidence to "low", and grams_per_sausage to 0.`
 
 let _client: Anthropic | null = null
 
@@ -85,6 +93,7 @@ export async function analyzeSausages(imageUrl: string): Promise<AnalysisResult>
     description: string
     confidence: string
     sausage_types: string[]
+    grams_per_sausage: number
   }
 
   return {
@@ -94,5 +103,6 @@ export async function analyzeSausages(imageUrl: string): Promise<AnalysisResult>
       ? parsed.confidence
       : 'low') as AnalysisResult['confidence'],
     sausageTypes: Array.isArray(parsed.sausage_types) ? parsed.sausage_types : [],
+    gramsPerSausage: Math.max(0, Math.round(Number(parsed.grams_per_sausage) || 0)),
   }
 }

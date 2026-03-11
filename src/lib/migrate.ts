@@ -24,6 +24,11 @@ async function migrate() {
     ALTER TABLE meals ADD COLUMN IF NOT EXISTS player_name TEXT NOT NULL DEFAULT 'Anonymous'
   `
 
+  // Add estimated_grams for weight-based scoring
+  await sql`
+    ALTER TABLE meals ADD COLUMN IF NOT EXISTS estimated_grams INTEGER
+  `
+
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_week_key ON meals(week_key DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_created_at ON meals(created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_player_name ON meals(player_name)`

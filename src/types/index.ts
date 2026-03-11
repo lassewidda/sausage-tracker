@@ -5,6 +5,7 @@ export interface Meal {
   sausageCount: number
   aiSuggestedCount: number | null
   aiDescription: string | null
+  estimatedGrams: number | null
   createdAt: string
   weekKey: string
   playerName: string
@@ -13,6 +14,7 @@ export interface Meal {
 export interface LeaderboardEntry {
   playerName: string
   totalSausages: number
+  totalGrams: number
   rank: number
 }
 
@@ -27,18 +29,21 @@ export interface AnalysisResult {
   description: string
   confidence: 'high' | 'medium' | 'low'
   sausageTypes: string[]
+  gramsPerSausage: number
 }
 
 export interface WeekGroup {
   weekKey: string
   weekLabel: string
   totalSausages: number
+  totalGrams: number
   meals: Meal[]
 }
 
 export interface GalleryData {
   weeks: WeekGroup[]
   grandTotal: number
+  grandTotalGrams: number
 }
 
 export type UploadPhase =

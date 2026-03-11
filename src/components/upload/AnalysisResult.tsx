@@ -65,6 +65,9 @@ export function AnalysisResult({
           <span className={`confidence-${analysis.confidence}`}>
             {analysis.confidence.toUpperCase()} CONFIDENCE
           </span>
+          {analysis.gramsPerSausage > 0 && (
+            <>&nbsp;&mdash;&nbsp;~{analysis.gramsPerSausage}G/SAUSAGE</>
+          )}
         </div>
       </div>
 
@@ -121,6 +124,19 @@ export function AnalysisResult({
             />
             <span>I CONFIRM I ATE {count} SAUSAGES AND UNDERSTAND THIS MAY IMPACT MY HEALTH NEGATIVELY</span>
           </label>
+        </div>
+      )}
+
+      {/* Estimated weight */}
+      {analysis.gramsPerSausage > 0 && (
+        <div className="row row--center">
+          <div className="amiga-badge" style={{ background: 'var(--amiga-dark-grey)' }}>
+            EST. WEIGHT:&nbsp;
+            <span style={{ color: 'var(--crt-amber)' }}>
+              ~{analysis.gramsPerSausage * count}G
+            </span>
+            &nbsp;({analysis.gramsPerSausage}G &times; {count})
+          </div>
         </div>
       )}
 
