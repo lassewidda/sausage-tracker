@@ -1,17 +1,19 @@
-import { getLeaderboard } from '@/lib/db'
+import { getLeaderboard, getSausageChains } from '@/lib/db'
 import { Leaderboard } from '@/components/highscore/Leaderboard'
+import { SausageChain } from '@/components/highscore/SausageChain'
 import { Window } from '@/components/amiga/Window'
 import Link from 'next/link'
 import { Button } from '@/components/amiga/Button'
-import type { Leaderboard as ILeaderboard } from '@/types'
+import type { Leaderboard as ILeaderboard, SausageChainEntry } from '@/types'
 import { formatWeekLabel } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
 export default async function HighscorePage() {
   let data: ILeaderboard = { allTime: [], thisWeek: [], weekKey: '' }
+  let chains: SausageChainEntry[] = []
   try {
-    data = await getLeaderboard()
+    ;[data, chains] = await Promise.all([getLeaderboard(), getSausageChains()])
   } catch (err) {
     console.error('Highscore fetch error:', err)
   }
@@ -45,6 +47,9 @@ export default async function HighscorePage() {
             entries={data.allTime}
             emptyMessage="NO SCORES YET — LOG A MEAL!"
           />
+
+          {/* Sausage chain */}
+          <SausageChain entries={chains} />
         </div>
       </Window>
     </main>

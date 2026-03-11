@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry } from '@/types'
+import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry } from '@/types'
 
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
@@ -119,6 +119,69 @@ export async function getLeaderboard(): Promise<Leaderboard> {
     thisWeek: toEntries(weekRows),
     weekKey,
   }
+}
+
+function prevWeekKey(weekKey: string): string {
+  const [yearStr, weekStr] = weekKey.split('-W')
+  const year = parseInt(yearStr)
+  const week = parseInt(weekStr)
+  const jan4 = new Date(year, 0, 4)
+  const dayOfWeek = (jan4.getDay() + 6) % 7
+  const monday = new Date(jan4)
+  monday.setDate(jan4.getDate() - dayOfWeek + (week - 1) * 7)
+  monday.setDate(monday.getDate() - 7)
+  return getWeekKey(monday)
+}
+
+export async function getSausageChains(): Promise<SausageChainEntry[]> {
+  const sql = getDb()
+
+  const rows = await sql`
+    SELECT player_name, week_key, SUM(sausage_count)::int AS week_total
+    FROM meals
+    GROUP BY player_name, week_key
+  `
+  await sql.end()
+
+  // Build a map: playerName -> (weekKey -> total)
+  const byPlayer = new Map<string, Map<string, number>>()
+  for (const row of rows) {
+    const name = row.player_name as string
+    const week = row.week_key as string
+    const total = row.week_total as number
+    if (!byPlayer.has(name)) byPlayer.set(name, new Map())
+    byPlayer.get(name)!.set(week, total)
+  }
+
+  const currentWeek = getWeekKey()
+  const entries: SausageChainEntry[] = []
+
+  for (const [playerName, weekMap] of byPlayer) {
+    let streak = 0
+    let wk = currentWeek
+
+    // Walk backwards up to 500 weeks (safety limit)
+    for (let i = 0; i < 500; i++) {
+      const total = weekMap.get(wk) ?? 0
+      if (total >= 3) {
+        streak++
+        wk = prevWeekKey(wk)
+      } else {
+        // Current week with < 3 doesn't break the streak — skip it and check last week
+        if (i === 0) {
+          wk = prevWeekKey(wk)
+          continue
+        }
+        break
+      }
+    }
+
+    entries.push({ playerName, streakWeeks: streak })
+  }
+
+  // Sort by streak descending, then alphabetically
+  entries.sort((a, b) => b.streakWeeks - a.streakWeeks || a.playerName.localeCompare(b.playerName))
+  return entries
 }
 
 export function groupByWeek(meals: Meal[]): WeekGroup[] {

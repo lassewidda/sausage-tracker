@@ -46,6 +46,11 @@ export interface GalleryData {
   grandTotalGrams: number
 }
 
+export interface SausageChainEntry {
+  playerName: string
+  streakWeeks: number
+}
+
 export type UploadPhase =
   | 'idle'
   | 'uploading'
