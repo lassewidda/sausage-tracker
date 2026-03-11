@@ -156,7 +156,7 @@ export async function getSausageChains(): Promise<SausageChainEntry[]> {
   const currentWeek = getWeekKey()
   const entries: SausageChainEntry[] = []
 
-  for (const [playerName, weekMap] of byPlayer) {
+  for (const [playerName, weekMap] of Array.from(byPlayer.entries())) {
     let streak = 0
     let wk = currentWeek
 
