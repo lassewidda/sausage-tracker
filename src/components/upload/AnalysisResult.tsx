@@ -22,6 +22,10 @@ export function AnalysisResult({
   isSaving,
 }: AnalysisResultProps) {
   const [count, setCount] = useState(analysis.count)
+  const [healthConfirmed, setHealthConfirmed] = useState(false)
+
+  const HEALTH_THRESHOLD = 5
+  const needsHealthWarning = count >= HEALTH_THRESHOLD
 
   return (
     <div className="stack">
@@ -85,8 +89,40 @@ export function AnalysisResult({
         >
           ADJUST COUNT IF NEEDED:
         </div>
-        <CountStepper count={count} onChange={setCount} />
+        <CountStepper count={count} onChange={(n) => { setCount(n); setHealthConfirmed(false) }} />
       </div>
+
+      {/* Health warning */}
+      {needsHealthWarning && (
+        <div
+          style={{
+            background: '#AA0000',
+            border: '2px solid #FF4444',
+            padding: '12px 16px',
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '7px',
+            textTransform: 'uppercase',
+            color: '#FFFFFF',
+            lineHeight: '1.8',
+          }}
+        >
+          <div style={{ color: '#FFFF00', marginBottom: '8px' }}>
+            ⚠ HEALTH WARNING ⚠
+          </div>
+          <div style={{ marginBottom: '12px' }}>
+            {count} SAUSAGES IN ONE MEAL IS A LOT. EATING THIS MANY SAUSAGES MAY NEGATIVELY IMPACT YOUR HEALTH. PLEASE CONFIRM YOU REALLY ATE THIS MANY.
+          </div>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={healthConfirmed}
+              onChange={(e) => setHealthConfirmed(e.target.checked)}
+              style={{ marginTop: '2px', accentColor: '#FFFF00', flexShrink: 0 }}
+            />
+            <span>I CONFIRM I ATE {count} SAUSAGES AND UNDERSTAND THIS MAY IMPACT MY HEALTH NEGATIVELY</span>
+          </label>
+        </div>
+      )}
 
       {/* Confirm button */}
       <div className="row row--center">
@@ -94,7 +130,7 @@ export function AnalysisResult({
           variant="primary"
           size="large"
           onClick={() => onConfirm(count)}
-          disabled={isSaving}
+          disabled={isSaving || (needsHealthWarning && !healthConfirmed)}
         >
           {isSaving ? 'SAVING...' : `CONFIRM  +${count} POINT${count !== 1 ? 'S' : ''}`}
         </Button>
