@@ -106,6 +106,8 @@ function ChainViz({ weeks }: { weeks: number }) {
       flexDirection: 'column',
       gap: '4px',
       alignItems: 'flex-start',
+      overflowX: 'auto',
+      maxWidth: '100%',
     }}>
       {rows.map((row, i) => (
         <ChainRow key={i} count={row.count} offset={row.offset} />

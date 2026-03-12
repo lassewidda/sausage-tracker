@@ -73,6 +73,11 @@ export function NameSetter() {
         color: name ? 'var(--crt-amber)' : '#AA0000',
         padding: '0',
         letterSpacing: '1px',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        maxWidth: '120px',
+        flexShrink: 0,
       }}
     >
       {name ? `PLAYER: ${name}` : '[ SET NAME ]'}

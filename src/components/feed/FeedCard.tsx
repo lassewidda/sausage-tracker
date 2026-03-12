@@ -29,7 +29,7 @@ export function FeedCard({ meal }: FeedCardProps) {
 
       <div style={{ display: 'flex', gap: '0', minHeight: '140px' }}>
         {/* Image */}
-        <div style={{ position: 'relative', width: '180px', flexShrink: 0, background: 'var(--amiga-black)' }}>
+        <div style={{ position: 'relative', width: 'clamp(110px, 35vw, 180px)', flexShrink: 0, background: 'var(--amiga-black)' }}>
           <Image
             src={meal.imageUrl}
             alt={meal.aiDescription ?? 'Meal'}

@@ -36,6 +36,7 @@
 
 html, body {
   height: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -71,8 +72,10 @@ body {
   padding: 4px 8px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 12px;
   flex-shrink: 0;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .amiga-menubar__title {
@@ -82,6 +85,11 @@ body {
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .amiga-menubar__item {
@@ -92,6 +100,8 @@ body {
   letter-spacing: 1px;
   text-decoration: none;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .amiga-menubar__item:hover {
@@ -102,6 +112,19 @@ body {
 
 .amiga-menubar__spacer {
   flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 540px) {
+  .amiga-menubar__title {
+    display: none;
+  }
+  .amiga-menubar {
+    gap: 8px;
+  }
+  .amiga-menubar__item {
+    font-size: 8px;
+  }
 }
 
 /* =====================
