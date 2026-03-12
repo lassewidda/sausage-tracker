@@ -55,7 +55,7 @@ export function FeedCard({ meal }: FeedCardProps) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
               <span style={{
                 fontFamily: 'var(--font-pixel)',
-                fontSize: '7px',
+                fontSize: '9px',
                 textTransform: 'uppercase',
                 color: 'var(--amiga-black)',
               }}>
@@ -64,7 +64,7 @@ export function FeedCard({ meal }: FeedCardProps) {
               {meal.estimatedGrams != null && meal.estimatedGrams > 0 && (
                 <span style={{
                   fontFamily: 'var(--font-pixel)',
-                  fontSize: '6px',
+                  fontSize: '8px',
                   color: 'var(--amiga-dark-grey)',
                 }}>
                   ~{meal.estimatedGrams}G
@@ -86,7 +86,7 @@ export function FeedCard({ meal }: FeedCardProps) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
             <div style={{
               fontFamily: 'var(--font-pixel)',
-              fontSize: '6px',
+              fontSize: '8px',
               color: 'var(--amiga-dark-grey)',
               textTransform: 'uppercase',
             }}>

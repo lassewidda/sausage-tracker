@@ -40,7 +40,7 @@ export function MealCard({ meal }: MealCardProps) {
           </p>
         )}
         {meal.playerName && meal.playerName !== 'Anonymous' && (
-          <div className="amiga-badge amiga-badge--orange" style={{ fontSize: '6px', padding: '2px 6px' }}>
+          <div className="amiga-badge amiga-badge--orange" style={{ fontSize: '8px', padding: '2px 6px' }}>
             {meal.playerName.toUpperCase()}
           </div>
         )}
@@ -50,7 +50,7 @@ export function MealCard({ meal }: MealCardProps) {
             <span
               style={{
                 fontFamily: 'var(--font-pixel)',
-                fontSize: '6px',
+                fontSize: '8px',
                 color: 'var(--crt-amber)',
                 background: 'var(--amiga-black)',
                 padding: '2px 4px',
@@ -62,7 +62,7 @@ export function MealCard({ meal }: MealCardProps) {
               <span
                 style={{
                   fontFamily: 'var(--font-pixel)',
-                  fontSize: '6px',
+                  fontSize: '8px',
                   color: 'var(--amiga-white)',
                   background: 'var(--amiga-dark-grey)',
                   padding: '2px 4px',

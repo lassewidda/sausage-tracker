@@ -83,7 +83,7 @@ export function AnalysisResult({
         <div
           style={{
             fontFamily: 'var(--font-pixel)',
-            fontSize: '7px',
+            fontSize: '9px',
             textTransform: 'uppercase',
             color: 'var(--amiga-white)',
             marginBottom: '12px',
@@ -103,7 +103,7 @@ export function AnalysisResult({
             border: '2px solid #FF4444',
             padding: '12px 16px',
             fontFamily: 'var(--font-pixel)',
-            fontSize: '7px',
+            fontSize: '9px',
             textTransform: 'uppercase',
             color: '#FFFFFF',
             lineHeight: '1.8',

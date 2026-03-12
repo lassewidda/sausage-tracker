@@ -188,7 +188,7 @@ export function UploadZone() {
         <div
           style={{
             fontFamily: 'var(--font-pixel)',
-            fontSize: '8px',
+            fontSize: '10px',
             textTransform: 'uppercase',
             letterSpacing: '2px',
             color: 'var(--amiga-black)',
@@ -246,7 +246,7 @@ export function UploadZone() {
             placeholder="YOUR NAME"
             style={{
               fontFamily: 'var(--font-pixel)',
-              fontSize: '8px',
+              fontSize: '10px',
               textTransform: 'uppercase',
               background: 'var(--amiga-black)',
               color: 'var(--crt-amber)',

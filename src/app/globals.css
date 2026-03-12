@@ -76,7 +76,7 @@ body {
 }
 
 .amiga-menubar__title {
-  font-size: 8px;
+  font-size: 10px;
   font-family: var(--font-pixel);
   color: var(--amiga-black);
   text-transform: uppercase;
@@ -85,7 +85,7 @@ body {
 }
 
 .amiga-menubar__item {
-  font-size: 8px;
+  font-size: 10px;
   font-family: var(--font-pixel);
   color: var(--amiga-black);
   text-transform: uppercase;
@@ -124,7 +124,7 @@ body {
   align-items: center;
   gap: 4px;
   padding: 2px 4px;
-  height: 20px;
+  height: 22px;
   border-bottom: 2px solid var(--amiga-black);
   flex-shrink: 0;
   user-select: none;
@@ -142,14 +142,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 6px;
+  font-size: 8px;
   color: var(--amiga-black);
 }
 
 .amiga-window__title {
   flex: 1;
   text-align: center;
-  font-size: 8px;
+  font-size: 10px;
   font-family: var(--font-pixel);
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -179,7 +179,7 @@ body {
    ===================== */
 .amiga-btn {
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
   background: var(--amiga-grey);
@@ -226,7 +226,7 @@ body {
 }
 
 .amiga-btn--large {
-  font-size: 10px;
+  font-size: 12px;
   padding: 10px 20px;
 }
 
@@ -237,7 +237,7 @@ body {
   background: var(--amiga-black);
   color: var(--crt-amber);
   font-family: var(--font-pixel);
-  font-size: 28px;
+  font-size: 32px;
   padding: 10px 20px;
   border-top:    2px solid var(--bevel-shadow);
   border-left:   2px solid var(--bevel-shadow);
@@ -251,13 +251,13 @@ body {
 }
 
 .amiga-gauge--small {
-  font-size: 16px;
+  font-size: 18px;
   padding: 6px 12px;
   min-width: 48px;
 }
 
 .amiga-gauge--large {
-  font-size: 40px;
+  font-size: 46px;
   padding: 14px 28px;
 }
 
@@ -271,7 +271,7 @@ body {
   padding: 32px 24px;
   text-align: center;
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 2px;
   line-height: 2;
@@ -303,7 +303,7 @@ body {
   background: var(--amiga-grey);
   border-top: 2px solid var(--bevel-shadow);
   padding: 4px 8px;
-  font-size: 7px;
+  font-size: 9px;
   font-family: var(--font-pixel);
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -340,7 +340,7 @@ body {
   background: var(--amiga-black);
   color: var(--crt-amber);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 4px 8px;
@@ -360,7 +360,7 @@ body {
   background: var(--amiga-dark-grey);
   color: var(--amiga-white);
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 9px;
   line-height: 1.8;
   padding: 8px;
   border-top:    2px solid var(--bevel-shadow);
@@ -414,7 +414,7 @@ body {
 
 .meal-card__desc {
   font-family: var(--font-pixel);
-  font-size: 6px;
+  font-size: 8px;
   color: var(--amiga-black);
   text-transform: uppercase;
   line-height: 1.8;
@@ -423,7 +423,7 @@ body {
 
 .meal-card__date {
   font-family: var(--font-pixel);
-  font-size: 6px;
+  font-size: 8px;
   color: var(--amiga-dark-grey);
   text-transform: uppercase;
 }
@@ -441,7 +441,7 @@ body {
   background: var(--amiga-orange);
   color: var(--amiga-white);
   font-family: var(--font-pixel);
-  font-size: 8px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 6px 10px;
@@ -506,7 +506,7 @@ body {
   gap: 4px;
   align-items: center;
   font-family: var(--font-pixel);
-  font-size: 7px;
+  font-size: 9px;
   text-transform: uppercase;
 }
 
@@ -543,7 +543,7 @@ body {
   background: var(--amiga-black);
   color: var(--crt-amber);
   font-family: var(--font-pixel);
-  font-size: 10px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 2px;
   padding: 12px 16px;
@@ -567,7 +567,7 @@ body {
 
 .success-score {
   font-family: var(--font-pixel);
-  font-size: 9px;
+  font-size: 11px;
   color: var(--amiga-black);
   text-transform: uppercase;
   letter-spacing: 1px;

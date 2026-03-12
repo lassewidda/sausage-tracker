@@ -73,7 +73,7 @@ function ChainViz({ weeks }: { weeks: number }) {
     return (
       <div style={{
         fontFamily: 'var(--font-pixel)',
-        fontSize: '7px',
+        fontSize: '9px',
         color: 'var(--amiga-dark-grey)',
         padding: '6px 0',
         textTransform: 'uppercase',
@@ -113,7 +113,7 @@ function ChainViz({ weeks }: { weeks: number }) {
       {weeks > MAX_DISPLAY && (
         <div style={{
           fontFamily: 'var(--font-pixel)',
-          fontSize: '6px',
+          fontSize: '8px',
           color: 'var(--crt-amber)',
           paddingTop: '4px',
         }}>
@@ -155,12 +155,12 @@ export function SausageChain({ entries }: Props) {
                   marginBottom: '6px',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '14px', lineHeight: 1 }}>
+                    <span style={{ fontSize: '16px', lineHeight: 1 }}>
                       {MEDALS[i] ?? `#${i + 1}`}
                     </span>
                     <span style={{
                       fontFamily: 'var(--font-pixel)',
-                      fontSize: '8px',
+                      fontSize: '10px',
                       textTransform: 'uppercase',
                       color: 'var(--amiga-black)',
                       letterSpacing: '1px',
@@ -172,7 +172,7 @@ export function SausageChain({ entries }: Props) {
                     background: entry.streakWeeks > 0 ? 'var(--amiga-black)' : 'var(--amiga-dark-grey)',
                     color: entry.streakWeeks > 0 ? 'var(--crt-amber)' : 'var(--amiga-grey)',
                     fontFamily: 'var(--font-pixel)',
-                    fontSize: '7px',
+                    fontSize: '9px',
                     padding: '4px 8px',
                     textShadow: entry.streakWeeks > 0 ? '0 0 4px var(--crt-amber)' : 'none',
                   }}>

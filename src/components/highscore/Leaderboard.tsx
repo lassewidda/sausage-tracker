@@ -39,10 +39,10 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
                     gap: '8px',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '14px', lineHeight: 1 }}>{medal}</span>
+                      <span style={{ fontSize: '16px', lineHeight: 1 }}>{medal}</span>
                       <span style={{
                         fontFamily: 'var(--font-pixel)',
-                        fontSize: '8px',
+                        fontSize: '10px',
                         textTransform: 'uppercase',
                         color: 'var(--amiga-black)',
                         letterSpacing: '1px',
@@ -54,7 +54,7 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
                       {entry.totalGrams > 0 && (
                         <span style={{
                           fontFamily: 'var(--font-pixel)',
-                          fontSize: '6px',
+                          fontSize: '8px',
                           color: 'var(--amiga-dark-grey)',
                           background: 'var(--amiga-light-grey)',
                           padding: '2px 4px',
