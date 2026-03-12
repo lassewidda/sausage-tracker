@@ -8,6 +8,7 @@ import { processImage, isHeic, MAX_RAW_SIZE } from '@/lib/imageProcess'
 import { useName } from '@/lib/useName'
 import { Button } from '@/components/amiga/Button'
 import { AnalysisResult } from './AnalysisResult'
+import { VictorySprite } from '@/components/ui/VictorySprite'
 
 export function UploadZone() {
   const router = useRouter()
@@ -139,6 +140,7 @@ export function UploadZone() {
   if (state.phase === 'success') {
     return (
       <div className="success-screen">
+        <VictorySprite />
         <div className="amiga-gauge amiga-gauge--large">+{state.confirmedCount}</div>
         <div className="success-score">
           SAUSAGE{state.confirmedCount !== 1 ? 'S' : ''} RECORDED!
