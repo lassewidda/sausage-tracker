@@ -162,7 +162,7 @@ export function SausageChain({ entries }: Props) {
                       fontFamily: 'var(--font-pixel)',
                       fontSize: '8px',
                       textTransform: 'uppercase',
-                      color: i === 0 ? 'var(--amiga-orange)' : 'var(--amiga-black)',
+                      color: 'var(--amiga-black)',
                       letterSpacing: '1px',
                     }}>
                       {entry.playerName}

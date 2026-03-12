@@ -44,7 +44,7 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
                         fontFamily: 'var(--font-pixel)',
                         fontSize: '8px',
                         textTransform: 'uppercase',
-                        color: entry.rank === 1 ? 'var(--amiga-orange)' : 'var(--amiga-black)',
+                        color: 'var(--amiga-black)',
                         letterSpacing: '1px',
                       }}>
                         {entry.playerName}
