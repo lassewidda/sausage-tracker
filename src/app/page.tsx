@@ -67,6 +67,32 @@ export default function HomePage() {
           &gt; BEST RESULTS: CLEAR PHOTO, GOOD LIGHTING, SAUSAGES VISIBLE
         </div>
       </Window>
+
+      {/* Rules window */}
+      <Window title="RULES" showGadgets={false}>
+        <div
+          style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '6px',
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+            lineHeight: '2.2',
+          }}
+        >
+          <span style={{ color: '#AA0000' }}>&gt; NO RETROSPECTIVE LOGGING.</span>
+          <span style={{ color: 'var(--amiga-dark-grey)' }}>
+            {' '}SAUSAGES MUST BE LOGGED
+            <br />
+            &nbsp;&nbsp;THE SAME DAY THEY ARE EATEN. LOGGING MEALS FROM
+            <br />
+            &nbsp;&nbsp;YESTERDAY, LAST WEEK OR EARLIER IS NOT ALLOWED.
+          </span>
+          <br />
+          <span style={{ color: 'var(--amiga-dark-grey)' }}>
+            &gt; PHOTO MUST SHOW THE ACTUAL MEAL YOU ARE EATING RIGHT NOW.
+          </span>
+        </div>
+      </Window>
     </main>
   )
 }
