@@ -49,30 +49,61 @@ export default async function PlayerPage({ params }: Props) {
 
   // Generate card if none exists
   if (!card) {
-    const generated = await generateHeroCard({
-      playerName,
-      totalSausages: stats.totalSausages,
-      totalGrams: stats.totalGrams,
-      mealCount: stats.mealCount,
-      maxInOneMeal: stats.maxInOneMeal,
-      activeWeeks: stats.activeWeeks,
-      chainLength: stats.chainLength,
-      recentMeals: stats.recentMeals,
-    })
+    try {
+      const generated = await generateHeroCard({
+        playerName,
+        totalSausages: stats.totalSausages,
+        totalGrams: stats.totalGrams,
+        mealCount: stats.mealCount,
+        maxInOneMeal: stats.maxInOneMeal,
+        activeWeeks: stats.activeWeeks,
+        chainLength: stats.chainLength,
+        recentMeals: stats.recentMeals,
+      })
 
-    card = await insertHeroCard({
-      playerName,
-      heroTitle: generated.heroTitle,
-      heroType: generated.heroType,
-      hp: generated.hp,
-      attack: generated.attack,
-      defense: generated.defense,
-      speed: generated.speed,
-      specialMoves: generated.specialMoves,
-      weakness: generated.weakness,
-      catchphrase: generated.catchphrase,
-      flavorText: generated.flavorText,
-    })
+      card = await insertHeroCard({
+        playerName,
+        heroTitle: generated.heroTitle || 'The Sausage Warrior',
+        heroType: generated.heroType || 'FIRE/MEAT',
+        hp: generated.hp || 100,
+        attack: generated.attack || 50,
+        defense: generated.defense || 50,
+        speed: generated.speed || 50,
+        specialMoves: Array.isArray(generated.specialMoves) ? generated.specialMoves : ['Sausage Slam (40)', 'Mustard Blast (30)', 'Link Storm (50)'],
+        weakness: generated.weakness || 'Vegetarian restaurants',
+        catchphrase: generated.catchphrase || 'Fear the sausage!',
+        flavorText: generated.flavorText || 'A mighty warrior of the cylindrical meat arts.',
+      })
+    } catch (err) {
+      console.error('Hero card generation failed:', err)
+      // Return a fallback page instead of crashing
+      return (
+        <main className="container">
+          <Link href="/highscore" style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '10px',
+            color: 'var(--amiga-black)',
+            textDecoration: 'underline',
+            display: 'inline-block',
+            marginBottom: '16px',
+          }}>
+            ← BACK TO HIGHSCORE
+          </Link>
+          <div className="amiga-window">
+            <div className="amiga-window__titlebar">
+              <div className="amiga-window__gadget" />
+              <span className="amiga-window__title">ERROR</span>
+              <div className="amiga-window__gadget" />
+            </div>
+            <div className="amiga-window__body">
+              <div className="amiga-info" style={{ textAlign: 'center' }}>
+                HERO CARD GENERATION FAILED FOR {playerName.toUpperCase()}. TRY AGAIN LATER.
+              </div>
+            </div>
+          </div>
+        </main>
+      )
+    }
   }
 
   return (
