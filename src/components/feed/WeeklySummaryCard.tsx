@@ -22,23 +22,20 @@ export function WeeklySummaryCard({ summary }: Props) {
         {/* Image collage */}
         {images.length > 0 && (
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: images.length === 1
-              ? '1fr'
-              : images.length <= 4
-                ? 'repeat(2, 1fr)'
-                : 'repeat(3, 1fr)',
+            display: 'flex',
             gap: '3px',
             background: 'var(--amiga-black)',
             border: '2px solid var(--bevel-shadow)',
             padding: '3px',
-            maxHeight: '200px',
-            overflow: 'hidden',
+            overflowX: 'auto',
           }}>
             {images.slice(0, 6).map((url, i) => (
               <div key={i} style={{
                 position: 'relative',
-                aspectRatio: images.length === 1 ? '16/7' : '4/3',
+                width: images.length === 1 ? '100%' : '120px',
+                height: '120px',
+                flexShrink: 0,
+                borderRadius: '2px',
                 overflow: 'hidden',
               }}>
                 <Image
@@ -47,7 +44,7 @@ export function WeeklySummaryCard({ summary }: Props) {
                   fill
                   style={{ objectFit: 'cover' }}
                   unoptimized
-                  sizes="(max-width: 600px) 50vw, 200px"
+                  sizes="120px"
                 />
               </div>
             ))}
