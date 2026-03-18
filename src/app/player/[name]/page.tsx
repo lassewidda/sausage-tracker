@@ -6,12 +6,11 @@ import Link from 'next/link'
 export const dynamic = 'force-dynamic'
 
 interface Props {
-  params: Promise<{ name: string }>
+  params: { name: string }
 }
 
 export default async function PlayerPage({ params }: Props) {
-  const { name } = await params
-  const playerName = decodeURIComponent(name)
+  const playerName = decodeURIComponent(params.name)
 
   // Check for existing card
   let card = await getHeroCard(playerName)
