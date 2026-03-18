@@ -393,7 +393,8 @@ export async function insertHeroCard(data: Omit<HeroCard, 'id' | 'createdAt'>): 
       hero_title = EXCLUDED.hero_title, hero_type = EXCLUDED.hero_type,
       hp = EXCLUDED.hp, attack = EXCLUDED.attack, defense = EXCLUDED.defense, speed = EXCLUDED.speed,
       special_moves = EXCLUDED.special_moves, weakness = EXCLUDED.weakness,
-      catchphrase = EXCLUDED.catchphrase, flavor_text = EXCLUDED.flavor_text
+      catchphrase = EXCLUDED.catchphrase, flavor_text = EXCLUDED.flavor_text,
+      created_at = NOW()
     RETURNING *
   `
   await sql.end()

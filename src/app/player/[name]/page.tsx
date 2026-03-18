@@ -1,6 +1,7 @@
 import { getHeroCard, insertHeroCard, getPlayerAllTimeStats } from '@/lib/db'
 import { generateHeroCard } from '@/lib/claude'
 import { HeroCardDisplay } from '@/components/player/HeroCardDisplay'
+import { RegenerateButton } from '@/components/player/RegenerateButton'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -119,6 +120,7 @@ export default async function PlayerPage({ params }: Props) {
         ← BACK TO HIGHSCORE
       </Link>
       <HeroCardDisplay card={card} stats={stats} />
+      <RegenerateButton playerName={playerName} cardCreatedAt={card.createdAt} />
     </main>
   )
 }
