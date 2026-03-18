@@ -50,6 +50,54 @@ export async function rewriteDescriptionForCount(
   return textBlock.text.trim()
 }
 
+export async function generateWeeklySummary(data: {
+  playerName: string
+  weekLabel: string
+  meals: { description: string | null; sausageCount: number; estimatedGrams: number | null }[]
+  totalSausages: number
+  totalGrams: number
+  chainLength: number
+  prevWeekSausages: number
+}): Promise<string> {
+  const client = getClient()
+
+  const mealList = data.meals
+    .map((m, i) => `  Meal ${i + 1}: ${m.sausageCount} sausage(s), ~${m.estimatedGrams ?? '?'}g — "${m.description ?? 'no description'}"`)
+    .join('\n')
+
+  const chainStatus = data.chainLength > 0
+    ? `Active sausage chain: ${data.chainLength} consecutive week(s) with 3+ sausages.`
+    : 'Sausage chain: BROKEN (failed to reach 3 sausages this week).'
+
+  const trend = data.prevWeekSausages > 0
+    ? `Previous week: ${data.prevWeekSausages} sausages. Change: ${data.totalSausages > data.prevWeekSausages ? '+' : ''}${data.totalSausages - data.prevWeekSausages}.`
+    : 'No data from previous week for comparison.'
+
+  const prompt = `Write a brief weekly sausage consumption report for "${data.playerName}" for ${data.weekLabel}.
+
+DATA:
+- Total sausages consumed: ${data.totalSausages}
+- Total estimated weight: ${data.totalGrams}g
+- Number of meals logged: ${data.meals.length}
+- ${chainStatus}
+- ${trend}
+
+MEALS:
+${mealList}
+
+STYLE: Write 2-4 sentences in the tone of a scientific research paper abstract, but about sausages. Be humorous and absurd while referencing real scientific terminology (e.g., "caloric intake patterns", "protein acquisition events", "longitudinal consumption metrics"). Include observations about their specific sausage choices and quantities. Comment on their chain status. Keep it SHORT and punchy. Do not use markdown formatting.`
+
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 300,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  const block = message.content.find((b) => b.type === 'text')
+  if (!block || block.type !== 'text') return 'SUMMARY GENERATION FAILED.'
+  return block.text.trim()
+}
+
 export async function analyzeSausages(imageUrl: string): Promise<AnalysisResult> {
   const client = getClient()
 

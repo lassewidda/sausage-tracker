@@ -51,6 +51,18 @@ export interface SausageChainEntry {
   streakWeeks: number
 }
 
+export interface WeeklySummary {
+  id: string
+  playerName: string
+  weekKey: string
+  summaryText: string
+  totalSausages: number
+  totalGrams: number
+  mealCount: number
+  chainLength: number
+  createdAt: string
+}
+
 export type UploadPhase =
   | 'idle'
   | 'uploading'

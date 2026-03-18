@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry } from '@/types'
+import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry, WeeklySummary } from '@/types'
 
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
@@ -202,6 +202,175 @@ export function groupByWeek(meals: Meal[]): WeekGroup[] {
 
   weeks.sort((a, b) => b.weekKey.localeCompare(a.weekKey))
   return weeks
+}
+
+// ── Weekly Summaries ──────────────────────────────────────────
+
+export interface PlayerWeekData {
+  playerName: string
+  weekKey: string
+  meals: { description: string | null; sausageCount: number; estimatedGrams: number | null }[]
+  totalSausages: number
+  totalGrams: number
+  chainLength: number
+  prevWeekSausages: number
+}
+
+export async function getPlayerWeekData(weekKey: string): Promise<PlayerWeekData[]> {
+  const sql = getDb()
+
+  const [mealRows, chainRows, prevRows] = await Promise.all([
+    sql`
+      SELECT player_name, ai_description, sausage_count, estimated_grams
+      FROM meals WHERE week_key = ${weekKey}
+      ORDER BY player_name, created_at
+    `,
+    sql`
+      SELECT player_name, week_key, SUM(sausage_count)::int AS week_total
+      FROM meals GROUP BY player_name, week_key
+    `,
+    sql`
+      SELECT player_name, SUM(sausage_count)::int AS total
+      FROM meals WHERE week_key = ${prevWeekKey(weekKey)}
+      GROUP BY player_name
+    `,
+  ])
+  await sql.end()
+
+  // Build chain map
+  const chainMap = new Map<string, Map<string, number>>()
+  for (const r of chainRows) {
+    const name = r.player_name as string
+    if (!chainMap.has(name)) chainMap.set(name, new Map())
+    chainMap.get(name)!.set(r.week_key as string, r.week_total as number)
+  }
+
+  // Compute chain length per player at given week
+  function computeChain(player: string): number {
+    const weekMap = chainMap.get(player)
+    if (!weekMap) return 0
+    let streak = 0
+    let wk = weekKey
+    for (let i = 0; i < 500; i++) {
+      if ((weekMap.get(wk) ?? 0) >= 3) {
+        streak++
+        wk = prevWeekKey(wk)
+      } else {
+        break
+      }
+    }
+    return streak
+  }
+
+  // Prev week sausages per player
+  const prevMap = new Map<string, number>()
+  for (const r of prevRows) prevMap.set(r.player_name as string, r.total as number)
+
+  // Group meals by player
+  const byPlayer = new Map<string, PlayerWeekData>()
+  for (const r of mealRows) {
+    const name = r.player_name as string
+    if (!byPlayer.has(name)) {
+      byPlayer.set(name, {
+        playerName: name,
+        weekKey,
+        meals: [],
+        totalSausages: 0,
+        totalGrams: 0,
+        chainLength: computeChain(name),
+        prevWeekSausages: prevMap.get(name) ?? 0,
+      })
+    }
+    const pd = byPlayer.get(name)!
+    const count = r.sausage_count as number
+    const grams = (r.estimated_grams as number | null) ?? 0
+    pd.meals.push({
+      description: r.ai_description as string | null,
+      sausageCount: count,
+      estimatedGrams: r.estimated_grams as number | null,
+    })
+    pd.totalSausages += count
+    pd.totalGrams += grams
+  }
+
+  return Array.from(byPlayer.values())
+}
+
+export async function getWeeklySummaries(weekKey: string): Promise<WeeklySummary[]> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT id, player_name, week_key, summary_text, total_sausages, total_grams, meal_count, chain_length, created_at
+    FROM weekly_summaries
+    WHERE week_key = ${weekKey}
+    ORDER BY total_sausages DESC
+  `
+  await sql.end()
+  return rows.map(rowToSummary)
+}
+
+export async function getAllWeeklySummaries(): Promise<WeeklySummary[]> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT id, player_name, week_key, summary_text, total_sausages, total_grams, meal_count, chain_length, created_at
+    FROM weekly_summaries
+    ORDER BY week_key DESC, total_sausages DESC
+  `
+  await sql.end()
+  return rows.map(rowToSummary)
+}
+
+export async function insertWeeklySummary(data: {
+  playerName: string
+  weekKey: string
+  summaryText: string
+  totalSausages: number
+  totalGrams: number
+  mealCount: number
+  chainLength: number
+}): Promise<WeeklySummary> {
+  const sql = getDb()
+  const rows = await sql`
+    INSERT INTO weekly_summaries (player_name, week_key, summary_text, total_sausages, total_grams, meal_count, chain_length)
+    VALUES (${data.playerName}, ${data.weekKey}, ${data.summaryText}, ${data.totalSausages}, ${data.totalGrams}, ${data.mealCount}, ${data.chainLength})
+    ON CONFLICT (player_name, week_key) DO UPDATE SET
+      summary_text = EXCLUDED.summary_text,
+      total_sausages = EXCLUDED.total_sausages,
+      total_grams = EXCLUDED.total_grams,
+      meal_count = EXCLUDED.meal_count,
+      chain_length = EXCLUDED.chain_length
+    RETURNING id, player_name, week_key, summary_text, total_sausages, total_grams, meal_count, chain_length, created_at
+  `
+  await sql.end()
+  return rowToSummary(rows[0])
+}
+
+export async function getWeeksWithMeals(): Promise<string[]> {
+  const sql = getDb()
+  const rows = await sql`SELECT DISTINCT week_key FROM meals ORDER BY week_key DESC`
+  await sql.end()
+  return rows.map(r => r.week_key as string)
+}
+
+export async function getSummarizedWeeks(): Promise<string[]> {
+  const sql = getDb()
+  const rows = await sql`SELECT DISTINCT week_key FROM weekly_summaries ORDER BY week_key DESC`
+  await sql.end()
+  return rows.map(r => r.week_key as string)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToSummary(row: any): WeeklySummary {
+  return {
+    id: row.id,
+    playerName: row.player_name,
+    weekKey: row.week_key,
+    summaryText: row.summary_text,
+    totalSausages: row.total_sausages,
+    totalGrams: row.total_grams,
+    mealCount: row.meal_count,
+    chainLength: row.chain_length,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
