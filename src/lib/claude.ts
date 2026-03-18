@@ -85,7 +85,11 @@ DATA:
 MEALS:
 ${mealList}
 
-STYLE: Write 2-4 sentences in the tone of a scientific research paper abstract, but about sausages. Be humorous and absurd while referencing real scientific terminology (e.g., "caloric intake patterns", "protein acquisition events", "longitudinal consumption metrics"). Include observations about their specific sausage choices and quantities. Comment on their chain status. Keep it SHORT and punchy. Do not use markdown formatting.`
+STYLE: Write 2-4 sentences in the tone of a scientific research paper abstract, but about sausages. Be humorous and absurd while referencing real scientific terminology (e.g., "caloric intake patterns", "protein acquisition events", "longitudinal consumption metrics", "gastrointestinal throughput", "cylindrical meat product utilization").
+
+IMPORTANT: Vary your opening every time. NEVER start with "This longitudinal analysis" or any repetitive pattern. Use creative, different openings — start with the player's name, a dramatic observation, a fake citation, a surprising statistic, a metaphor, or jump straight into the findings. Every report should feel fresh and unique.
+
+Include observations about their specific sausage choices and quantities. Comment on their chain status. Keep it SHORT and punchy. Do not use markdown formatting.`
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',

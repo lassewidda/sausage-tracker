@@ -41,9 +41,19 @@ export default async function FeedPage() {
     mealsByWeek.set(meal.weekKey, existing)
   }
 
-  // Group summaries by week
+  // Build image lookup: (weekKey, playerName) -> imageUrls
+  const imagesByWeekPlayer = new Map<string, string[]>()
+  for (const meal of meals) {
+    const key = `${meal.weekKey}::${meal.playerName}`
+    const existing = imagesByWeekPlayer.get(key) ?? []
+    existing.push(meal.imageUrl)
+    imagesByWeekPlayer.set(key, existing)
+  }
+
+  // Group summaries by week, attaching image URLs
   const summariesByWeek = new Map<string, WeeklySummary[]>()
   for (const s of summaries) {
+    s.imageUrls = imagesByWeekPlayer.get(`${s.weekKey}::${s.playerName}`) ?? []
     const existing = summariesByWeek.get(s.weekKey) ?? []
     existing.push(s)
     summariesByWeek.set(s.weekKey, existing)

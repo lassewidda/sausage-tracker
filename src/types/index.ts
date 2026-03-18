@@ -61,6 +61,7 @@ export interface WeeklySummary {
   mealCount: number
   chainLength: number
   createdAt: string
+  imageUrls?: string[]
 }
 
 export type UploadPhase =
