@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { LeaderboardEntry } from '@/types'
 
 interface LeaderboardProps {
@@ -40,15 +41,16 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span style={{ fontSize: '16px', lineHeight: 1 }}>{medal}</span>
-                      <span style={{
+                      <Link href={`/player/${encodeURIComponent(entry.playerName)}`} style={{
                         fontFamily: 'var(--font-pixel)',
                         fontSize: '10px',
                         textTransform: 'uppercase',
                         color: 'var(--amiga-black)',
                         letterSpacing: '1px',
+                        textDecoration: 'none',
                       }}>
                         {entry.playerName}
-                      </span>
+                      </Link>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       {entry.totalGrams > 0 && (

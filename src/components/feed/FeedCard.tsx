@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import type { Meal } from '@/types'
 import { DeleteButton } from './DeleteButton'
 
@@ -23,7 +24,7 @@ export function FeedCard({ meal }: FeedCardProps) {
       {/* Title bar with player name */}
       <div className="amiga-window__titlebar">
         <div className="amiga-window__gadget" />
-        <span className="amiga-window__title">{meal.playerName.toUpperCase()}</span>
+        <Link href={`/player/${encodeURIComponent(meal.playerName)}`} className="amiga-window__title" style={{ textDecoration: 'none', color: 'inherit' }}>{meal.playerName.toUpperCase()}</Link>
         <div className="amiga-window__gadget" />
       </div>
 

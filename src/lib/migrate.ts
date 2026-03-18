@@ -47,6 +47,25 @@ async function migrate() {
 
   await sql`CREATE INDEX IF NOT EXISTS idx_weekly_summaries_week ON weekly_summaries(week_key DESC)`
 
+  // Hero cards table
+  await sql`
+    CREATE TABLE IF NOT EXISTS hero_cards (
+      id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      player_name    TEXT NOT NULL UNIQUE,
+      hero_title     TEXT NOT NULL,
+      hero_type      TEXT NOT NULL,
+      hp             INTEGER NOT NULL,
+      attack         INTEGER NOT NULL,
+      defense        INTEGER NOT NULL,
+      speed          INTEGER NOT NULL,
+      special_moves  TEXT[] NOT NULL DEFAULT '{}',
+      weakness       TEXT NOT NULL,
+      catchphrase    TEXT NOT NULL,
+      flavor_text    TEXT NOT NULL,
+      created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_week_key ON meals(week_key DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_created_at ON meals(created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_player_name ON meals(player_name)`

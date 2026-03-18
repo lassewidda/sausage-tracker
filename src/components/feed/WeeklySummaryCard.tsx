@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import type { WeeklySummary } from '@/types'
 
 interface Props {
@@ -13,7 +14,7 @@ export function WeeklySummaryCard({ summary }: Props) {
       <div className="amiga-window__titlebar" style={{ background: '#1E6B2A' }}>
         <div className="amiga-window__gadget" />
         <span className="amiga-window__title">
-          📊 WEEKLY REPORT — {summary.playerName.toUpperCase()}
+          📊 WEEKLY REPORT — <Link href={`/player/${encodeURIComponent(summary.playerName)}`} style={{ textDecoration: 'none', color: 'inherit' }}>{summary.playerName.toUpperCase()}</Link>
         </span>
         <div className="amiga-window__gadget" />
       </div>

@@ -51,6 +51,22 @@ export interface SausageChainEntry {
   streakWeeks: number
 }
 
+export interface HeroCard {
+  id: string
+  playerName: string
+  heroTitle: string
+  heroType: string
+  hp: number
+  attack: number
+  defense: number
+  speed: number
+  specialMoves: string[]
+  weakness: string
+  catchphrase: string
+  flavorText: string
+  createdAt: string
+}
+
 export interface WeeklySummary {
   id: string
   playerName: string

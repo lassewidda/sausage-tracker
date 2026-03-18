@@ -27,6 +27,79 @@ function getClient(): Anthropic {
   return _client
 }
 
+export async function generateHeroCard(data: {
+  playerName: string
+  totalSausages: number
+  totalGrams: number
+  mealCount: number
+  maxInOneMeal: number
+  activeWeeks: number
+  chainLength: number
+  recentMeals: { description: string | null; sausageCount: number }[]
+}): Promise<{
+  heroTitle: string
+  heroType: string
+  hp: number
+  attack: number
+  defense: number
+  speed: number
+  specialMoves: string[]
+  weakness: string
+  catchphrase: string
+  flavorText: string
+}> {
+  const client = getClient()
+
+  const recentDescriptions = data.recentMeals
+    .filter(m => m.description)
+    .map(m => `- ${m.sausageCount} sausage(s): ${m.description}`)
+    .join('\n')
+
+  const prompt = `Create a superhero/Pokémon-style trading card for sausage champion "${data.playerName}".
+
+PLAYER STATS:
+- Total lifetime sausages: ${data.totalSausages}
+- Total weight consumed: ${data.totalGrams}g
+- Meals logged: ${data.mealCount}
+- Max sausages in a single meal: ${data.maxInOneMeal}
+- Active weeks: ${data.activeWeeks}
+- Current sausage chain: ${data.chainLength} consecutive weeks
+
+RECENT MEALS:
+${recentDescriptions || 'No recent meals'}
+
+Generate a JSON card with these fields. Be creative, funny, and thematic around sausages:
+
+- heroTitle: A dramatic superhero/Pokémon name (e.g., "The Bratwurst Berserker", "Wiener Warlord", "Chorizo Champion"). Make it unique to this player's habits.
+- heroType: A sausage-themed type like "FIRE/MEAT", "DARK/SMOKED", "ELECTRIC/GRILLED" etc. Two types separated by /.
+- hp: A number 10-999 based on total grams consumed (more grams = higher HP)
+- attack: A number 1-99 based on max sausages in one meal
+- defense: A number 1-99 based on chain length (consistency)
+- speed: A number 1-99 based on meals per active week
+- specialMoves: Array of exactly 3 special move names. Each should be a pun or sausage reference (e.g., "Mustard Blast", "Link Storm", "Casing Crush"). Include the move's damage in parentheses.
+- weakness: A funny weakness (one short sentence)
+- catchphrase: A dramatic one-liner this hero would say
+- flavorText: 1-2 sentences of dramatic Pokédex-style lore about this sausage warrior
+
+Respond with ONLY valid JSON, no markdown, no explanation.`
+
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 500,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  const block = message.content.find((b) => b.type === 'text')
+  if (!block || block.type !== 'text') throw new Error('No response')
+
+  const cleaned = block.text
+    .replace(/^```(?:json)?\n?/, '')
+    .replace(/\n?```$/, '')
+    .trim()
+
+  return JSON.parse(cleaned)
+}
+
 export async function rewriteDescriptionForCount(
   description: string,
   oldCount: number,

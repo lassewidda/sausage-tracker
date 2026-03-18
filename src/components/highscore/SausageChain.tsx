@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { SausageChainEntry } from '@/types'
 
 interface Props {
@@ -160,15 +161,16 @@ export function SausageChain({ entries }: Props) {
                     <span style={{ fontSize: '16px', lineHeight: 1 }}>
                       {MEDALS[i] ?? `#${i + 1}`}
                     </span>
-                    <span style={{
+                    <Link href={`/player/${encodeURIComponent(entry.playerName)}`} style={{
                       fontFamily: 'var(--font-pixel)',
                       fontSize: '10px',
                       textTransform: 'uppercase',
                       color: 'var(--amiga-black)',
                       letterSpacing: '1px',
+                      textDecoration: 'none',
                     }}>
                       {entry.playerName}
-                    </span>
+                    </Link>
                   </div>
                   <div style={{
                     background: entry.streakWeeks > 0 ? 'var(--amiga-black)' : 'var(--amiga-dark-grey)',

@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry, WeeklySummary } from '@/types'
+import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry, WeeklySummary, HeroCard } from '@/types'
 
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
@@ -369,6 +369,104 @@ function rowToSummary(row: any): WeeklySummary {
     totalGrams: row.total_grams,
     mealCount: row.meal_count,
     chainLength: row.chain_length,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  }
+}
+
+// ── Hero Cards ────────────────────────────────────────────────
+
+export async function getHeroCard(playerName: string): Promise<HeroCard | null> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT * FROM hero_cards WHERE player_name = ${playerName}
+  `
+  await sql.end()
+  return rows.length > 0 ? rowToHeroCard(rows[0]) : null
+}
+
+export async function insertHeroCard(data: Omit<HeroCard, 'id' | 'createdAt'>): Promise<HeroCard> {
+  const sql = getDb()
+  const rows = await sql`
+    INSERT INTO hero_cards (player_name, hero_title, hero_type, hp, attack, defense, speed, special_moves, weakness, catchphrase, flavor_text)
+    VALUES (${data.playerName}, ${data.heroTitle}, ${data.heroType}, ${data.hp}, ${data.attack}, ${data.defense}, ${data.speed}, ${data.specialMoves}, ${data.weakness}, ${data.catchphrase}, ${data.flavorText})
+    ON CONFLICT (player_name) DO UPDATE SET
+      hero_title = EXCLUDED.hero_title, hero_type = EXCLUDED.hero_type,
+      hp = EXCLUDED.hp, attack = EXCLUDED.attack, defense = EXCLUDED.defense, speed = EXCLUDED.speed,
+      special_moves = EXCLUDED.special_moves, weakness = EXCLUDED.weakness,
+      catchphrase = EXCLUDED.catchphrase, flavor_text = EXCLUDED.flavor_text
+    RETURNING *
+  `
+  await sql.end()
+  return rowToHeroCard(rows[0])
+}
+
+export async function getPlayerAllTimeStats(playerName: string) {
+  const sql = getDb()
+  const [statsRows, mealRows, chainRows] = await Promise.all([
+    sql`
+      SELECT
+        COUNT(*)::int AS meal_count,
+        SUM(sausage_count)::int AS total_sausages,
+        COALESCE(SUM(estimated_grams), 0)::int AS total_grams,
+        MAX(sausage_count)::int AS max_in_one_meal,
+        COUNT(DISTINCT week_key)::int AS active_weeks
+      FROM meals WHERE player_name = ${playerName}
+    `,
+    sql`
+      SELECT ai_description, sausage_count, estimated_grams
+      FROM meals WHERE player_name = ${playerName}
+      ORDER BY created_at DESC LIMIT 10
+    `,
+    sql`
+      SELECT week_key, SUM(sausage_count)::int AS week_total
+      FROM meals WHERE player_name = ${playerName}
+      GROUP BY week_key
+    `,
+  ])
+  await sql.end()
+
+  const stats = statsRows[0]
+
+  // Compute chain
+  const weekMap = new Map<string, number>()
+  for (const r of chainRows) weekMap.set(r.week_key as string, r.week_total as number)
+  let chain = 0
+  let wk = getWeekKey()
+  for (let i = 0; i < 500; i++) {
+    if ((weekMap.get(wk) ?? 0) >= 3) { chain++; wk = prevWeekKey(wk) }
+    else if (i === 0) { wk = prevWeekKey(wk); continue }
+    else break
+  }
+
+  return {
+    mealCount: (stats.meal_count as number) || 0,
+    totalSausages: (stats.total_sausages as number) || 0,
+    totalGrams: (stats.total_grams as number) || 0,
+    maxInOneMeal: (stats.max_in_one_meal as number) || 0,
+    activeWeeks: (stats.active_weeks as number) || 0,
+    chainLength: chain,
+    recentMeals: mealRows.map(r => ({
+      description: r.ai_description as string | null,
+      sausageCount: r.sausage_count as number,
+    })),
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToHeroCard(row: any): HeroCard {
+  return {
+    id: row.id,
+    playerName: row.player_name,
+    heroTitle: row.hero_title,
+    heroType: row.hero_type,
+    hp: row.hp,
+    attack: row.attack,
+    defense: row.defense,
+    speed: row.speed,
+    specialMoves: row.special_moves ?? [],
+    weakness: row.weakness,
+    catchphrase: row.catchphrase,
+    flavorText: row.flavor_text,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
   }
 }
