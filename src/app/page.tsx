@@ -51,7 +51,7 @@ export default function HomePage() {
         <div
           style={{
             fontFamily: 'var(--font-pixel)',
-            fontSize: '6px',
+            fontSize: '9px',
             textTransform: 'uppercase',
             letterSpacing: '1px',
             lineHeight: '2.2',
@@ -73,7 +73,7 @@ export default function HomePage() {
         <div
           style={{
             fontFamily: 'var(--font-pixel)',
-            fontSize: '6px',
+            fontSize: '9px',
             textTransform: 'uppercase',
             letterSpacing: '1px',
             lineHeight: '2.2',
