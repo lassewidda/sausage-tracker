@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { insertMeal, getAllMeals, groupByWeek } from '@/lib/db'
+import { insertMeal, getAllMeals, groupByWeek, addPlayerItem } from '@/lib/db'
 import { rewriteDescriptionForCount } from '@/lib/claude'
+import { rollItemDrop } from '@/lib/itemCatalog'
 
 export async function GET(): Promise<NextResponse> {
   try {
@@ -65,6 +66,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     gramsPerSausage && gramsPerSausage > 0 ? gramsPerSausage * sausageCount : null
 
   try {
+    const normalizedName = (playerName ?? 'Anonymous').trim() || 'Anonymous'
     const meal = await insertMeal({
       imageUrl,
       blobPath,
@@ -72,9 +74,26 @@ export async function POST(request: Request): Promise<NextResponse> {
       aiSuggestedCount: aiSuggestedCount ?? null,
       aiDescription: finalDescription,
       estimatedGrams,
-      playerName: (playerName ?? 'Anonymous').trim() || 'Anonymous',
+      playerName: normalizedName,
     })
-    return NextResponse.json(meal, { status: 201 })
+
+    // Roll for item drop
+    let itemDrop = null
+    if (normalizedName !== 'Anonymous') {
+      const droppedItem = rollItemDrop()
+      if (droppedItem) {
+        await addPlayerItem(normalizedName.toLowerCase(), droppedItem.itemKey)
+        itemDrop = {
+          itemKey: droppedItem.itemKey,
+          name: droppedItem.name,
+          description: droppedItem.description,
+          rarity: droppedItem.rarity,
+          flavorText: droppedItem.flavorText,
+        }
+      }
+    }
+
+    return NextResponse.json({ ...meal, itemDrop }, { status: 201 })
   } catch (error) {
     console.error('POST /api/meals error:', error)
     return NextResponse.json({ error: 'Failed to save meal', details: String(error) }, { status: 500 })

@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleTaunt, BattleStats, BattleState } from '@/types'
+import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleTaunt, BattleStats, BattleState, PlayerItem, BattleEffect, ItemEffectType } from '@/types'
 
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
@@ -539,7 +539,32 @@ function rowToTurn(row: any): BattleTurn {
     damageDealt: row.damage_dealt,
     defenderHpAfter: row.defender_hp_after,
     isKnockout: row.is_knockout,
+    itemUsed: row.item_used ?? null,
+    itemEffect: row.item_effect ?? null,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToPlayerItem(row: any): PlayerItem {
+  return {
+    id: row.id,
+    playerName: row.player_name,
+    itemKey: row.item_key,
+    obtainedAt: row.obtained_at instanceof Date ? row.obtained_at.toISOString() : row.obtained_at,
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToBattleEffect(row: any): BattleEffect {
+  return {
+    id: row.id,
+    battleId: row.battle_id,
+    targetCardId: row.target_card_id,
+    effectType: row.effect_type as ItemEffectType,
+    effectValue: row.effect_value,
+    remainingTurns: row.remaining_turns,
+    sourcePlayer: row.source_player,
   }
 }
 
@@ -690,7 +715,7 @@ export async function joinBattle(battleId: string, opponent: string): Promise<Ba
 
 export async function getBattleState(battleId: string): Promise<BattleState> {
   const sql = getDb()
-  const [battleRows, deckRows, turnRows, tauntRows] = await Promise.all([
+  const [battleRows, deckRows, turnRows, tauntRows, effectRows] = await Promise.all([
     sql`SELECT * FROM battles WHERE id = ${battleId}`,
     sql`
       SELECT d.*, h.player_name, h.hero_title, h.hero_type, h.hp, h.attack, h.defense, h.speed,
@@ -708,6 +733,9 @@ export async function getBattleState(battleId: string): Promise<BattleState> {
       WHERE battle_id = ${battleId} AND created_at > NOW() - INTERVAL '10 seconds'
       ORDER BY created_at DESC LIMIT 5
     `,
+    sql`
+      SELECT * FROM battle_effects WHERE battle_id = ${battleId}
+    `,
   ])
   await sql.end()
 
@@ -724,6 +752,7 @@ export async function getBattleState(battleId: string): Promise<BattleState> {
     opponentDeck,
     turns: turnRows.map(rowToTurn),
     taunts: tauntRows.map(rowToTaunt),
+    effects: effectRows.map(rowToBattleEffect),
   }
 }
 
@@ -803,7 +832,8 @@ export async function markPlayerReady(battleId: string, playerName: string): Pro
 export async function executeTurn(
   battleId: string,
   playerName: string,
-  moveIndex: number
+  moveIndex: number | null,
+  itemId?: string
 ): Promise<BattleTurn> {
   const sql = getDb()
 
@@ -834,9 +864,164 @@ export async function executeTurn(
   const defenderCard = rowToHeroCard(defenderDeck)
 
   const { calculateDamage, checkBattleEnd, determineTurnOrder, parseMoveDamage } = await import('./battleEngine')
+  const { getItemDefinition } = await import('./itemCatalog')
+
+  // ── ITEM PATH ─────────────────────────────────────────────
+  if (itemId && moveIndex === null) {
+    // Validate item ownership and consume it
+    const consumed = await sql`
+      DELETE FROM player_items WHERE id = ${itemId} AND player_name = ${playerName} RETURNING item_key
+    `
+    if (consumed.length === 0) { await sql.end(); throw new Error('Item not found or not yours') }
+
+    const itemKey = consumed[0].item_key as string
+    const item = getItemDefinition(itemKey)
+    if (!item) { await sql.end(); throw new Error('Unknown item') }
+
+    let damageDealt = 0
+    let defenderHpAfter = defenderDeck.current_hp as number
+    let isKo = false
+    let itemEffectDesc = item.description
+
+    switch (item.effectType) {
+      case 'heal': {
+        const maxHp = attackerCard.hp
+        const currentHp = attackerDeck.current_hp as number
+        const healed = Math.min(item.effectValue, maxHp - currentHp)
+        await sql`
+          UPDATE battle_decks SET current_hp = ${currentHp + healed} WHERE id = ${attackerDeck.id}
+        `
+        itemEffectDesc = `Healed ${healed} HP`
+        break
+      }
+      case 'direct_damage': {
+        damageDealt = item.effectValue
+        defenderHpAfter = Math.max(0, (defenderDeck.current_hp as number) - damageDealt)
+        isKo = defenderHpAfter <= 0
+        await sql`
+          UPDATE battle_decks SET current_hp = ${defenderHpAfter}, is_knocked_out = ${isKo}, is_active = ${!isKo}
+          WHERE id = ${defenderDeck.id}
+        `
+        itemEffectDesc = `Dealt ${damageDealt} direct damage`
+        break
+      }
+      case 'buff_atk':
+      case 'buff_def':
+      case 'buff_spd': {
+        await sql`
+          INSERT INTO battle_effects (battle_id, target_card_id, effect_type, effect_value, remaining_turns, source_player)
+          VALUES (${battleId}, ${attackerDeck.id}, ${item.effectType}, ${item.effectValue}, ${item.effectDuration ?? 3}, ${playerName})
+        `
+        break
+      }
+      case 'debuff_def': {
+        await sql`
+          INSERT INTO battle_effects (battle_id, target_card_id, effect_type, effect_value, remaining_turns, source_player)
+          VALUES (${battleId}, ${defenderDeck.id}, ${item.effectType}, ${item.effectValue}, ${item.effectDuration ?? 3}, ${playerName})
+        `
+        break
+      }
+      case 'debuff_atk': {
+        // Curry powder bomb: 15 damage + debuff
+        damageDealt = 15
+        defenderHpAfter = Math.max(0, (defenderDeck.current_hp as number) - damageDealt)
+        isKo = defenderHpAfter <= 0
+        await sql`
+          UPDATE battle_decks SET current_hp = ${defenderHpAfter}, is_knocked_out = ${isKo}, is_active = ${!isKo}
+          WHERE id = ${defenderDeck.id}
+        `
+        if (!isKo) {
+          await sql`
+            INSERT INTO battle_effects (battle_id, target_card_id, effect_type, effect_value, remaining_turns, source_player)
+            VALUES (${battleId}, ${defenderDeck.id}, ${item.effectType}, ${item.effectValue}, ${item.effectDuration ?? 3}, ${playerName})
+          `
+        }
+        itemEffectDesc = `Dealt ${damageDealt} damage + lowered ATK by ${item.effectValue}`
+        break
+      }
+    }
+
+    // Record turn
+    const turnRows = await sql`
+      INSERT INTO battle_turns (battle_id, turn_number, attacker, attacker_card_id, defender_card_id,
+        move_used, move_damage, type_multiplier, damage_dealt, defender_hp_after, is_knockout, item_used, item_effect)
+      VALUES (${battleId}, ${battle.currentTurn}, ${playerName}, ${attackerDeck.card_id},
+        ${defenderDeck.card_id}, ${'ITEM'}, ${0}, ${1.0},
+        ${damageDealt}, ${defenderHpAfter}, ${isKo}, ${itemKey}, ${itemEffectDesc})
+      RETURNING *
+    `
+
+    // If KO, handle card swap + clear effects
+    if (isKo) {
+      await sql`DELETE FROM battle_effects WHERE battle_id = ${battleId} AND target_card_id = ${defenderDeck.id}`
+      const nextCard = await sql`
+        SELECT id FROM battle_decks
+        WHERE battle_id = ${battleId} AND player_name = ${defenderName}
+          AND is_knocked_out = false AND is_active = false
+        ORDER BY position LIMIT 1
+      `
+      if (nextCard.length > 0) {
+        await sql`UPDATE battle_decks SET is_active = true WHERE id = ${nextCard[0].id}`
+      }
+    }
+
+    // Check battle end + advance turn (same logic as move path)
+    const allDecks = await sql`SELECT * FROM battle_decks WHERE battle_id = ${battleId}`
+    const challengerDeck = allDecks.filter(d => d.player_name === battle.challenger).map(rowToDeckCard)
+    const opponentDeckCards = allDecks.filter(d => d.player_name === battle.opponent).map(rowToDeckCard)
+    const winner = checkBattleEnd(challengerDeck, opponentDeckCards)
+
+    if (winner) {
+      await sql`UPDATE battles SET status = 'finished', winner = ${winner}, updated_at = NOW() WHERE id = ${battleId}`
+      const loser = winner === battle.challenger ? battle.opponent! : battle.challenger
+      await updateBattleStatsInternal(sql, winner, loser)
+    } else {
+      const nextTurnPlayer = isKo ? playerName : defenderName!
+      await sql`
+        UPDATE battles SET current_turn = ${battle.currentTurn + 1}, turn_player = ${nextTurnPlayer}, updated_at = NOW()
+        WHERE id = ${battleId}
+      `
+    }
+
+    await sql.end()
+    return rowToTurn(turnRows[0])
+  }
+
+  // ── MOVE PATH ─────────────────────────────────────────────
+
+  // Fetch active effects for stat modifications
+  const effectRows = await sql`
+    SELECT * FROM battle_effects WHERE battle_id = ${battleId}
+  `
+
+  // Calculate stat modifiers from effects
+  let atkMod = 0
+  let defModAttacker = 0
+  let defModDefender = 0
+  for (const eff of effectRows) {
+    const targetId = eff.target_card_id as string
+    const effType = eff.effect_type as string
+    const effVal = eff.effect_value as number
+    if (targetId === attackerDeck.id) {
+      if (effType === 'buff_atk') atkMod += effVal
+      if (effType === 'debuff_atk') atkMod -= effVal
+      if (effType === 'buff_def') defModAttacker += effVal
+      if (effType === 'debuff_def') defModAttacker -= effVal
+    }
+    if (targetId === defenderDeck.id) {
+      if (effType === 'buff_def') defModDefender += effVal
+      if (effType === 'debuff_def') defModDefender -= effVal
+      if (effType === 'buff_atk') {} // doesn't affect defense
+      if (effType === 'debuff_atk') {} // doesn't affect defense
+    }
+  }
+
+  // Create modified card copies for damage calculation
+  const modAttacker = { ...attackerCard, attack: Math.max(1, attackerCard.attack + atkMod) }
+  const modDefender = { ...defenderCard, defense: Math.max(0, defenderCard.defense + defModDefender) }
 
   // PP validation: check if the chosen move still has uses left
-  const chosenMove = attackerCard.specialMoves[moveIndex] ?? attackerCard.specialMoves[0]
+  const chosenMove = modAttacker.specialMoves[moveIndex!] ?? modAttacker.specialMoves[0]
   const { maxPp, name: moveName } = parseMoveDamage(chosenMove)
   const usedCountRows = await sql`
     SELECT COUNT(*)::int AS used FROM battle_turns
@@ -846,10 +1031,9 @@ export async function executeTurn(
 
   let result
   if (usedCount >= maxPp) {
-    // Struggle: all PP depleted, fixed 10 damage, no type advantage
     result = { damage: 10, multiplier: 1.0, moveName: 'Struggle', baseDamage: 10 }
   } else {
-    result = calculateDamage(attackerCard, defenderCard, moveIndex)
+    result = calculateDamage(modAttacker, modDefender, moveIndex!)
   }
 
   const newHp = Math.max(0, (defenderDeck.current_hp as number) - result.damage)
@@ -871,8 +1055,18 @@ export async function executeTurn(
     RETURNING *
   `
 
-  // If KO, activate next card
+  // Tick effects: decrement remaining_turns, delete expired
+  await sql`
+    UPDATE battle_effects SET remaining_turns = remaining_turns - 1
+    WHERE battle_id = ${battleId}
+  `
+  await sql`
+    DELETE FROM battle_effects WHERE battle_id = ${battleId} AND remaining_turns <= 0
+  `
+
+  // If KO, activate next card and clear effects on dead card
   if (isKo) {
+    await sql`DELETE FROM battle_effects WHERE battle_id = ${battleId} AND target_card_id = ${defenderDeck.id}`
     const nextCard = await sql`
       SELECT id FROM battle_decks
       WHERE battle_id = ${battleId} AND player_name = ${defenderName}
@@ -897,20 +1091,16 @@ export async function executeTurn(
       UPDATE battles SET status = 'finished', winner = ${winner}, updated_at = NOW()
       WHERE id = ${battleId}
     `
-    // Update stats
     const loser = winner === battle.challenger ? battle.opponent! : battle.challenger
     await updateBattleStatsInternal(sql, winner, loser)
   } else {
-    // Determine next turn player
     let nextTurnPlayer: string
     if (isKo) {
-      // After KO, the attacker gets another turn
       nextTurnPlayer = playerName
     } else {
       nextTurnPlayer = defenderName!
     }
 
-    // If KO'd and new card activated, recalculate speed order
     if (isKo) {
       const activeCards = await sql`
         SELECT d.player_name, h.speed FROM battle_decks d
@@ -984,6 +1174,65 @@ export async function sendTaunt(battleId: string, playerName: string, message: s
   `
   await sql.end()
   return rowToTaunt(rows[0])
+}
+
+// ── Inventory ──────────────────────────────────────────────
+
+export async function getPlayerInventory(playerName: string): Promise<PlayerItem[]> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT * FROM player_items WHERE player_name = ${playerName} ORDER BY obtained_at DESC
+  `
+  await sql.end()
+  return rows.map(rowToPlayerItem)
+}
+
+export async function addPlayerItem(playerName: string, itemKey: string): Promise<PlayerItem> {
+  const sql = getDb()
+  const rows = await sql`
+    INSERT INTO player_items (player_name, item_key) VALUES (${playerName}, ${itemKey}) RETURNING *
+  `
+  await sql.end()
+  return rowToPlayerItem(rows[0])
+}
+
+export async function consumePlayerItem(itemId: string, playerName: string): Promise<boolean> {
+  const sql = getDb()
+  const rows = await sql`
+    DELETE FROM player_items WHERE id = ${itemId} AND player_name = ${playerName} RETURNING id
+  `
+  await sql.end()
+  return rows.length > 0
+}
+
+// ── Battle Effects ─────────────────────────────────────────
+
+export async function getBattleEffects(battleId: string): Promise<BattleEffect[]> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT * FROM battle_effects WHERE battle_id = ${battleId}
+  `
+  await sql.end()
+  return rows.map(rowToBattleEffect)
+}
+
+export async function ensureStarterItem(playerName: string): Promise<void> {
+  const sql = getDb()
+  const existing = await sql`
+    SELECT COUNT(*)::int AS count FROM player_items WHERE player_name = ${playerName}
+  `
+  if ((existing[0].count as number) > 0) {
+    await sql.end()
+    return
+  }
+  // Give one random item
+  const { ITEM_CATALOG } = await import('./itemCatalog')
+  const allKeys = Object.keys(ITEM_CATALOG)
+  const randomKey = allKeys[Math.floor(Math.random() * allKeys.length)]
+  await sql`
+    INSERT INTO player_items (player_name, item_key) VALUES (${playerName}, ${randomKey})
+  `
+  await sql.end()
 }
 
 export async function ensureStarterCards(playerName: string): Promise<void> {

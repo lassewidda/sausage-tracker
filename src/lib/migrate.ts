@@ -168,6 +168,37 @@ async function migrate() {
   // Add summary column to battles
   await sql`ALTER TABLE battles ADD COLUMN IF NOT EXISTS summary TEXT`
 
+  // Player items (inventory) table
+  await sql`
+    CREATE TABLE IF NOT EXISTS player_items (
+      id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      player_name    TEXT NOT NULL,
+      item_key       TEXT NOT NULL,
+      obtained_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_player_items_player ON player_items(player_name)`
+
+  // Battle effects table (active buffs/debuffs during battle)
+  await sql`
+    CREATE TABLE IF NOT EXISTS battle_effects (
+      id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      battle_id       UUID NOT NULL REFERENCES battles(id) ON DELETE CASCADE,
+      target_card_id  UUID NOT NULL,
+      effect_type     TEXT NOT NULL,
+      effect_value    INTEGER NOT NULL,
+      remaining_turns INTEGER NOT NULL,
+      source_player   TEXT NOT NULL
+    )
+  `
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_battle_effects_battle ON battle_effects(battle_id)`
+
+  // Add item columns to battle_turns
+  await sql`ALTER TABLE battle_turns ADD COLUMN IF NOT EXISTS item_used TEXT`
+  await sql`ALTER TABLE battle_turns ADD COLUMN IF NOT EXISTS item_effect TEXT`
+
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_week_key ON meals(week_key DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_created_at ON meals(created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_player_name ON meals(player_name)`

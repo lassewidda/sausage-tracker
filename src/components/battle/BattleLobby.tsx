@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import type { Battle, HeroCard } from '@/types'
+import type { Battle, HeroCard, PlayerItem, ItemDefinition } from '@/types'
 import { useName } from '@/lib/useName'
 import { CardDetail } from './CardDetail'
 
@@ -31,13 +31,15 @@ export function BattleLobby() {
   const [loading, setLoading] = useState(false)
   const [hasMeals, setHasMeals] = useState(false)
   const [selectedCard, setSelectedCard] = useState<HeroCard | null>(null)
+  const [inventory, setInventory] = useState<(PlayerItem & { definition?: ItemDefinition })[]>([])
 
   const fetchLobby = useCallback(async () => {
     if (!name) return
     try {
-      const [lobbyRes, deckRes] = await Promise.all([
+      const [lobbyRes, deckRes, invRes] = await Promise.all([
         fetch(`/api/battle?playerName=${encodeURIComponent(name)}`),
         fetch(`/api/hero-card?playerName=${encodeURIComponent(name)}`),
+        fetch(`/api/inventory?playerName=${encodeURIComponent(name)}`),
       ])
       const lobbyData = await lobbyRes.json()
       setOpenBattles(lobbyData.openBattles ?? [])
@@ -48,6 +50,11 @@ export function BattleLobby() {
       setDeck(deckArr)
       // Check if player has any non-starter cards (means they have meal history)
       setHasMeals(deckArr.some((c: HeroCard) => !c.weekKey.startsWith('STARTER')))
+
+      if (invRes.ok) {
+        const invData = await invRes.json()
+        setInventory(Array.isArray(invData) ? invData : [])
+      }
     } catch { /* ignore */ }
   }, [name])
 
@@ -176,9 +183,9 @@ export function BattleLobby() {
             </div>
           ) : (
             <div style={{
-              display: 'flex',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
               gap: '8px',
-              overflowX: 'auto',
               padding: '4px',
             }}>
               {deck.map((card) => {
@@ -189,8 +196,6 @@ export function BattleLobby() {
                     border: '2px solid #333',
                     borderRadius: '4px',
                     padding: '6px',
-                    minWidth: '100px',
-                    flexShrink: 0,
                     cursor: 'pointer',
                   }}>
                     <div style={{
@@ -220,6 +225,64 @@ export function BattleLobby() {
                     }}>
                       HP:{card.hp} A:{card.attack} D:{card.defense} S:{card.speed}
                     </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Inventory */}
+      <div className="amiga-window">
+        <div className="amiga-window__titlebar">
+          <span className="amiga-window__gadget">&#9632;</span>
+          <span className="amiga-window__title">YOUR INVENTORY ({inventory.length} ITEMS)</span>
+        </div>
+        <div className="amiga-window__body">
+          {inventory.length === 0 ? (
+            <div style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '9px',
+              color: 'var(--amiga-dark-grey)',
+              textAlign: 'center',
+              padding: '16px',
+            }}>
+              NO ITEMS. LOG MEALS FOR A CHANCE TO FIND ITEMS!
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+            }}>
+              {inventory.map((item) => {
+                const def = item.definition
+                if (!def) return null
+                const color = def.rarity === 'rare' ? '#FFD700' : def.rarity === 'uncommon' ? '#4488FF' : '#888'
+                return (
+                  <div key={item.id} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '4px 6px',
+                    background: '#1a1a1a',
+                    border: `1px solid ${color}33`,
+                  }}>
+                    <span style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: '8px',
+                      color,
+                    }}>
+                      {def.name}
+                    </span>
+                    <span style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: '7px',
+                      color: '#666',
+                    }}>
+                      {def.description}
+                    </span>
                   </div>
                 )
               })}

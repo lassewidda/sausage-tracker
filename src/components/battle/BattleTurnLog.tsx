@@ -36,15 +36,26 @@ export function BattleTurnLog({ turns }: Props) {
       {turns.map((turn) => (
         <div key={turn.id} style={{ color: 'var(--amiga-white)' }}>
           <span style={{ color: 'var(--crt-amber)' }}>{turn.attacker}</span>
-          {' used '}
-          <span style={{ color: 'var(--amiga-orange)' }}>{turn.moveUsed}</span>
-          {'! '}
-          <span style={{ color: '#FF4444' }}>{turn.damageDealt} dmg</span>
-          {turn.typeMultiplier > 1 && (
-            <span style={{ color: '#44CC44' }}> (super effective!)</span>
-          )}
-          {turn.typeMultiplier < 1 && (
-            <span style={{ color: '#888' }}> (not very effective)</span>
+          {turn.itemUsed ? (
+            <>
+              {' used '}
+              <span style={{ color: '#44DDFF' }}>{turn.itemUsed.replace(/_/g, ' ')}</span>
+              {'! '}
+              <span style={{ color: '#88CCFF' }}>{turn.itemEffect}</span>
+            </>
+          ) : (
+            <>
+              {' used '}
+              <span style={{ color: 'var(--amiga-orange)' }}>{turn.moveUsed}</span>
+              {'! '}
+              <span style={{ color: '#FF4444' }}>{turn.damageDealt} dmg</span>
+              {turn.typeMultiplier > 1 && (
+                <span style={{ color: '#44CC44' }}> (super effective!)</span>
+              )}
+              {turn.typeMultiplier < 1 && (
+                <span style={{ color: '#888' }}> (not very effective)</span>
+              )}
+            </>
           )}
           {turn.isKnockout && (
             <span style={{ color: '#FF4444' }}> KO!</span>

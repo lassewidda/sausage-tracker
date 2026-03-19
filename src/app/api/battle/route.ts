@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createBattle, getOpenBattles, getPlayerBattles, ensureStarterCards } from '@/lib/db'
+import { createBattle, getOpenBattles, getPlayerBattles, ensureStarterCards, ensureStarterItem } from '@/lib/db'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -21,6 +21,7 @@ export async function POST(request: Request) {
   if (!playerName) return NextResponse.json({ error: 'Missing playerName' }, { status: 400 })
 
   await ensureStarterCards(playerName)
+  await ensureStarterItem(playerName)
   const battle = await createBattle(playerName)
   return NextResponse.json(battle)
 }

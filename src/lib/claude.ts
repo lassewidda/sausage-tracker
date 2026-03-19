@@ -209,7 +209,7 @@ export async function generateBattleSummary(data: {
     return `Turn ${t.turnNumber}: ${t.attacker}'s ${t.attackerCard} used ${t.moveUsed} on ${t.defenderCard} → ${t.damageDealt} damage${multi}${ko} (${t.defenderHpAfter} HP left)`
   }).join('\n')
 
-  const prompt = `Write a dramatic, funny battle recap for a sausage-themed Pokémon-style card game called "Wiener Battle".
+  const prompt = `Write a dramatic, funny battle recap for a sausage-themed Pokémon-style card game called "Sausage Tracker".
 
 BATTLE: ${data.challenger.toUpperCase()} vs ${data.opponent.toUpperCase()}
 WINNER: ${data.winner ? data.winner.toUpperCase() : 'DRAW'}

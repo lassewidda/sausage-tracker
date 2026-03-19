@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { joinBattle, ensureStarterCards } from '@/lib/db'
+import { joinBattle, ensureStarterCards, ensureStarterItem } from '@/lib/db'
 
 export async function POST(
   request: Request,
@@ -12,6 +12,7 @@ export async function POST(
 
   try {
     await ensureStarterCards(playerName)
+    await ensureStarterItem(playerName)
     const battle = await joinBattle(id, playerName)
     return NextResponse.json(battle)
   } catch {

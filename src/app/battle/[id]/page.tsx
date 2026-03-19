@@ -6,7 +6,7 @@ import { useBattleState } from '@/components/battle/useBattleState'
 import { BattleCardSelect } from '@/components/battle/BattleCardSelect'
 import { BattleArena } from '@/components/battle/BattleArena'
 import { BattleResult } from '@/components/battle/BattleResult'
-import type { HeroCard } from '@/types'
+import type { HeroCard, PlayerItem, ItemDefinition } from '@/types'
 import { useEffect } from 'react'
 
 export default function BattleArenaPage({ params }: { params: { id: string } }) {
@@ -14,6 +14,7 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
   const { name } = useName()
   const { state, refetch } = useBattleState(id)
   const [deck, setDeck] = useState<HeroCard[]>([])
+  const [inventory, setInventory] = useState<(PlayerItem & { definition?: ItemDefinition })[]>([])
   const [isReady, setIsReady] = useState(false)
   const [joining, setJoining] = useState(false)
 
@@ -25,8 +26,17 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
       .catch(() => {})
   }, [name])
 
+  const fetchInventory = useCallback(() => {
+    if (!name) return
+    fetch(`/api/inventory?playerName=${encodeURIComponent(name)}`)
+      .then(r => r.json())
+      .then(d => setInventory(Array.isArray(d) ? d : []))
+      .catch(() => {})
+  }, [name])
+
   // Fetch deck on mount and whenever battle enters selecting phase
   useEffect(() => { fetchDeck() }, [fetchDeck])
+  useEffect(() => { fetchInventory() }, [fetchInventory])
   useEffect(() => {
     if (state?.battle.status === 'selecting') fetchDeck()
   }, [state?.battle.status, fetchDeck])
@@ -63,6 +73,19 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
       refetch()
     } catch { /* ignore */ }
   }, [id, name, refetch])
+
+  const handleUseItem = useCallback(async (itemId: string) => {
+    if (!name) return
+    try {
+      await fetch(`/api/battle/${id}/turn`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerName: name, itemId }),
+      })
+      refetch()
+      fetchInventory()
+    } catch { /* ignore */ }
+  }, [id, name, refetch, fetchInventory])
 
   if (!name) {
     return (
@@ -199,6 +222,8 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
               state={state}
               playerName={name}
               onMove={handleMove}
+              onUseItem={handleUseItem}
+              inventory={inventory}
             />
           )}
 

@@ -12,7 +12,7 @@ bun run db:migrate   # Run DB migrations (src/lib/migrate.ts — creates/updates
 
 ## Architecture
 
-**Wiener Battle V2.0** — sausage meal photo tracker + turn-based card battle game. Claude Haiku counts sausages in uploaded photos (each sausage = 1 point). Weekly meal activity generates hero cards for a Pokémon-style battle system with ELO rankings.
+**Sausage Tracker v1.1** — sausage meal photo tracker + turn-based card battle game. Claude Haiku counts sausages in uploaded photos (each sausage = 1 point). Weekly meal activity generates hero cards for a Pokémon-style battle system with ELO rankings.
 
 **Stack**: Next.js 14 App Router + TypeScript + Bun, Vercel Blob (image storage), Supabase PostgreSQL via `postgres` npm package, Anthropic Claude Haiku for vision + card generation.
 

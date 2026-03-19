@@ -110,6 +110,8 @@ export interface BattleTurn {
   damageDealt: number
   defenderHpAfter: number
   isKnockout: boolean
+  itemUsed: string | null
+  itemEffect: string | null
   createdAt: string
 }
 
@@ -134,6 +136,7 @@ export interface BattleState {
   opponentDeck: BattleDeckCard[]
   turns: BattleTurn[]
   taunts: BattleTaunt[]
+  effects: BattleEffect[]
 }
 
 export interface WeeklySummary {
@@ -147,6 +150,39 @@ export interface WeeklySummary {
   chainLength: number
   createdAt: string
   imageUrls?: string[]
+}
+
+// ── Items & Inventory ──────────────────────────────────────
+
+export type ItemRarity = 'common' | 'uncommon' | 'rare'
+export type ItemEffectType = 'heal' | 'buff_atk' | 'buff_def' | 'buff_spd' | 'direct_damage' | 'debuff_atk' | 'debuff_def'
+
+export interface ItemDefinition {
+  itemKey: string
+  name: string
+  description: string
+  rarity: ItemRarity
+  effectType: ItemEffectType
+  effectValue: number
+  effectDuration?: number
+  flavorText: string
+}
+
+export interface PlayerItem {
+  id: string
+  playerName: string
+  itemKey: string
+  obtainedAt: string
+}
+
+export interface BattleEffect {
+  id: string
+  battleId: string
+  targetCardId: string
+  effectType: ItemEffectType
+  effectValue: number
+  remainingTurns: number
+  sourcePlayer: string
 }
 
 export type UploadPhase =

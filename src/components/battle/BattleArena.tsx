@@ -1,23 +1,31 @@
 'use client'
 
 import { useState } from 'react'
-import type { BattleState } from '@/types'
+import type { BattleState, PlayerItem, ItemDefinition } from '@/types'
 import { BattleCard } from './BattleCard'
 import { MoveButton } from './MoveButton'
+import { ItemButton } from './ItemButton'
 import { BattleTurnLog } from './BattleTurnLog'
 import { TauntBar } from './TauntBar'
 import { TauntBubble } from './TauntBubble'
 import { parseMoveDamage } from '@/lib/battleEngine'
 
+interface InventoryItem extends PlayerItem {
+  definition?: ItemDefinition
+}
+
 interface Props {
   state: BattleState
   playerName: string
   onMove: (moveIndex: number) => void
+  onUseItem: (itemId: string) => void
+  inventory: InventoryItem[]
 }
 
-export function BattleArena({ state, playerName, onMove }: Props) {
+export function BattleArena({ state, playerName, onMove, onUseItem, inventory }: Props) {
   const [submitting, setSubmitting] = useState(false)
-  const { battle, challengerDeck, opponentDeck, turns, taunts } = state
+  const [activeTab, setActiveTab] = useState<'moves' | 'items'>('moves')
+  const { battle, challengerDeck, opponentDeck, turns, taunts, effects } = state
 
   const isChallenger = playerName === battle.challenger
   const myDeck = isChallenger ? challengerDeck : opponentDeck
@@ -49,6 +57,20 @@ export function BattleArena({ state, playerName, onMove }: Props) {
     onMove(moveIndex)
     setTimeout(() => setSubmitting(false), 500)
   }
+
+  const handleUseItem = async (itemId: string) => {
+    if (submitting || !isMyTurn) return
+    setSubmitting(true)
+    onUseItem(itemId)
+    setActiveTab('moves')
+    setTimeout(() => setSubmitting(false), 500)
+  }
+
+  // Get effects for active cards
+  const myActiveEffects = myActive ? effects.filter(e => e.targetCardId === myActive.id) : []
+  const theirActiveEffects = theirActive ? effects.filter(e => e.targetCardId === theirActive.id) : []
+
+  const usableItems = inventory.filter(i => i.definition)
 
   // Check if all moves are out of PP (forced struggle)
   const allMovesEmpty = myActive?.card?.specialMoves.every((_, i) => getRemainingPp(i) <= 0) ?? false
@@ -147,37 +169,129 @@ export function BattleArena({ state, playerName, onMove }: Props) {
         <span>ENEMY TEAM: {theirDeck.filter(c => !c.isKnockedOut).length}/{theirDeck.length} alive</span>
       </div>
 
-      {/* Move buttons */}
+      {/* Effect badges */}
+      {(myActiveEffects.length > 0 || theirActiveEffects.length > 0) && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '6px',
+          gap: '8px',
+        }}>
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+            {myActiveEffects.map(e => {
+              const label = e.effectType.replace('buff_', '+').replace('debuff_', '-').toUpperCase()
+              const isDebuff = e.effectType.startsWith('debuff')
+              return (
+                <span key={e.id} style={{
+                  background: isDebuff ? '#442222' : '#224422',
+                  color: isDebuff ? '#FF6666' : '#66FF66',
+                  padding: '2px 4px',
+                  border: `1px solid ${isDebuff ? '#663333' : '#336633'}`,
+                }}>
+                  {label} {e.effectValue} ({e.remainingTurns}t)
+                </span>
+              )
+            })}
+          </div>
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+            {theirActiveEffects.map(e => {
+              const label = e.effectType.replace('buff_', '+').replace('debuff_', '-').toUpperCase()
+              const isDebuff = e.effectType.startsWith('debuff')
+              return (
+                <span key={e.id} style={{
+                  background: isDebuff ? '#442222' : '#224422',
+                  color: isDebuff ? '#FF6666' : '#66FF66',
+                  padding: '2px 4px',
+                  border: `1px solid ${isDebuff ? '#663333' : '#336633'}`,
+                }}>
+                  {label} {e.effectValue} ({e.remainingTurns}t)
+                </span>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Move/Item buttons */}
       {isMyTurn && myActive?.card && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: '8px',
-            color: 'var(--amiga-orange)',
-          }}>
-            {allMovesEmpty ? 'ALL MOVES EXHAUSTED — STRUGGLE!' : 'CHOOSE YOUR ATTACK:'}
-          </div>
-          {allMovesEmpty ? (
+          {/* Tab toggle */}
+          <div style={{ display: 'flex', gap: '4px' }}>
             <button
-              className="amiga-btn"
-              disabled={submitting}
-              onClick={() => handleMove(0)}
-              style={{ width: '100%', fontSize: '8px' }}
+              className={`amiga-btn${activeTab === 'moves' ? ' amiga-btn--primary' : ''}`}
+              onClick={() => setActiveTab('moves')}
+              style={{ fontSize: '8px', flex: 1 }}
             >
-              <span>STRUGGLE</span>
-              <span style={{ color: '#FF4444', marginLeft: '8px' }}>10 dmg (recoil!)</span>
+              MOVES
             </button>
-          ) : (
-            myActive.card.specialMoves.map((move, i) => (
-              <MoveButton
-                key={i}
-                move={move}
-                index={i}
-                disabled={submitting || !isMyTurn}
-                remainingPp={getRemainingPp(i)}
-                onUse={handleMove}
-              />
-            ))
+            <button
+              className={`amiga-btn${activeTab === 'items' ? ' amiga-btn--primary' : ''}`}
+              onClick={() => setActiveTab('items')}
+              style={{ fontSize: '8px', flex: 1 }}
+            >
+              ITEMS ({usableItems.length})
+            </button>
+          </div>
+
+          {activeTab === 'moves' && (
+            <>
+              <div style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '8px',
+                color: 'var(--amiga-orange)',
+              }}>
+                {allMovesEmpty ? 'ALL MOVES EXHAUSTED — STRUGGLE!' : 'CHOOSE YOUR ATTACK:'}
+              </div>
+              {allMovesEmpty ? (
+                <button
+                  className="amiga-btn"
+                  disabled={submitting}
+                  onClick={() => handleMove(0)}
+                  style={{ width: '100%', fontSize: '8px' }}
+                >
+                  <span>STRUGGLE</span>
+                  <span style={{ color: '#FF4444', marginLeft: '8px' }}>10 dmg (recoil!)</span>
+                </button>
+              ) : (
+                myActive.card.specialMoves.map((move, i) => (
+                  <MoveButton
+                    key={i}
+                    move={move}
+                    index={i}
+                    disabled={submitting || !isMyTurn}
+                    remainingPp={getRemainingPp(i)}
+                    onUse={handleMove}
+                  />
+                ))
+              )}
+            </>
+          )}
+
+          {activeTab === 'items' && (
+            <>
+              {usableItems.length === 0 ? (
+                <div style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: '8px',
+                  color: '#666',
+                  textAlign: 'center',
+                  padding: '12px',
+                }}>
+                  NO ITEMS. LOG MEALS TO FIND ITEMS!
+                </div>
+              ) : (
+                usableItems.map((item) => (
+                  <ItemButton
+                    key={item.id}
+                    itemId={item.id}
+                    definition={item.definition!}
+                    disabled={submitting || !isMyTurn}
+                    onUse={handleUseItem}
+                  />
+                ))
+              )}
+            </>
           )}
         </div>
       )}

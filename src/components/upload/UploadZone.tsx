@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { upload } from '@vercel/blob/client'
-import type { UploadState, AnalysisResult as IAnalysisResult } from '@/types'
+import type { UploadState, AnalysisResult as IAnalysisResult, ItemDefinition } from '@/types'
 import { processImage, isHeic, MAX_RAW_SIZE } from '@/lib/imageProcess'
 import { useName } from '@/lib/useName'
 import { Button } from '@/components/amiga/Button'
@@ -16,6 +16,7 @@ export function UploadZone() {
   const [nameInput, setNameInput] = useState('')
   const [state, setState] = useState<UploadState>({ phase: 'idle' })
   const [isDragging, setIsDragging] = useState(false)
+  const [itemDrop, setItemDrop] = useState<ItemDefinition | null>(null)
 
   const processFile = useCallback(async (file: File) => {
     const isImage =
@@ -122,6 +123,11 @@ export function UploadZone() {
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
+        const data = await res.json()
+        if (data.itemDrop) {
+          setItemDrop(data.itemDrop)
+        }
+
         setState({ phase: 'success', confirmedCount })
       } catch (err) {
         setState((s) => ({ ...s, phase: 'confirming', error: 'SAVE FAILED. TRY AGAIN.' }))
@@ -133,6 +139,7 @@ export function UploadZone() {
 
   const reset = useCallback(() => {
     setState({ phase: 'idle' })
+    setItemDrop(null)
   }, [])
 
   // ── RENDER ──────────────────────────────────────────────────────────────────
@@ -147,6 +154,54 @@ export function UploadZone() {
           <br />
           {state.confirmedCount} POINT{state.confirmedCount !== 1 ? 'S' : ''} ADDED TO YOUR SCORE
         </div>
+        {itemDrop && (
+          <div className="amiga-window" style={{
+            maxWidth: '320px',
+            margin: '12px auto',
+            border: `3px solid ${itemDrop.rarity === 'rare' ? '#FFD700' : itemDrop.rarity === 'uncommon' ? '#4488FF' : '#888'}`,
+            boxShadow: `0 0 20px ${itemDrop.rarity === 'rare' ? 'rgba(255,215,0,0.4)' : itemDrop.rarity === 'uncommon' ? 'rgba(68,136,255,0.3)' : 'rgba(136,136,136,0.2)'}`,
+          }}>
+            <div className="amiga-window__titlebar">
+              <span className="amiga-window__gadget">&#9632;</span>
+              <span className="amiga-window__title">ITEM FOUND!</span>
+            </div>
+            <div className="amiga-window__body" style={{ textAlign: 'center', padding: '12px' }}>
+              <div style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '11px',
+                color: itemDrop.rarity === 'rare' ? '#FFD700' : itemDrop.rarity === 'uncommon' ? '#4488FF' : '#ccc',
+                marginBottom: '6px',
+              }}>
+                {itemDrop.name}
+              </div>
+              <div style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '7px',
+                color: itemDrop.rarity === 'rare' ? '#FFD700' : itemDrop.rarity === 'uncommon' ? '#4488FF' : '#888',
+                textTransform: 'uppercase',
+                marginBottom: '8px',
+              }}>
+                {itemDrop.rarity}
+              </div>
+              <div style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '8px',
+                color: '#aaa',
+                marginBottom: '6px',
+              }}>
+                {itemDrop.description}
+              </div>
+              <div style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '7px',
+                color: '#666',
+                fontStyle: 'italic',
+              }}>
+                &quot;{itemDrop.flavorText}&quot;
+              </div>
+            </div>
+          </div>
+        )}
         <div className="row row--center" style={{ gap: '12px', flexWrap: 'wrap' }}>
           <Button onClick={reset}>ADD ANOTHER MEAL</Button>
           <Button
