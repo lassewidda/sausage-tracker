@@ -6,6 +6,7 @@ import Link from 'next/link'
 import type { Battle, HeroCard, PlayerItem, ItemDefinition } from '@/types'
 import { useName } from '@/lib/useName'
 import { CardDetail } from './CardDetail'
+import { PixelAvatar, getTypeTheme } from '@/components/player/HeroCardDisplay'
 
 function getCurrentWeekKey(): string {
   const d = new Date()
@@ -184,46 +185,63 @@ export function BattleLobby() {
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-              gap: '8px',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+              gap: '6px',
               padding: '4px',
             }}>
               {deck.map((card) => {
                 const isStarter = card.weekKey.startsWith('STARTER')
+                const theme = getTypeTheme(card.heroType)
                 return (
                   <div key={card.id} onClick={() => setSelectedCard(card)} style={{
-                    background: '#1a1a1a',
-                    border: '2px solid #333',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(0,0,0,0.2)',
+                    border: `1px solid ${theme.border}44`,
                     borderRadius: '4px',
                     padding: '6px',
                     cursor: 'pointer',
                   }}>
                     <div style={{
-                      fontFamily: 'var(--font-pixel)',
-                      fontSize: '7px',
-                      color: 'var(--amiga-orange)',
-                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '4px',
                       overflow: 'hidden',
-                      textOverflow: 'ellipsis',
+                      background: theme.gradient,
+                      border: `1px solid ${theme.border}`,
                     }}>
-                      {card.heroTitle}
+                      <PixelAvatar card={card} theme={theme} size={32} />
                     </div>
-                    <div style={{
-                      fontFamily: 'var(--font-pixel)',
-                      fontSize: '6px',
-                      color: '#888',
-                      marginTop: '2px',
-                    }}>
-                      {card.heroType}
-                      {isStarter && ' (S)'}
-                    </div>
-                    <div style={{
-                      fontFamily: 'var(--font-pixel)',
-                      fontSize: '6px',
-                      color: '#666',
-                      marginTop: '4px',
-                    }}>
-                      HP:{card.hp} A:{card.attack} D:{card.defense} S:{card.speed}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: '7px',
+                        color: '#ccc',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}>
+                        {card.heroTitle}
+                        {isStarter && ' (S)'}
+                      </div>
+                      <div style={{
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: '6px',
+                        color: theme.accent,
+                        opacity: 0.7,
+                      }}>
+                        {card.heroType}
+                      </div>
+                      <div style={{
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: '6px',
+                        color: '#666',
+                        marginTop: '2px',
+                      }}>
+                        HP:{card.hp} A:{card.attack} D:{card.defense} S:{card.speed}
+                      </div>
                     </div>
                   </div>
                 )
