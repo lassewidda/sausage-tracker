@@ -49,46 +49,57 @@ export function AboutModal() {
           <div
             onClick={e => e.stopPropagation()}
             className="amiga-window"
-            style={{ maxWidth: '500px', width: '100%', animation: 'card-enter 0.3s steps(4)', overflow: 'hidden' }}
+            style={{
+              maxWidth: '500px',
+              width: 'calc(100% - 32px)',
+              minWidth: 0,
+              animation: 'card-enter 0.3s steps(4)',
+              overflow: 'hidden',
+            }}
           >
             <div className="amiga-window__titlebar">
               <span className="amiga-window__gadget" onClick={() => setOpen(false)} style={{ cursor: 'pointer' }}>&#9632;</span>
               <span className="amiga-window__title">ABOUT SAUSAGE TRACKER V1.1</span>
             </div>
-            <div className="amiga-window__body" style={{ padding: '16px', overflowY: 'auto', maxHeight: '70vh' }}>
-              <div style={{
+            <div className="amiga-window__body" style={{
+              padding: '16px',
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              maxHeight: '70vh',
+            }}>
+              <p style={{
                 fontFamily: 'var(--font-pixel)',
                 fontSize: '8px',
                 lineHeight: '2.2',
                 color: 'var(--amiga-white)',
-                overflowWrap: 'break-word',
-                wordBreak: 'break-word',
+                margin: 0,
+                overflowWrap: 'anywhere',
               }}>
                 What started as a single-page photo uploader where Claude Haiku counted sausages in your lunch has, over 56 commits, mutated into a full competitive card battle game. The sausage logging still exists at its core, but each week your eating habits are now fed to an AI that generates a unique hero card — complete with sausage-pun moves like &quot;Mustard Megablast&quot; and types like CHORIZO/GRILLED — with stats directly influenced by how many sausages you actually consumed.
-              </div>
-              <div style={{
+              </p>
+              <p style={{
                 fontFamily: 'var(--font-pixel)',
                 fontSize: '8px',
                 lineHeight: '2.2',
                 color: 'var(--amiga-white)',
                 marginTop: '12px',
-                overflowWrap: 'break-word',
-                wordBreak: 'break-word',
+                marginBottom: 0,
+                overflowWrap: 'anywhere',
               }}>
                 A real-time multiplayer battle arena lets players challenge friends, pick decks of 4 cards (including one intentionally terrible starter like &quot;Soggy Microwave Frank&quot;), and duke it out in turn-based combat with type advantages and an ELO rating system. The social layer includes live taunts with speech bubbles, a treasure chest card reveal for weekly drops, and AI-generated dramatic play-by-play recaps of every battle.
-              </div>
-              <div style={{
+              </p>
+              <p style={{
                 fontFamily: 'var(--font-pixel)',
                 fontSize: '8px',
                 lineHeight: '2.2',
                 color: '#888',
                 marginTop: '12px',
+                marginBottom: 0,
                 fontStyle: 'italic',
-                overflowWrap: 'break-word',
-                wordBreak: 'break-word',
+                overflowWrap: 'anywhere',
               }}>
                 Built with Next.js, Claude Haiku, and an unhealthy obsession with processed meat. Proof that logging your lunch can spiral into a competitive esport.
-              </div>
+              </p>
               <div style={{ textAlign: 'center', marginTop: '16px' }}>
                 <button
                   className="amiga-btn amiga-btn--primary"
