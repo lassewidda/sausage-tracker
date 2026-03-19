@@ -33,6 +33,7 @@ export function BattleLobby() {
   const [hasMeals, setHasMeals] = useState(false)
   const [selectedCard, setSelectedCard] = useState<HeroCard | null>(null)
   const [inventory, setInventory] = useState<(PlayerItem & { definition?: ItemDefinition })[]>([])
+  const [seenItemIds, setSeenItemIds] = useState<Set<string>>(new Set())
 
   const fetchLobby = useCallback(async () => {
     if (!name) return
@@ -58,6 +59,29 @@ export function BattleLobby() {
       }
     } catch { /* ignore */ }
   }, [name])
+
+  // Load seen item IDs from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('sausage_seen_items')
+      if (stored) setSeenItemIds(new Set(JSON.parse(stored)))
+    } catch { /* ignore */ }
+  }, [])
+
+  // Mark items as seen after 3 seconds of viewing
+  useEffect(() => {
+    if (inventory.length === 0) return
+    const newIds = inventory.map(i => i.id)
+    const hasNew = newIds.some(id => !seenItemIds.has(id))
+    if (!hasNew) return
+
+    const timeout = setTimeout(() => {
+      const merged = new Set(Array.from(seenItemIds).concat(newIds))
+      setSeenItemIds(merged)
+      try { localStorage.setItem('sausage_seen_items', JSON.stringify(Array.from(merged))) } catch { /* ignore */ }
+    }, 3000)
+    return () => clearTimeout(timeout)
+  }, [inventory, seenItemIds])
 
   useEffect(() => {
     fetchLobby()
@@ -278,20 +302,33 @@ export function BattleLobby() {
                 const def = item.definition
                 if (!def) return null
                 const color = def.rarity === 'rare' ? '#FFD700' : def.rarity === 'uncommon' ? '#4488FF' : '#888'
+                const isNew = !seenItemIds.has(item.id)
                 return (
                   <div key={item.id} style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     padding: '4px 6px',
-                    background: '#1a1a1a',
-                    border: `1px solid ${color}33`,
+                    background: isNew ? '#1a1a2a' : '#1a1a1a',
+                    border: `1px solid ${isNew ? color : color + '33'}`,
                   }}>
                     <span style={{
                       fontFamily: 'var(--font-pixel)',
                       fontSize: '8px',
                       color,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
                     }}>
+                      {isNew && (
+                        <span className="amiga-blink" style={{
+                          fontSize: '6px',
+                          color: '#FF4444',
+                          flexShrink: 0,
+                        }}>
+                          NEW!
+                        </span>
+                      )}
                       {def.name}
                     </span>
                     <span style={{
