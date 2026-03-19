@@ -5,6 +5,8 @@ import type { BattleState } from '@/types'
 import { BattleCard } from './BattleCard'
 import { MoveButton } from './MoveButton'
 import { BattleTurnLog } from './BattleTurnLog'
+import { TauntBar } from './TauntBar'
+import { TauntBubble } from './TauntBubble'
 import { parseMoveDamage } from '@/lib/battleEngine'
 
 interface Props {
@@ -15,7 +17,7 @@ interface Props {
 
 export function BattleArena({ state, playerName, onMove }: Props) {
   const [submitting, setSubmitting] = useState(false)
-  const { battle, challengerDeck, opponentDeck, turns } = state
+  const { battle, challengerDeck, opponentDeck, turns, taunts } = state
 
   const isChallenger = playerName === battle.challenger
   const myDeck = isChallenger ? challengerDeck : opponentDeck
@@ -81,6 +83,13 @@ export function BattleArena({ state, playerName, onMove }: Props) {
         minHeight: '200px',
         position: 'relative',
       }}>
+        {/* Taunt bubbles */}
+        <TauntBubble
+          taunts={taunts}
+          playerName={playerName}
+          challengerName={battle.challenger}
+        />
+
         {/* VS text */}
         <div style={{
           position: 'absolute',
@@ -184,6 +193,9 @@ export function BattleArena({ state, playerName, onMove }: Props) {
           {myActive.card.heroType} vs {theirActive.card.heroType}
         </div>
       )}
+
+      {/* Taunt bar */}
+      <TauntBar battleId={battle.id} playerName={playerName} />
 
       {/* Turn log */}
       <BattleTurnLog turns={turns} />

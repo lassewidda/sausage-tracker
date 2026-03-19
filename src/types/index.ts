@@ -119,11 +119,20 @@ export interface BattleStats {
   eloRating: number
 }
 
+export interface BattleTaunt {
+  id: string
+  battleId: string
+  playerName: string
+  message: string
+  createdAt: string
+}
+
 export interface BattleState {
   battle: Battle
   challengerDeck: BattleDeckCard[]
   opponentDeck: BattleDeckCard[]
   turns: BattleTurn[]
+  taunts: BattleTaunt[]
 }
 
 export interface WeeklySummary {

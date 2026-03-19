@@ -152,6 +152,19 @@ async function migrate() {
     )
   `
 
+  // Battle taunts table
+  await sql`
+    CREATE TABLE IF NOT EXISTS battle_taunts (
+      id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      battle_id        UUID NOT NULL REFERENCES battles(id) ON DELETE CASCADE,
+      player_name      TEXT NOT NULL,
+      message          TEXT NOT NULL,
+      created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_battle_taunts_battle ON battle_taunts(battle_id, created_at DESC)`
+
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_week_key ON meals(week_key DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_created_at ON meals(created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_player_name ON meals(player_name)`

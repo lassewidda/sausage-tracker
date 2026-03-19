@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleStats, BattleState } from '@/types'
+import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleTaunt, BattleStats, BattleState } from '@/types'
 
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
@@ -543,6 +543,17 @@ function rowToTurn(row: any): BattleTurn {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToTaunt(row: any): BattleTaunt {
+  return {
+    id: row.id,
+    battleId: row.battle_id,
+    playerName: row.player_name,
+    message: row.message,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function rowToBattleStats(row: any): BattleStats {
   return {
     playerName: row.player_name,
@@ -601,7 +612,7 @@ export async function joinBattle(battleId: string, opponent: string): Promise<Ba
 
 export async function getBattleState(battleId: string): Promise<BattleState> {
   const sql = getDb()
-  const [battleRows, deckRows, turnRows] = await Promise.all([
+  const [battleRows, deckRows, turnRows, tauntRows] = await Promise.all([
     sql`SELECT * FROM battles WHERE id = ${battleId}`,
     sql`
       SELECT d.*, h.player_name, h.hero_title, h.hero_type, h.hp, h.attack, h.defense, h.speed,
@@ -613,6 +624,11 @@ export async function getBattleState(battleId: string): Promise<BattleState> {
     `,
     sql`
       SELECT * FROM battle_turns WHERE battle_id = ${battleId} ORDER BY turn_number
+    `,
+    sql`
+      SELECT * FROM battle_taunts
+      WHERE battle_id = ${battleId} AND created_at > NOW() - INTERVAL '10 seconds'
+      ORDER BY created_at DESC LIMIT 5
     `,
   ])
   await sql.end()
@@ -629,6 +645,7 @@ export async function getBattleState(battleId: string): Promise<BattleState> {
     challengerDeck,
     opponentDeck,
     turns: turnRows.map(rowToTurn),
+    taunts: tauntRows.map(rowToTaunt),
   }
 }
 
@@ -862,6 +879,27 @@ export async function getBattleLeaderboard(): Promise<BattleStats[]> {
   const rows = await sql`SELECT * FROM battle_stats ORDER BY elo_rating DESC`
   await sql.end()
   return rows.map(rowToBattleStats)
+}
+
+export async function sendTaunt(battleId: string, playerName: string, message: string): Promise<BattleTaunt> {
+  const sql = getDb()
+  // Rate limit: max 1 taunt per 2 seconds per player
+  const recent = await sql`
+    SELECT COUNT(*)::int AS count FROM battle_taunts
+    WHERE battle_id = ${battleId} AND player_name = ${playerName}
+      AND created_at > NOW() - INTERVAL '2 seconds'
+  `
+  if ((recent[0].count as number) > 0) {
+    await sql.end()
+    throw new Error('Too fast! Wait a moment.')
+  }
+  const rows = await sql`
+    INSERT INTO battle_taunts (battle_id, player_name, message)
+    VALUES (${battleId}, ${playerName}, ${message.slice(0, 80)})
+    RETURNING *
+  `
+  await sql.end()
+  return rowToTaunt(rows[0])
 }
 
 export async function ensureStarterCards(playerName: string): Promise<void> {
