@@ -6,7 +6,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const { playerName, cardIds } = await request.json()
+  const body = await request.json()
+  const playerName = (body.playerName || '').toLowerCase()
+  const cardIds = body.cardIds
 
   if (!playerName || !Array.isArray(cardIds) || cardIds.length !== 3) {
     return NextResponse.json({ error: 'Must select exactly 3 cards' }, { status: 400 })

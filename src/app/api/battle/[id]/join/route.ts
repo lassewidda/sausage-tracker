@@ -6,7 +6,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const { playerName } = await request.json()
+  const body = await request.json()
+  const playerName = (body.playerName || '').toLowerCase()
   if (!playerName) return NextResponse.json({ error: 'Missing playerName' }, { status: 400 })
 
   try {

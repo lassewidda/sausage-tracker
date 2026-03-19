@@ -4,7 +4,7 @@ import { generateHeroCard } from '@/lib/claude'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const playerName = searchParams.get('playerName')
+  const playerName = (searchParams.get('playerName') || '').toLowerCase()
   if (!playerName) return NextResponse.json({ error: 'Missing playerName' }, { status: 400 })
 
   const deck = await getPlayerDeck(playerName)
@@ -12,7 +12,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { playerName } = await request.json()
+  const body = await request.json()
+  const playerName = (body.playerName || '').toLowerCase()
 
   if (!playerName || typeof playerName !== 'string') {
     return NextResponse.json({ error: 'Missing playerName' }, { status: 400 })

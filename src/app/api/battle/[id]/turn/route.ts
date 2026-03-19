@@ -6,7 +6,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const { playerName, moveIndex } = await request.json()
+  const body = await request.json()
+  const playerName = (body.playerName || '').toLowerCase()
+  const moveIndex = body.moveIndex
 
   if (!playerName || moveIndex === undefined) {
     return NextResponse.json({ error: 'Missing playerName or moveIndex' }, { status: 400 })

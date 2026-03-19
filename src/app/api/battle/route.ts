@@ -3,7 +3,7 @@ import { createBattle, getOpenBattles, getPlayerBattles, ensureStarterCards } fr
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const playerName = searchParams.get('playerName')
+  const playerName = (searchParams.get('playerName') || '').toLowerCase()
 
   const openBattles = await getOpenBattles()
 
@@ -16,7 +16,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { playerName } = await request.json()
+  const body = await request.json()
+  const playerName = (body.playerName || '').toLowerCase()
   if (!playerName) return NextResponse.json({ error: 'Missing playerName' }, { status: 400 })
 
   await ensureStarterCards(playerName)
