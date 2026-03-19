@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { NameSetter } from '@/components/ui/NameSetter'
 import { JerryMode } from '@/components/ui/JerryMode'
-import { PlayerBadge } from '@/components/ui/PlayerBadge'
+import { NameSetter } from '@/components/ui/NameSetter'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -23,11 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/highscore" className="amiga-menubar__item">HIGHSCORE</Link>
             <Link href="/battle" className="amiga-menubar__item">BATTLE</Link>
             <JerryMode />
-            <div style={{ width: '1px', background: 'var(--amiga-dark-grey)', margin: '0 4px' }} />
-            <NameSetter />
           </nav>
           <div className="amiga-menubar" style={{ borderTop: 'none', justifyContent: 'flex-end', padding: '2px 8px' }}>
-            <PlayerBadge />
+            <NameSetter />
           </div>
           {children}
         </div>
