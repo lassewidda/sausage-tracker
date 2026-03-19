@@ -6,6 +6,21 @@ import Link from 'next/link'
 import type { Battle, HeroCard } from '@/types'
 import { useName } from '@/lib/useName'
 
+function getCurrentWeekKey(): string {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7))
+  const week1 = new Date(d.getFullYear(), 0, 4)
+  const weekNum =
+    Math.round(
+      ((d.getTime() - week1.getTime()) / 86400000 -
+        3 +
+        ((week1.getDay() + 6) % 7)) /
+        7
+    ) + 1
+  return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`
+}
+
 export function BattleLobby() {
   const { name } = useName()
   const router = useRouter()
@@ -13,6 +28,7 @@ export function BattleLobby() {
   const [activeBattles, setActiveBattles] = useState<Battle[]>([])
   const [deck, setDeck] = useState<HeroCard[]>([])
   const [loading, setLoading] = useState(false)
+  const [hasMeals, setHasMeals] = useState(false)
 
   const fetchLobby = useCallback(async () => {
     if (!name) return
@@ -26,7 +42,10 @@ export function BattleLobby() {
       setActiveBattles(lobbyData.activeBattles ?? [])
 
       const deckData = await deckRes.json()
-      setDeck(Array.isArray(deckData) ? deckData : [])
+      const deckArr = Array.isArray(deckData) ? deckData : []
+      setDeck(deckArr)
+      // Check if player has any non-starter cards (means they have meal history)
+      setHasMeals(deckArr.some((c: HeroCard) => !c.weekKey.startsWith('STARTER')))
     } catch { /* ignore */ }
   }, [name])
 
@@ -95,6 +114,38 @@ export function BattleLobby() {
           LEADERBOARD
         </Link>
       </div>
+
+      {/* New card available */}
+      {hasMeals && !deck.some(c => c.weekKey === getCurrentWeekKey()) && (
+        <div
+          className="amiga-window"
+          style={{ cursor: 'pointer', border: '3px solid var(--crt-amber)' }}
+          onClick={() => router.push('/battle/new-card')}
+        >
+          <div className="amiga-window__body" style={{
+            textAlign: 'center',
+            padding: '20px',
+            background: 'linear-gradient(180deg, #1a0a00 0%, #0a0500 100%)',
+          }}>
+            <div className="amiga-blink" style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '14px',
+              color: 'var(--crt-amber)',
+              textShadow: '0 0 12px rgba(255, 170, 0, 0.6)',
+              marginBottom: '8px',
+            }}>
+              NEW CARD AVAILABLE!
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '8px',
+              color: '#888',
+            }}>
+              TAP TO OPEN YOUR WEEKLY TREASURE
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Your deck collection */}
       <div className="amiga-window">
