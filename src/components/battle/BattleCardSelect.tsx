@@ -78,8 +78,10 @@ export function BattleCardSelect({ deck, onSubmit, isReady }: Props) {
               style={{
                 background: isSelected
                   ? theme.gradient
-                  : 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)',
-                border: `2px solid ${isSelected ? theme.border : isStarter ? '#666' : '#333'}`,
+                  : isStarter
+                    ? 'linear-gradient(180deg, #1a1511 0%, #0d0a07 100%)'
+                    : 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)',
+                border: `2px ${isStarter && !isSelected ? 'dashed' : 'solid'} ${isSelected ? theme.border : isStarter ? '#8B7355' : '#333'}`,
                 borderRadius: '6px',
                 padding: '8px',
                 cursor: isReady ? 'default' : 'pointer',
@@ -93,18 +95,20 @@ export function BattleCardSelect({ deck, onSubmit, isReady }: Props) {
               {isStarter && (
                 <div style={{
                   position: 'absolute',
-                  top: '4px',
-                  left: '4px',
-                  background: '#555',
+                  top: '-1px',
+                  left: '-1px',
+                  right: '-1px',
+                  background: '#8B7355',
                   color: '#ffd700',
                   fontFamily: 'var(--font-pixel)',
-                  fontSize: '6px',
-                  padding: '2px 4px',
-                  borderRadius: '2px',
+                  fontSize: '7px',
+                  padding: '3px 6px',
+                  borderRadius: '4px 4px 0 0',
                   zIndex: 2,
-                  lineHeight: 1,
+                  textAlign: 'center',
+                  letterSpacing: '1px',
                 }}>
-                  ★
+                  ★ STARTER ★
                 </div>
               )}
 
@@ -132,6 +136,7 @@ export function BattleCardSelect({ deck, onSubmit, isReady }: Props) {
                 color: theme.accent,
                 textTransform: 'uppercase',
                 marginBottom: '4px',
+                marginTop: isStarter ? '14px' : 0,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
