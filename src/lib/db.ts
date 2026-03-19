@@ -732,8 +732,24 @@ export async function executeTurn(
   const attackerCard = rowToHeroCard(attackerDeck)
   const defenderCard = rowToHeroCard(defenderDeck)
 
-  const { calculateDamage, checkBattleEnd, determineTurnOrder } = await import('./battleEngine')
-  const result = calculateDamage(attackerCard, defenderCard, moveIndex)
+  const { calculateDamage, checkBattleEnd, determineTurnOrder, parseMoveDamage } = await import('./battleEngine')
+
+  // PP validation: check if the chosen move still has uses left
+  const chosenMove = attackerCard.specialMoves[moveIndex] ?? attackerCard.specialMoves[0]
+  const { maxPp, name: moveName } = parseMoveDamage(chosenMove)
+  const usedCountRows = await sql`
+    SELECT COUNT(*)::int AS used FROM battle_turns
+    WHERE battle_id = ${battleId} AND attacker_card_id = ${attackerDeck.card_id} AND move_used = ${moveName}
+  `
+  const usedCount = (usedCountRows[0]?.used as number) ?? 0
+
+  let result
+  if (usedCount >= maxPp) {
+    // Struggle: all PP depleted, fixed 10 damage, no type advantage
+    result = { damage: 10, multiplier: 1.0, moveName: 'Struggle', baseDamage: 10 }
+  } else {
+    result = calculateDamage(attackerCard, defenderCard, moveIndex)
+  }
 
   const newHp = Math.max(0, (defenderDeck.current_hp as number) - result.damage)
   const isKo = newHp <= 0

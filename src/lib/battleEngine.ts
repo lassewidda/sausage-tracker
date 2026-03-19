@@ -1,27 +1,51 @@
 import type { HeroCard, BattleDeckCard } from '@/types'
 
-// Type advantage matrix
+// Sausage-themed type advantage matrix
+// Super effective = 1.5x, not very effective = 0.66x
 const TYPE_CHART: Record<string, Record<string, number>> = {
-  FIRE:     { GRASS: 1.5, ICE: 1.5, STEEL: 1.5, WATER: 0.75, FIRE: 0.75 },
-  WATER:    { FIRE: 1.5, GRILLED: 1.5, SMOKED: 1.5, GRASS: 0.75, WATER: 0.75 },
-  GRASS:    { WATER: 1.5, POISON: 0.75, FIRE: 0.75, ICE: 0.75 },
-  ELECTRIC: { WATER: 1.5, STEEL: 1.5, GRASS: 0.75, ELECTRIC: 0.75 },
-  ICE:      { GRASS: 1.5, DARK: 1.5, FIRE: 0.75, STEEL: 0.75, ICE: 0.75 },
-  DARK:     { NORMAL: 1.5, POISON: 1.5, DARK: 0.75, STEEL: 0.75 },
-  STEEL:    { ICE: 1.5, NORMAL: 1.5, FIRE: 0.75, WATER: 0.75 },
-  POISON:   { GRASS: 1.5, MEAT: 1.5, STEEL: 0.75, POISON: 0.75 },
-  NORMAL:   { STEEL: 0.75, DARK: 0.75 },
-  SMOKED:   { MEAT: 1.5, GRASS: 1.5, WATER: 0.75 },
-  GRILLED:  { MEAT: 1.5, ICE: 1.5, WATER: 0.75 },
-  MEAT:     {}, // MEAT gives 1.1x bonus always (handled separately)
+  BRATWURST:    { FRANKFURTER: 1.5, VEGGIE: 1.5, WEISSWURST: 0.66 },
+  FRANKFURTER:  { WEISSWURST: 1.5, VEGGIE: 1.5, MUSTARD: 0.66, CHORIZO: 0.66 },
+  CHORIZO:      { FRANKFURTER: 1.5, WEISSWURST: 1.5, KIELBASA: 1.5, SAUERKRAUT: 0.66 },
+  KIELBASA:     { BRATWURST: 1.5, ANDOUILLE: 1.5, CHORIZO: 0.66, CURRYWURST: 0.66 },
+  ANDOUILLE:    { FRANKFURTER: 1.5, CURRYWURST: 1.5, KIELBASA: 0.66, BLOOD_SAUSAGE: 0.66 },
+  WEISSWURST:   { KIELBASA: 1.5, BLOOD_SAUSAGE: 1.5, CHORIZO: 0.66, GRILLED: 0.66 },
+  CURRYWURST:   { KIELBASA: 1.5, BRATWURST: 1.5, ANDOUILLE: 0.66, SAUERKRAUT: 0.66 },
+  BLOOD_SAUSAGE:{ VEGGIE: 1.5, ANDOUILLE: 1.5, WEISSWURST: 0.66, MUSTARD: 0.66 },
+  VEGGIE:       { SAUERKRAUT: 1.5, MUSTARD: 1.5, BRATWURST: 0.66, BLOOD_SAUSAGE: 0.66, CHORIZO: 0.66 },
+  MUSTARD:      { FRANKFURTER: 1.5, BLOOD_SAUSAGE: 1.5, SAUERKRAUT: 0.66, VEGGIE: 0.66 },
+  SAUERKRAUT:   { MUSTARD: 1.5, CHORIZO: 1.5, CURRYWURST: 1.5, VEGGIE: 0.66, BRATWURST: 0.66 },
+  GRILLED:      { WEISSWURST: 1.5, VEGGIE: 1.5, SAUERKRAUT: 0.66, MUSTARD: 0.66 },
+  // Legacy types still work with neutral multiplier
+  FIRE: { GRASS: 1.5, ICE: 1.5 },
+  WATER: { FIRE: 1.5 },
+  MEAT: {},
+  NORMAL: {},
+  DARK: {},
+  STEEL: {},
+  POISON: {},
+  ELECTRIC: {},
+  ICE: {},
+  GRASS: {},
+  SMOKED: {},
 }
 
-export function parseMoveDamage(move: string): { name: string; baseDamage: number } {
-  const match = move.match(/^(.+?)\s*\((\d+)\)\s*$/)
+export interface ParsedMove {
+  name: string
+  baseDamage: number
+  maxPp: number
+}
+
+export function parseMoveDamage(move: string): ParsedMove {
+  // Format: "Move Name (damage/pp)" or "Move Name (damage)"
+  const match = move.match(/^(.+?)\s*\((\d+)(?:\/(\d+))?\)\s*$/)
   if (match) {
-    return { name: match[1].trim(), baseDamage: parseInt(match[2]) }
+    return {
+      name: match[1].trim(),
+      baseDamage: parseInt(match[2]),
+      maxPp: match[3] ? parseInt(match[3]) : 99,
+    }
   }
-  return { name: move, baseDamage: 20 }
+  return { name: move, baseDamage: 25, maxPp: 99 }
 }
 
 function getTypes(heroType: string): string[] {
@@ -32,15 +56,9 @@ function getTypeMultiplier(attackerTypes: string[], defenderTypes: string[]): nu
   let multiplier = 1.0
 
   for (const atkType of attackerTypes) {
-    // MEAT bonus: always 1.1x
-    if (atkType === 'MEAT') {
-      multiplier *= 1.1
-      continue
-    }
     const chart = TYPE_CHART[atkType]
     if (!chart) continue
     for (const defType of defenderTypes) {
-      if (defType === 'MEAT') continue // MEAT as defender doesn't modify incoming
       const mod = chart[defType]
       if (mod) multiplier *= mod
     }
@@ -67,7 +85,9 @@ export function calculateDamage(
   const defenderTypes = getTypes(defender.heroType)
   const multiplier = getTypeMultiplier(attackerTypes, defenderTypes)
 
-  const raw = (attacker.attack * baseDamage / 100) * multiplier * (100 / (100 + defender.defense))
+  // Rebalanced formula: additive attack+baseDamage, softer defense scaling
+  // Target: ~15-30 damage per hit against typical stats, games finish in 10-20 turns
+  const raw = ((attacker.attack + baseDamage) / 2.5) * multiplier * (60 / (60 + defender.defense))
   const damage = Math.max(1, Math.floor(raw))
 
   return { damage, multiplier, moveName: name, baseDamage }
@@ -80,7 +100,6 @@ export function determineTurnOrder(
   if (card1.speed !== card2.speed) {
     return card1.speed > card2.speed ? card1.playerName : card2.playerName
   }
-  // Tie-break: alphabetical
   return card1.playerName < card2.playerName ? card1.playerName : card2.playerName
 }
 
@@ -129,9 +148,9 @@ export function getStarterCards(): StarterCard[] {
   return [
     {
       heroTitle: 'Soggy Microwave Frank',
-      heroType: 'NORMAL/WATER',
-      hp: 30, attack: 5, defense: 5, speed: 3,
-      specialMoves: ['Lukewarm Splash (10)', 'Sad Sizzle (15)', 'Ketchup Drizzle (12)'],
+      heroType: 'FRANKFURTER/MUSTARD',
+      hp: 45, attack: 15, defense: 10, speed: 8,
+      specialMoves: ['Lukewarm Splash (25/10)', 'Sad Sizzle (35/5)', 'Ketchup Drizzle (45/2)'],
       weakness: 'Any form of seasoning',
       catchphrase: 'I was frozen five minutes ago...',
       flavorText: 'Found behind the office microwave. Still slightly cold in the middle.',
@@ -139,9 +158,9 @@ export function getStarterCards(): StarterCard[] {
     },
     {
       heroTitle: 'The Uncooked Rookie',
-      heroType: 'NORMAL/MEAT',
-      hp: 25, attack: 3, defense: 8, speed: 2,
-      specialMoves: ['Raw Slap (8)', 'Refrigerator Chill (12)', 'Expiry Date Panic (15)'],
+      heroType: 'BRATWURST/VEGGIE',
+      hp: 40, attack: 10, defense: 20, speed: 6,
+      specialMoves: ['Raw Slap (20/15)', 'Refrigerator Chill (30/6)', 'Expiry Date Panic (40/3)'],
       weakness: 'Room temperature',
       catchphrase: 'Please... just cook me...',
       flavorText: 'Straight out of the package with the little absorbent pad still attached.',
@@ -149,9 +168,9 @@ export function getStarterCards(): StarterCard[] {
     },
     {
       heroTitle: 'Leftover Link',
-      heroType: 'NORMAL/DARK',
-      hp: 35, attack: 4, defense: 4, speed: 6,
-      specialMoves: ['Day-Old Toss (10)', 'Suspicious Smell (14)', 'Microwave Spin (11)'],
+      heroType: 'KIELBASA/BLOOD_SAUSAGE',
+      hp: 50, attack: 12, defense: 12, speed: 15,
+      specialMoves: ['Day-Old Toss (20/12)', 'Suspicious Smell (30/6)', 'Microwave Spin (40/3)'],
       weakness: 'Being sniffed before eating',
       catchphrase: 'I was great yesterday, I swear!',
       flavorText: 'Three days in the back of the fridge. Character building.',
@@ -159,9 +178,9 @@ export function getStarterCards(): StarterCard[] {
     },
     {
       heroTitle: 'Bargain Bin Banger',
-      heroType: 'NORMAL/STEEL',
-      hp: 20, attack: 6, defense: 3, speed: 4,
-      specialMoves: ['Discount Slam (12)', 'Shrink-Wrap Shield (8)', 'Best Before Blitz (14)'],
+      heroType: 'ANDOUILLE/SAUERKRAUT',
+      hp: 35, attack: 18, defense: 8, speed: 12,
+      specialMoves: ['Discount Slam (30/8)', 'Shrink-Wrap Shield (20/12)', 'Best Before Blitz (45/2)'],
       weakness: 'Quality control',
       catchphrase: '50% off and worth every penny!',
       flavorText: 'The yellow sticker special. Questionable origin, unbeatable price.',
@@ -169,9 +188,9 @@ export function getStarterCards(): StarterCard[] {
     },
     {
       heroTitle: 'Mystery Meat Cylinder',
-      heroType: 'NORMAL/POISON',
-      hp: 40, attack: 2, defense: 6, speed: 1,
-      specialMoves: ['Ambiguous Ooze (10)', 'Label Confusion (13)', 'Preservative Burst (11)'],
+      heroType: 'CURRYWURST/CHORIZO',
+      hp: 55, attack: 8, defense: 15, speed: 5,
+      specialMoves: ['Ambiguous Ooze (20/15)', 'Label Confusion (35/5)', 'Preservative Burst (45/2)'],
       weakness: 'Ingredient lists',
       catchphrase: 'You don\'t want to know what\'s inside...',
       flavorText: 'Contents: meat (probably). May contain traces of everything.',

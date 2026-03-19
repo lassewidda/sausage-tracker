@@ -187,6 +187,8 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
             <BattleResult
               winner={battle.winner}
               playerName={name}
+              battleId={id}
+              turns={state.turns}
             />
           )}
         </div>

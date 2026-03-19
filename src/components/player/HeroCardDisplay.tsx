@@ -93,6 +93,62 @@ export function getTypeTheme(heroType: string): TypeTheme {
       border: '#DD4444', glow: 'rgba(221, 68, 68, 0.4)', accent: '#DD4444',
       bodyColor: '#CC3333', accentColor: '#FF8888', particle: '🥩',
     },
+    // Sausage-themed types
+    'BRATWURST': {
+      bg: '#1a0e05', gradient: 'linear-gradient(180deg, #2a1a08 0%, #1a0e05 40%, #332200 100%)',
+      border: '#DD8833', glow: 'rgba(221, 136, 51, 0.4)', accent: '#DD8833',
+      bodyColor: '#BB7722', accentColor: '#FFCC66', particle: '🌭',
+    },
+    'FRANKFURTER': {
+      bg: '#1a0808', gradient: 'linear-gradient(180deg, #2a1010 0%, #1a0808 40%, #331010 100%)',
+      border: '#EE6644', glow: 'rgba(238, 102, 68, 0.4)', accent: '#EE6644',
+      bodyColor: '#CC5533', accentColor: '#FF9977', particle: '🌭',
+    },
+    'CHORIZO': {
+      bg: '#1a0505', gradient: 'linear-gradient(180deg, #2a0808 0%, #1a0505 40%, #330a00 100%)',
+      border: '#DD3311', glow: 'rgba(221, 51, 17, 0.5)', accent: '#DD3311',
+      bodyColor: '#BB2200', accentColor: '#FF6644', particle: '🌶️',
+    },
+    'KIELBASA': {
+      bg: '#12100a', gradient: 'linear-gradient(180deg, #221a0f 0%, #12100a 40%, #2a2010 100%)',
+      border: '#AA8855', glow: 'rgba(170, 136, 85, 0.3)', accent: '#AA8855',
+      bodyColor: '#886633', accentColor: '#CCAA77', particle: '💨',
+    },
+    'ANDOUILLE': {
+      bg: '#150a08', gradient: 'linear-gradient(180deg, #251510 0%, #150a08 40%, #301510 100%)',
+      border: '#CC6644', glow: 'rgba(204, 102, 68, 0.4)', accent: '#CC6644',
+      bodyColor: '#AA5533', accentColor: '#EE9966', particle: '🔥',
+    },
+    'WEISSWURST': {
+      bg: '#0f1418', gradient: 'linear-gradient(180deg, #182028 0%, #0f1418 40%, #1a2530 100%)',
+      border: '#CCDDEE', glow: 'rgba(204, 221, 238, 0.4)', accent: '#CCDDEE',
+      bodyColor: '#AABBCC', accentColor: '#EEEEFF', particle: '❄️',
+    },
+    'CURRYWURST': {
+      bg: '#1a1500', gradient: 'linear-gradient(180deg, #2a2200 0%, #1a1500 40%, #332a00 100%)',
+      border: '#EECC00', glow: 'rgba(238, 204, 0, 0.5)', accent: '#EECC00',
+      bodyColor: '#CCAA00', accentColor: '#FFEE44', particle: '⚡',
+    },
+    'BLOOD_SAUSAGE': {
+      bg: '#120510', gradient: 'linear-gradient(180deg, #200a1a 0%, #120510 40%, #250820 100%)',
+      border: '#991133', glow: 'rgba(153, 17, 51, 0.5)', accent: '#991133',
+      bodyColor: '#770022', accentColor: '#CC4466', particle: '🩸',
+    },
+    'VEGGIE': {
+      bg: '#081808', gradient: 'linear-gradient(180deg, #0f280f 0%, #081808 40%, #0a300a 100%)',
+      border: '#66BB44', glow: 'rgba(102, 187, 68, 0.4)', accent: '#66BB44',
+      bodyColor: '#449922', accentColor: '#88DD66', particle: '🥬',
+    },
+    'MUSTARD': {
+      bg: '#1a1400', gradient: 'linear-gradient(180deg, #2a2000 0%, #1a1400 40%, #332800 100%)',
+      border: '#DDAA00', glow: 'rgba(221, 170, 0, 0.5)', accent: '#DDAA00',
+      bodyColor: '#BB8800', accentColor: '#FFDD44', particle: '🟡',
+    },
+    'SAUERKRAUT': {
+      bg: '#101508', gradient: 'linear-gradient(180deg, #182010 0%, #101508 40%, #1a2a0a 100%)',
+      border: '#99AA44', glow: 'rgba(153, 170, 68, 0.3)', accent: '#99AA44',
+      bodyColor: '#778833', accentColor: '#BBCC66', particle: '🥒',
+    },
   }
   return themes[type1] ?? {
     bg: '#1a1008', gradient: 'linear-gradient(180deg, #2a1a0a 0%, #1a1008 40%, #332200 100%)',
@@ -143,9 +199,13 @@ function StatBar({ label, value, max, color, theme }: { label: string; value: nu
 }
 
 export function PixelAvatar({ card, theme, size }: { card: HeroCard; stats?: Props['stats']; theme: TypeTheme; size?: number }) {
-  const h = hash(card.playerName)
-  const creature = h % 6 // 6 completely different creature archetypes
+  const h = hash(card.heroTitle + card.playerName)
+  const creature = h % 12 // 12 different creature archetypes
+  // Use secondary type for detail color variety
+  const type2 = card.heroType.split('/')[1]?.trim()
+  const detailTheme = type2 ? getTypeTheme(type2) : theme
   const { bodyColor: b, accentColor: a } = theme
+  const d = detailTheme.bodyColor // detail/third color
   const bg = theme.bg
   const SIZE = size ?? 160
 
@@ -422,6 +482,287 @@ export function PixelAvatar({ card, theme, size }: { card: HeroCard; stats?: Pro
           <rect x="19" y="27" width="6" height="2" fill="#C03A18" />
           <rect x="6" y="27" width="1" height="2" fill="#8C2508" />
           <rect x="25" y="27" width="1" height="2" fill="#8C2508" />
+        </>
+      )}
+
+      {creature === 6 && (
+        // OCTOPUS — tentacled sea creature with sausage tentacles
+        <>
+          {/* Head dome */}
+          <rect x="10" y="4" width="12" height="10" fill={b} />
+          <rect x="8" y="6" width="2" height="6" fill={b} />
+          <rect x="22" y="6" width="2" height="6" fill={b} />
+          <rect x="12" y="3" width="8" height="2" fill={b} />
+          {/* Head patterns */}
+          <rect x="12" y="5" width="3" height="2" fill={d} opacity="0.3" />
+          <rect x="18" y="7" width="3" height="2" fill={d} opacity="0.2" />
+          {/* Eyes — big and round */}
+          <rect x="11" y="8" width="4" height="4" fill="#fff" />
+          <rect x="17" y="8" width="4" height="4" fill="#fff" />
+          <rect x="13" y="9" width="2" height="2" fill={d} />
+          <rect x="18" y="9" width="2" height="2" fill={d} />
+          <rect x="13" y="10" width="1" height="1" fill="#000" />
+          <rect x="19" y="10" width="1" height="1" fill="#000" />
+          {/* Mouth */}
+          <rect x="14" y="12" width="4" height="1" fill={a} opacity="0.5" />
+          {/* Tentacles — 8 wavy arms */}
+          <rect x="4" y="14" width="3" height="3" fill={b} />
+          <rect x="2" y="17" width="3" height="4" fill={b} />
+          <rect x="0" y="21" width="3" height="3" fill={a} />
+          <rect x="7" y="14" width="3" height="4" fill={b} />
+          <rect x="5" y="18" width="3" height="5" fill={b} />
+          <rect x="3" y="23" width="4" height="3" fill={a} />
+          <rect x="22" y="14" width="3" height="3" fill={b} />
+          <rect x="25" y="17" width="3" height="4" fill={b} />
+          <rect x="27" y="21" width="3" height="3" fill={a} />
+          <rect x="19" y="14" width="3" height="4" fill={b} />
+          <rect x="22" y="18" width="3" height="5" fill={b} />
+          <rect x="24" y="23" width="4" height="3" fill={a} />
+          {/* Center tentacles with sausages */}
+          <rect x="11" y="14" width="4" height="6" fill={b} />
+          <rect x="17" y="14" width="4" height="6" fill={b} />
+          <rect x="10" y="20" width="5" height="4" fill={a} />
+          <rect x="17" y="20" width="5" height="4" fill={a} />
+          {/* Sausage held */}
+          <rect x="12" y="24" width="8" height="2" fill="#C03A18" />
+          <rect x="11" y="24" width="1" height="2" fill="#8C2508" />
+          {/* Suction cups */}
+          <rect x="3" y="19" width="1" height="1" fill={d} />
+          <rect x="6" y="21" width="1" height="1" fill={d} />
+          <rect x="26" y="19" width="1" height="1" fill={d} />
+          <rect x="23" y="21" width="1" height="1" fill={d} />
+        </>
+      )}
+
+      {creature === 7 && (
+        // MUSHROOM — fungal creature with cap and spots
+        <>
+          {/* Mushroom cap */}
+          <rect x="6" y="4" width="20" height="10" fill={b} />
+          <rect x="4" y="6" width="2" height="6" fill={b} />
+          <rect x="26" y="6" width="2" height="6" fill={b} />
+          <rect x="8" y="2" width="16" height="3" fill={b} />
+          <rect x="10" y="1" width="12" height="2" fill={a} />
+          {/* Cap spots */}
+          <rect x="10" y="4" width="3" height="3" fill={d} />
+          <rect x="18" y="3" width="4" height="3" fill={d} />
+          <rect x="13" y="8" width="3" height="2" fill={d} />
+          <rect x="22" y="7" width="3" height="2" fill={d} />
+          <rect x="7" y="6" width="2" height="2" fill={d} opacity="0.6" />
+          {/* Stem/face */}
+          <rect x="11" y="14" width="10" height="10" fill={a} />
+          <rect x="10" y="16" width="1" height="6" fill={a} />
+          <rect x="21" y="16" width="1" height="6" fill={a} />
+          {/* Eyes */}
+          <rect x="13" y="16" width="2" height="3" fill="#000" />
+          <rect x="17" y="16" width="2" height="3" fill="#000" />
+          <rect x="13" y="16" width="1" height="1" fill="#fff" />
+          <rect x="17" y="16" width="1" height="1" fill="#fff" />
+          {/* Smile */}
+          <rect x="13" y="20" width="6" height="1" fill="#000" opacity="0.4" />
+          <rect x="12" y="19" width="1" height="1" fill="#000" opacity="0.3" />
+          <rect x="19" y="19" width="1" height="1" fill="#000" opacity="0.3" />
+          {/* Feet */}
+          <rect x="9" y="24" width="5" height="3" fill={b} />
+          <rect x="18" y="24" width="5" height="3" fill={b} />
+          {/* Spore particles */}
+          <rect x="3" y="12" width="2" height="2" fill={d} opacity="0.3" />
+          <rect x="27" y="10" width="2" height="2" fill={d} opacity="0.3" />
+          <rect x="5" y="2" width="2" height="2" fill={d} opacity="0.2" />
+          {/* Sausage skewer */}
+          <rect x="23" y="16" width="2" height="8" fill="#8C2508" />
+          <rect x="22" y="17" width="4" height="2" fill="#C03A18" />
+          <rect x="22" y="21" width="4" height="2" fill="#C03A18" />
+        </>
+      )}
+
+      {creature === 8 && (
+        // ROBOT — mechanical sausage mech
+        <>
+          {/* Head — boxy with antenna */}
+          <rect x="10" y="4" width="12" height="8" fill={a} />
+          <rect x="11" y="5" width="10" height="6" fill={b} />
+          <rect x="15" y="1" width="2" height="4" fill={a} />
+          <rect x="14" y="0" width="4" height="2" fill={d} />
+          {/* Visor */}
+          <rect x="12" y="6" width="8" height="3" fill="#000" />
+          <rect x="13" y="7" width="2" height="1" fill={d} />
+          <rect x="17" y="7" width="2" height="1" fill={d} />
+          {/* Scanner light */}
+          <rect x="14" y="6" width="4" height="1" fill={d} opacity="0.5" />
+          {/* Torso — armored */}
+          <rect x="8" y="12" width="16" height="10" fill={a} />
+          <rect x="10" y="13" width="12" height="8" fill={b} />
+          {/* Chest plate */}
+          <rect x="13" y="14" width="6" height="5" fill={d} opacity="0.3" />
+          <rect x="14" y="15" width="4" height="3" fill="#000" />
+          <rect x="15" y="16" width="2" height="1" fill={d} />
+          {/* Arms — mechanical */}
+          <rect x="3" y="13" width="5" height="3" fill={a} />
+          <rect x="1" y="14" width="3" height="5" fill={b} />
+          <rect x="24" y="13" width="5" height="3" fill={a} />
+          <rect x="28" y="14" width="3" height="5" fill={b} />
+          {/* Claw hands */}
+          <rect x="0" y="19" width="2" height="1" fill={a} />
+          <rect x="0" y="21" width="2" height="1" fill={a} />
+          <rect x="30" y="19" width="2" height="1" fill={a} />
+          <rect x="30" y="21" width="2" height="1" fill={a} />
+          {/* Legs — piston */}
+          <rect x="10" y="22" width="4" height="6" fill={a} />
+          <rect x="18" y="22" width="4" height="6" fill={a} />
+          <rect x="11" y="23" width="2" height="4" fill={b} />
+          <rect x="19" y="23" width="2" height="4" fill={b} />
+          {/* Feet */}
+          <rect x="8" y="28" width="7" height="3" fill={a} />
+          <rect x="17" y="28" width="7" height="3" fill={a} />
+          {/* Sausage ammo belt */}
+          <rect x="3" y="16" width="5" height="1" fill="#C03A18" />
+          <rect x="24" y="16" width="5" height="1" fill="#C03A18" />
+          <rect x="3" y="18" width="5" height="1" fill="#B83010" />
+        </>
+      )}
+
+      {creature === 9 && (
+        // CRAB — armored crustacean with pincers
+        <>
+          {/* Shell */}
+          <rect x="6" y="10" width="20" height="12" fill={b} />
+          <rect x="8" y="8" width="16" height="3" fill={b} />
+          <rect x="10" y="7" width="12" height="2" fill={a} />
+          {/* Shell pattern */}
+          <rect x="10" y="11" width="4" height="3" fill={d} opacity="0.3" />
+          <rect x="18" y="11" width="4" height="3" fill={d} opacity="0.3" />
+          <rect x="13" y="15" width="6" height="3" fill={d} opacity="0.2" />
+          {/* Eye stalks */}
+          <rect x="11" y="4" width="2" height="4" fill={a} />
+          <rect x="19" y="4" width="2" height="4" fill={a} />
+          <rect x="10" y="3" width="4" height="2" fill={b} />
+          <rect x="18" y="3" width="4" height="2" fill={b} />
+          {/* Eyes */}
+          <rect x="11" y="3" width="2" height="2" fill="#fff" />
+          <rect x="19" y="3" width="2" height="2" fill="#fff" />
+          <rect x="11" y="4" width="1" height="1" fill="#000" />
+          <rect x="20" y="4" width="1" height="1" fill="#000" />
+          {/* Left pincer */}
+          <rect x="1" y="10" width="5" height="3" fill={a} />
+          <rect x="0" y="8" width="4" height="3" fill={b} />
+          <rect x="0" y="11" width="3" height="3" fill={b} />
+          <rect x="0" y="9" width="2" height="1" fill={a} />
+          <rect x="0" y="13" width="2" height="1" fill={a} />
+          {/* Right pincer holding sausage */}
+          <rect x="26" y="10" width="5" height="3" fill={a} />
+          <rect x="28" y="8" width="4" height="3" fill={b} />
+          <rect x="29" y="11" width="3" height="3" fill={b} />
+          <rect x="30" y="9" width="2" height="1" fill={a} />
+          <rect x="30" y="13" width="2" height="1" fill={a} />
+          {/* Sausage in pincer */}
+          <rect x="27" y="6" width="2" height="5" fill="#C03A18" />
+          <rect x="27" y="5" width="2" height="1" fill="#8C2508" />
+          {/* Legs */}
+          <rect x="6" y="22" width="3" height="4" fill={a} />
+          <rect x="11" y="22" width="3" height="5" fill={a} />
+          <rect x="18" y="22" width="3" height="5" fill={a} />
+          <rect x="23" y="22" width="3" height="4" fill={a} />
+          <rect x="5" y="26" width="4" height="2" fill={b} />
+          <rect x="10" y="27" width="4" height="2" fill={b} />
+          <rect x="18" y="27" width="4" height="2" fill={b} />
+          <rect x="23" y="26" width="4" height="2" fill={b} />
+          {/* Mouth */}
+          <rect x="14" y="19" width="4" height="2" fill="#000" opacity="0.5" />
+          <rect x="14" y="19" width="1" height="1" fill={d} />
+          <rect x="17" y="19" width="1" height="1" fill={d} />
+        </>
+      )}
+
+      {creature === 10 && (
+        // WOLF — fierce four-legged predator
+        <>
+          {/* Body */}
+          <rect x="6" y="14" width="18" height="8" fill={b} />
+          <rect x="8" y="12" width="14" height="3" fill={b} />
+          {/* Back fur */}
+          <rect x="8" y="12" width="3" height="1" fill={a} />
+          <rect x="14" y="11" width="4" height="1" fill={a} />
+          <rect x="20" y="12" width="3" height="1" fill={a} />
+          {/* Belly */}
+          <rect x="10" y="18" width="10" height="3" fill={d} opacity="0.3" />
+          {/* Head */}
+          <rect x="22" y="8" width="8" height="8" fill={b} />
+          <rect x="24" y="6" width="4" height="3" fill={b} />
+          {/* Snout */}
+          <rect x="28" y="10" width="4" height="4" fill={a} />
+          <rect x="30" y="12" width="2" height="2" fill="#000" />
+          <rect x="31" y="12" width="1" height="1" fill={d} />
+          {/* Ears */}
+          <rect x="24" y="4" width="2" height="3" fill={b} />
+          <rect x="28" y="4" width="2" height="3" fill={b} />
+          <rect x="24" y="4" width="1" height="2" fill={d} />
+          <rect x="29" y="4" width="1" height="2" fill={d} />
+          {/* Eye */}
+          <rect x="26" y="9" width="2" height="2" fill={a} />
+          <rect x="27" y="9" width="1" height="1" fill="#000" />
+          {/* Fangs */}
+          <rect x="29" y="14" width="1" height="2" fill="#fff" />
+          <rect x="31" y="14" width="1" height="1" fill="#fff" />
+          {/* Front legs */}
+          <rect x="20" y="22" width="3" height="6" fill={b} />
+          <rect x="17" y="22" width="3" height="6" fill={b} />
+          <rect x="17" y="28" width="3" height="2" fill={a} />
+          <rect x="20" y="28" width="3" height="2" fill={a} />
+          {/* Back legs */}
+          <rect x="6" y="22" width="3" height="5" fill={b} />
+          <rect x="10" y="22" width="3" height="5" fill={b} />
+          <rect x="6" y="27" width="3" height="2" fill={a} />
+          <rect x="10" y="27" width="3" height="2" fill={a} />
+          {/* Tail */}
+          <rect x="2" y="12" width="4" height="2" fill={b} />
+          <rect x="0" y="10" width="3" height="3" fill={a} />
+          {/* Sausage in mouth */}
+          <rect x="28" y="13" width="4" height="1" fill="#C03A18" />
+          <rect x="27" y="13" width="1" height="1" fill="#8C2508" />
+        </>
+      )}
+
+      {creature === 11 && (
+        // TURTLE — shelled tank creature
+        <>
+          {/* Shell */}
+          <rect x="6" y="8" width="20" height="14" fill={b} />
+          <rect x="8" y="6" width="16" height="3" fill={b} />
+          <rect x="4" y="10" width="2" height="10" fill={b} />
+          <rect x="26" y="10" width="2" height="10" fill={b} />
+          {/* Shell pattern — hexagonal */}
+          <rect x="9" y="9" width="5" height="4" fill={d} opacity="0.4" />
+          <rect x="18" y="9" width="5" height="4" fill={d} opacity="0.4" />
+          <rect x="13" y="9" width="6" height="3" fill={a} opacity="0.3" />
+          <rect x="9" y="14" width="6" height="4" fill={d} opacity="0.3" />
+          <rect x="17" y="14" width="6" height="4" fill={d} opacity="0.3" />
+          <rect x="12" y="16" width="8" height="3" fill={a} opacity="0.2" />
+          {/* Shell ridge */}
+          <rect x="14" y="6" width="4" height="1" fill={a} />
+          <rect x="13" y="7" width="6" height="1" fill={a} opacity="0.5" />
+          {/* Head */}
+          <rect x="26" y="12" width="6" height="6" fill={a} />
+          <rect x="28" y="10" width="4" height="3" fill={a} />
+          {/* Eyes */}
+          <rect x="29" y="11" width="2" height="2" fill="#fff" />
+          <rect x="30" y="12" width="1" height="1" fill="#000" />
+          {/* Mouth */}
+          <rect x="30" y="15" width="2" height="1" fill={b} />
+          <rect x="31" y="14" width="1" height="1" fill={d} />
+          {/* Front legs */}
+          <rect x="22" y="22" width="5" height="4" fill={a} />
+          <rect x="22" y="26" width="6" height="3" fill={d} opacity="0.6" />
+          {/* Back legs */}
+          <rect x="5" y="22" width="5" height="4" fill={a} />
+          <rect x="4" y="26" width="6" height="3" fill={d} opacity="0.6" />
+          {/* Tail */}
+          <rect x="2" y="18" width="3" height="2" fill={a} />
+          <rect x="0" y="18" width="2" height="1" fill={a} opacity="0.5" />
+          {/* Sausage on shell */}
+          <rect x="11" y="5" width="6" height="2" fill="#C03A18" />
+          <rect x="10" y="5" width="1" height="2" fill="#8C2508" />
+          <rect x="17" y="5" width="1" height="2" fill="#8C2508" />
         </>
       )}
     </svg>

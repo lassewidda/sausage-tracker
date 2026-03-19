@@ -5,6 +5,7 @@ import type { BattleState } from '@/types'
 import { BattleCard } from './BattleCard'
 import { MoveButton } from './MoveButton'
 import { BattleTurnLog } from './BattleTurnLog'
+import { parseMoveDamage } from '@/lib/battleEngine'
 
 interface Props {
   state: BattleState
@@ -28,12 +29,27 @@ export function BattleArena({ state, playerName, onMove }: Props) {
   const isLastAttacker = lastTurn?.attacker === playerName
   const isLastDefender = lastTurn && !isLastAttacker
 
+  // Calculate remaining PP for active card's moves
+  const getRemainingPp = (moveIndex: number): number => {
+    if (!myActive?.card) return 0
+    const move = myActive.card.specialMoves[moveIndex]
+    if (!move) return 0
+    const { name, maxPp } = parseMoveDamage(move)
+    const usedCount = turns.filter(
+      t => t.attackerCardId === myActive.cardId && t.moveUsed === name
+    ).length
+    return Math.max(0, maxPp - usedCount)
+  }
+
   const handleMove = async (moveIndex: number) => {
     if (submitting || !isMyTurn) return
     setSubmitting(true)
     onMove(moveIndex)
     setTimeout(() => setSubmitting(false), 500)
   }
+
+  // Check if all moves are out of PP (forced struggle)
+  const allMovesEmpty = myActive?.card?.specialMoves.every((_, i) => getRemainingPp(i) <= 0) ?? false
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -130,17 +146,42 @@ export function BattleArena({ state, playerName, onMove }: Props) {
             fontSize: '8px',
             color: 'var(--amiga-orange)',
           }}>
-            CHOOSE YOUR ATTACK:
+            {allMovesEmpty ? 'ALL MOVES EXHAUSTED — STRUGGLE!' : 'CHOOSE YOUR ATTACK:'}
           </div>
-          {myActive.card.specialMoves.map((move, i) => (
-            <MoveButton
-              key={i}
-              move={move}
-              index={i}
-              disabled={submitting || !isMyTurn}
-              onUse={handleMove}
-            />
-          ))}
+          {allMovesEmpty ? (
+            <button
+              className="amiga-btn"
+              disabled={submitting}
+              onClick={() => handleMove(0)}
+              style={{ width: '100%', fontSize: '8px' }}
+            >
+              <span>STRUGGLE</span>
+              <span style={{ color: '#FF4444', marginLeft: '8px' }}>10 dmg (recoil!)</span>
+            </button>
+          ) : (
+            myActive.card.specialMoves.map((move, i) => (
+              <MoveButton
+                key={i}
+                move={move}
+                index={i}
+                disabled={submitting || !isMyTurn}
+                remainingPp={getRemainingPp(i)}
+                onUse={handleMove}
+              />
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Type matchup hint */}
+      {isMyTurn && myActive?.card && theirActive?.card && (
+        <div style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '6px',
+          color: '#666',
+          textAlign: 'center',
+        }}>
+          {myActive.card.heroType} vs {theirActive.card.heroType}
         </div>
       )}
 

@@ -71,12 +71,16 @@ ${recentDescriptions || 'No recent meals'}
 Generate a JSON card with these fields. Be creative, funny, and thematic around sausages:
 
 - heroTitle: A dramatic superhero/Pokémon name (e.g., "The Bratwurst Berserker", "Wiener Warlord", "Chorizo Champion"). Make it unique to this player's habits.
-- heroType: A sausage-themed type like "FIRE/MEAT", "DARK/SMOKED", "ELECTRIC/GRILLED" etc. Two types separated by /.
-- hp: A number 10-999 based on total grams consumed (more grams = higher HP)
-- attack: A number 1-99 based on max sausages in one meal
-- defense: A number 1-99 based on chain length (consistency)
-- speed: A number 1-99 based on meals per active week
-- specialMoves: Array of exactly 3 special move names. Each should be a pun or sausage reference (e.g., "Mustard Blast", "Link Storm", "Casing Crush"). Include the move's damage in parentheses.
+- heroType: MUST be exactly two types from this list separated by /: BRATWURST, FRANKFURTER, CHORIZO, KIELBASA, ANDOUILLE, WEISSWURST, CURRYWURST, BLOOD_SAUSAGE, VEGGIE, MUSTARD, SAUERKRAUT, GRILLED. Example: "CHORIZO/GRILLED" or "FRANKFURTER/MUSTARD". Pick types that match the player's sausage eating patterns.
+- hp: A number 30-120 based on total grams consumed (more grams = higher HP, but max 120)
+- attack: A number 10-60 based on max sausages in one meal
+- defense: A number 10-60 based on chain length (consistency)
+- speed: A number 10-60 based on meals per active week
+- specialMoves: Array of exactly 3 special moves. Format: "Move Name (damage/PP)" where damage is the attack power and PP is how many times it can be used. Design a balanced set:
+  * One strong move: high damage (40-50), low PP (2-3). Example: "Mustard Megablast (45/2)"
+  * One medium move: moderate damage (25-35), medium PP (5-7). Example: "Casing Crush (30/6)"
+  * One weak but reliable move: low damage (15-25), high PP (10-15). Example: "Link Slap (20/12)"
+  Make each move a sausage pun or food reference!
 - weakness: A funny weakness (one short sentence)
 - catchphrase: A dramatic one-liner this hero would say
 - flavorText: 1-2 sentences of dramatic Pokédex-style lore about this sausage warrior
@@ -97,7 +101,13 @@ Respond with ONLY valid JSON, no markdown, no explanation.`
     .replace(/\n?```$/, '')
     .trim()
 
-  return JSON.parse(cleaned)
+  const parsed = JSON.parse(cleaned)
+  // Clamp stats to battle-balanced ranges
+  parsed.hp = Math.min(120, Math.max(30, parsed.hp || 80))
+  parsed.attack = Math.min(60, Math.max(10, parsed.attack || 30))
+  parsed.defense = Math.min(60, Math.max(10, parsed.defense || 30))
+  parsed.speed = Math.min(60, Math.max(10, parsed.speed || 30))
+  return parsed
 }
 
 export async function rewriteDescriptionForCount(
