@@ -132,8 +132,22 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
                 color: 'var(--amiga-dark-grey)',
                 marginTop: '12px',
               }}>
-                SHARE THIS PAGE WITH YOUR OPPONENT
+                SHARE THIS LINK WITH YOUR OPPONENT
               </div>
+              <button
+                className="amiga-btn amiga-btn--primary"
+                style={{ marginTop: '12px' }}
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href)
+                    .then(() => {
+                      const btn = document.getElementById('copy-link-btn')
+                      if (btn) { btn.textContent = 'COPIED!'; setTimeout(() => { btn.textContent = 'COPY BATTLE LINK' }, 2000) }
+                    })
+                }}
+                id="copy-link-btn"
+              >
+                COPY BATTLE LINK
+              </button>
             </div>
           )}
 
