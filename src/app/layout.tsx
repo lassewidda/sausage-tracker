@@ -5,8 +5,8 @@ import { NameSetter } from '@/components/ui/NameSetter'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Sausage Tracker v1.0',
-  description: 'Track your sausage consumption with AI-powered meal analysis',
+  title: 'Wiener Battle V2.0',
+  description: 'Log sausages, build hero cards, battle your friends',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <div className="amiga-screen">
           <nav className="amiga-menubar">
-            <span className="amiga-menubar__title">SAUSAGE TRACKER v1.0</span>
+            <span className="amiga-menubar__title">WIENER BATTLE V2.0</span>
             <div className="amiga-menubar__spacer" />
             <Link href="/" className="amiga-menubar__item">LOG</Link>
             <Link href="/feed" className="amiga-menubar__item">FEED</Link>
