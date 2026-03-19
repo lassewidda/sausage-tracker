@@ -80,7 +80,7 @@ export function TauntBar({ battleId, playerName }: Props) {
           <div style={{
             display: 'flex',
             flexWrap: 'wrap',
-            gap: '4px',
+            gap: '6px',
           }}>
             {PRESET_TAUNTS.map((t) => (
               <button
@@ -90,11 +90,16 @@ export function TauntBar({ battleId, playerName }: Props) {
                 style={{
                   background: cooldown ? '#1a1a1a' : '#2a2a2a',
                   border: '1px solid #444',
-                  borderRadius: '4px',
-                  padding: '3px 6px',
+                  borderRadius: '6px',
+                  padding: '8px 10px',
+                  minWidth: '40px',
+                  minHeight: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   cursor: cooldown ? 'not-allowed' : 'pointer',
                   fontFamily: 'var(--font-pixel)',
-                  fontSize: '7px',
+                  fontSize: '10px',
                   color: cooldown ? '#555' : '#ccc',
                   opacity: cooldown ? 0.5 : 1,
                 }}
@@ -105,7 +110,7 @@ export function TauntBar({ battleId, playerName }: Props) {
           </div>
 
           {/* Custom text input */}
-          <div style={{ display: 'flex', gap: '4px' }}>
+          <div style={{ display: 'flex', gap: '6px' }}>
             <input
               type="text"
               value={text}
@@ -117,19 +122,20 @@ export function TauntBar({ battleId, playerName }: Props) {
                 flex: 1,
                 background: '#0a0a0a',
                 border: '1px solid #444',
-                borderRadius: '4px',
-                padding: '4px 8px',
+                borderRadius: '6px',
+                padding: '8px 10px',
                 fontFamily: 'var(--font-pixel)',
-                fontSize: '7px',
+                fontSize: '10px',
                 color: '#ccc',
                 outline: 'none',
+                minHeight: '40px',
               }}
             />
             <button
               disabled={cooldown || !text.trim()}
               onClick={() => send(text)}
               className="amiga-btn"
-              style={{ fontSize: '7px', padding: '4px 8px' }}
+              style={{ fontSize: '10px', padding: '8px 12px', minHeight: '40px' }}
             >
               SEND
             </button>
