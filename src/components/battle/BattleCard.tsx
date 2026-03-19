@@ -48,7 +48,8 @@ export function BattleCard({ deckCard, isAttacking, isHit, isKo, side }: Props) 
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
-      }}>
+      }}
+      title={card.heroTitle}>
         {card.heroTitle}
       </div>
 
