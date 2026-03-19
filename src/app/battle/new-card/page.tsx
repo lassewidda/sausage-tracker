@@ -457,11 +457,12 @@ export default function NewCardPage() {
             {/* Flavor text */}
             <div style={{
               fontFamily: 'var(--font-pixel)',
-              fontSize: '7px',
-              color: '#666',
+              fontSize: '10px',
+              lineHeight: '1.8',
+              color: '#999',
               textAlign: 'center',
               fontStyle: 'italic',
-              padding: '0 16px',
+              padding: '0 8px',
               maxWidth: '360px',
             }}>
               {card.flavorText}
