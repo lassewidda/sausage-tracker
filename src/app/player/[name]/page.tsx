@@ -1,4 +1,4 @@
-import { getHeroCard, insertHeroCard, getPlayerAllTimeStats } from '@/lib/db'
+import { getHeroCard, insertHeroCard, getPlayerAllTimeStats, getWeekKey } from '@/lib/db'
 import { generateHeroCard } from '@/lib/claude'
 import { HeroCardDisplay } from '@/components/player/HeroCardDisplay'
 import { RegenerateButton } from '@/components/player/RegenerateButton'
@@ -74,6 +74,7 @@ export default async function PlayerPage({ params }: Props) {
         weakness: generated.weakness || 'Vegetarian restaurants',
         catchphrase: generated.catchphrase || 'Fear the sausage!',
         flavorText: generated.flavorText || 'A mighty warrior of the cylindrical meat arts.',
+        weekKey: getWeekKey(),
       })
     } catch (err) {
       console.error('Hero card generation failed:', err)

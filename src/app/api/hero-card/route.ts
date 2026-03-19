@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server'
-import { getHeroCard, insertHeroCard, getPlayerAllTimeStats } from '@/lib/db'
+import { getHeroCard, getPlayerDeck, insertHeroCard, getPlayerAllTimeStats, getWeekKey } from '@/lib/db'
 import { generateHeroCard } from '@/lib/claude'
 
-const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const playerName = searchParams.get('playerName')
+  if (!playerName) return NextResponse.json({ error: 'Missing playerName' }, { status: 400 })
+
+  const deck = await getPlayerDeck(playerName)
+  return NextResponse.json(deck)
+}
 
 export async function POST(request: Request) {
   const { playerName } = await request.json()
@@ -11,17 +18,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Missing playerName' }, { status: 400 })
   }
 
-  // Check existing card and cooldown
-  const existing = await getHeroCard(playerName)
+  const weekKey = getWeekKey()
+
+  // Check if card already exists for this week
+  const existing = await getHeroCard(playerName, weekKey)
   if (existing) {
-    const age = Date.now() - new Date(existing.createdAt).getTime()
-    if (age < ONE_WEEK_MS) {
-      const nextDate = new Date(new Date(existing.createdAt).getTime() + ONE_WEEK_MS)
-      return NextResponse.json({
-        error: 'Too soon',
-        nextRegenerateAt: nextDate.toISOString(),
-      }, { status: 429 })
-    }
+    return NextResponse.json({
+      error: 'Already generated this week',
+      card: existing,
+    }, { status: 429 })
   }
 
   const stats = await getPlayerAllTimeStats(playerName)
@@ -52,6 +57,7 @@ export async function POST(request: Request) {
     weakness: generated.weakness || 'Vegetarian restaurants',
     catchphrase: generated.catchphrase || 'Fear the sausage!',
     flavorText: generated.flavorText || 'A mighty warrior of the cylindrical meat arts.',
+    weekKey,
   })
 
   return NextResponse.json(card)

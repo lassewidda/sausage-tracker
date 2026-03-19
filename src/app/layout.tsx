@@ -20,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/" className="amiga-menubar__item">ADD MEAL</Link>
             <Link href="/feed" className="amiga-menubar__item">FEED</Link>
             <Link href="/highscore" className="amiga-menubar__item">HIGHSCORE</Link>
+            <Link href="/battle" className="amiga-menubar__item">BATTLE</Link>
             <JerryMode />
             <div style={{ width: '1px', background: 'var(--amiga-dark-grey)', margin: '0 4px' }} />
             <NameSetter />

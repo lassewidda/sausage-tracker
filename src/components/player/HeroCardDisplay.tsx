@@ -30,7 +30,7 @@ interface TypeTheme {
   particle: string
 }
 
-function getTypeTheme(heroType: string): TypeTheme {
+export function getTypeTheme(heroType: string): TypeTheme {
   const type1 = heroType.split('/')[0]?.trim().toUpperCase() ?? ''
   const themes: Record<string, TypeTheme> = {
     'FIRE': {
@@ -142,12 +142,12 @@ function StatBar({ label, value, max, color, theme }: { label: string; value: nu
   )
 }
 
-function PixelAvatar({ card, theme }: { card: HeroCard; stats: Props['stats']; theme: TypeTheme }) {
+export function PixelAvatar({ card, theme, size }: { card: HeroCard; stats?: Props['stats']; theme: TypeTheme; size?: number }) {
   const h = hash(card.playerName)
   const creature = h % 6 // 6 completely different creature archetypes
   const { bodyColor: b, accentColor: a } = theme
   const bg = theme.bg
-  const SIZE = 160
+  const SIZE = size ?? 160
 
   // Each creature is a totally different shape drawn on a 32x32 grid
   return (

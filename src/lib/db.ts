@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry, WeeklySummary, HeroCard } from '@/types'
+import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleStats, BattleState } from '@/types'
 
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
@@ -375,21 +375,37 @@ function rowToSummary(row: any): WeeklySummary {
 
 // ── Hero Cards ────────────────────────────────────────────────
 
-export async function getHeroCard(playerName: string): Promise<HeroCard | null> {
+export async function getHeroCard(playerName: string, weekKey?: string): Promise<HeroCard | null> {
   const sql = getDb()
-  const rows = await sql`
-    SELECT * FROM hero_cards WHERE player_name = ${playerName}
-  `
+  let rows
+  if (weekKey) {
+    rows = await sql`
+      SELECT * FROM hero_cards WHERE player_name = ${playerName} AND week_key = ${weekKey}
+    `
+  } else {
+    rows = await sql`
+      SELECT * FROM hero_cards WHERE player_name = ${playerName} ORDER BY created_at DESC LIMIT 1
+    `
+  }
   await sql.end()
   return rows.length > 0 ? rowToHeroCard(rows[0]) : null
+}
+
+export async function getPlayerDeck(playerName: string): Promise<HeroCard[]> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT * FROM hero_cards WHERE player_name = ${playerName} ORDER BY created_at DESC
+  `
+  await sql.end()
+  return rows.map(rowToHeroCard)
 }
 
 export async function insertHeroCard(data: Omit<HeroCard, 'id' | 'createdAt'>): Promise<HeroCard> {
   const sql = getDb()
   const rows = await sql`
-    INSERT INTO hero_cards (player_name, hero_title, hero_type, hp, attack, defense, speed, special_moves, weakness, catchphrase, flavor_text)
-    VALUES (${data.playerName}, ${data.heroTitle}, ${data.heroType}, ${data.hp}, ${data.attack}, ${data.defense}, ${data.speed}, ${data.specialMoves}, ${data.weakness}, ${data.catchphrase}, ${data.flavorText})
-    ON CONFLICT (player_name) DO UPDATE SET
+    INSERT INTO hero_cards (player_name, hero_title, hero_type, hp, attack, defense, speed, special_moves, weakness, catchphrase, flavor_text, week_key)
+    VALUES (${data.playerName}, ${data.heroTitle}, ${data.heroType}, ${data.hp}, ${data.attack}, ${data.defense}, ${data.speed}, ${data.specialMoves}, ${data.weakness}, ${data.catchphrase}, ${data.flavorText}, ${data.weekKey})
+    ON CONFLICT (player_name, week_key) DO UPDATE SET
       hero_title = EXCLUDED.hero_title, hero_type = EXCLUDED.hero_type,
       hp = EXCLUDED.hp, attack = EXCLUDED.attack, defense = EXCLUDED.defense, speed = EXCLUDED.speed,
       special_moves = EXCLUDED.special_moves, weakness = EXCLUDED.weakness,
@@ -468,8 +484,392 @@ function rowToHeroCard(row: any): HeroCard {
     weakness: row.weakness,
     catchphrase: row.catchphrase,
     flavorText: row.flavor_text,
+    weekKey: row.week_key ?? '',
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
   }
+}
+
+// ── Battles ──────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToBattle(row: any): Battle {
+  return {
+    id: row.id,
+    challenger: row.challenger,
+    opponent: row.opponent,
+    status: row.status,
+    challengerReady: row.challenger_ready,
+    opponentReady: row.opponent_ready,
+    currentTurn: row.current_turn,
+    turnPlayer: row.turn_player,
+    winner: row.winner,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+    updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToDeckCard(row: any): BattleDeckCard {
+  return {
+    id: row.id,
+    battleId: row.battle_id,
+    playerName: row.player_name,
+    cardId: row.card_id,
+    position: row.position,
+    currentHp: row.current_hp,
+    isActive: row.is_active,
+    isKnockedOut: row.is_knocked_out,
+    card: row.hero_title ? rowToHeroCard(row) : undefined,
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToTurn(row: any): BattleTurn {
+  return {
+    id: row.id,
+    battleId: row.battle_id,
+    turnNumber: row.turn_number,
+    attacker: row.attacker,
+    attackerCardId: row.attacker_card_id,
+    defenderCardId: row.defender_card_id,
+    moveUsed: row.move_used,
+    moveDamage: row.move_damage,
+    typeMultiplier: row.type_multiplier,
+    damageDealt: row.damage_dealt,
+    defenderHpAfter: row.defender_hp_after,
+    isKnockout: row.is_knockout,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToBattleStats(row: any): BattleStats {
+  return {
+    playerName: row.player_name,
+    wins: row.wins,
+    losses: row.losses,
+    eloRating: row.elo_rating,
+  }
+}
+
+export async function createBattle(challenger: string): Promise<Battle> {
+  const sql = getDb()
+  // Clean up stale waiting battles older than 1 hour
+  await sql`DELETE FROM battles WHERE status = 'waiting' AND created_at < NOW() - INTERVAL '1 hour'`
+  const rows = await sql`
+    INSERT INTO battles (challenger) VALUES (${challenger}) RETURNING *
+  `
+  await sql.end()
+  return rowToBattle(rows[0])
+}
+
+export async function getOpenBattles(): Promise<Battle[]> {
+  const sql = getDb()
+  // Clean up stale
+  await sql`DELETE FROM battles WHERE status = 'waiting' AND created_at < NOW() - INTERVAL '1 hour'`
+  const rows = await sql`
+    SELECT * FROM battles WHERE status = 'waiting' ORDER BY created_at DESC
+  `
+  await sql.end()
+  return rows.map(rowToBattle)
+}
+
+export async function getPlayerBattles(playerName: string): Promise<Battle[]> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT * FROM battles
+    WHERE (challenger = ${playerName} OR opponent = ${playerName})
+      AND status IN ('selecting', 'battling')
+    ORDER BY updated_at DESC
+  `
+  await sql.end()
+  return rows.map(rowToBattle)
+}
+
+export async function joinBattle(battleId: string, opponent: string): Promise<Battle> {
+  const sql = getDb()
+  const rows = await sql`
+    UPDATE battles
+    SET opponent = ${opponent}, status = 'selecting', updated_at = NOW()
+    WHERE id = ${battleId} AND status = 'waiting' AND challenger != ${opponent}
+    RETURNING *
+  `
+  await sql.end()
+  if (rows.length === 0) throw new Error('Battle not available')
+  return rowToBattle(rows[0])
+}
+
+export async function getBattleState(battleId: string): Promise<BattleState> {
+  const sql = getDb()
+  const [battleRows, deckRows, turnRows] = await Promise.all([
+    sql`SELECT * FROM battles WHERE id = ${battleId}`,
+    sql`
+      SELECT d.*, h.player_name, h.hero_title, h.hero_type, h.hp, h.attack, h.defense, h.speed,
+             h.special_moves, h.weakness, h.catchphrase, h.flavor_text, h.week_key, h.created_at
+      FROM battle_decks d
+      JOIN hero_cards h ON h.id = d.card_id
+      WHERE d.battle_id = ${battleId}
+      ORDER BY d.player_name, d.position
+    `,
+    sql`
+      SELECT * FROM battle_turns WHERE battle_id = ${battleId} ORDER BY turn_number
+    `,
+  ])
+  await sql.end()
+
+  if (battleRows.length === 0) throw new Error('Battle not found')
+  const battle = rowToBattle(battleRows[0])
+
+  const allDeck = deckRows.map(rowToDeckCard)
+  const challengerDeck = allDeck.filter(d => d.playerName === battle.challenger)
+  const opponentDeck = allDeck.filter(d => d.playerName === battle.opponent)
+
+  return {
+    battle,
+    challengerDeck,
+    opponentDeck,
+    turns: turnRows.map(rowToTurn),
+  }
+}
+
+export async function submitDeck(battleId: string, playerName: string, cardIds: string[]): Promise<void> {
+  const sql = getDb()
+  // Verify cards belong to this player
+  const cards = await sql`
+    SELECT id, hp FROM hero_cards WHERE id = ANY(${cardIds}) AND player_name = ${playerName}
+  `
+  if (cards.length !== cardIds.length) {
+    await sql.end()
+    throw new Error('Invalid cards')
+  }
+
+  // Delete existing deck entries for this player in this battle
+  await sql`DELETE FROM battle_decks WHERE battle_id = ${battleId} AND player_name = ${playerName}`
+
+  // Insert deck cards
+  for (let i = 0; i < cardIds.length; i++) {
+    const card = cards.find(c => c.id === cardIds[i])!
+    await sql`
+      INSERT INTO battle_decks (battle_id, player_name, card_id, position, current_hp, is_active)
+      VALUES (${battleId}, ${playerName}, ${cardIds[i]}, ${i}, ${card.hp}, ${i === 0})
+    `
+  }
+  await sql.end()
+}
+
+export async function markPlayerReady(battleId: string, playerName: string): Promise<Battle> {
+  const sql = getDb()
+  // Mark this player ready
+  await sql`
+    UPDATE battles SET
+      challenger_ready = CASE WHEN challenger = ${playerName} THEN true ELSE challenger_ready END,
+      opponent_ready = CASE WHEN opponent = ${playerName} THEN true ELSE opponent_ready END,
+      updated_at = NOW()
+    WHERE id = ${battleId}
+  `
+  // Check if both ready → start battle
+  const rows = await sql`SELECT * FROM battles WHERE id = ${battleId}`
+  const battle = rowToBattle(rows[0])
+
+  if (battle.challengerReady && battle.opponentReady) {
+    // Determine who goes first based on active cards' speed
+    const deckRows = await sql`
+      SELECT d.player_name, h.speed FROM battle_decks d
+      JOIN hero_cards h ON h.id = d.card_id
+      WHERE d.battle_id = ${battleId} AND d.is_active = true
+    `
+    const challengerSpeed = deckRows.find(r => r.player_name === battle.challenger)?.speed ?? 0
+    const opponentSpeed = deckRows.find(r => r.player_name === battle.opponent)?.speed ?? 0
+
+    const { determineTurnOrder } = await import('./battleEngine')
+    const firstPlayer = determineTurnOrder(
+      { playerName: battle.challenger, speed: challengerSpeed as number },
+      { playerName: battle.opponent!, speed: opponentSpeed as number }
+    )
+
+    const updatedRows = await sql`
+      UPDATE battles SET status = 'battling', current_turn = 1, turn_player = ${firstPlayer}, updated_at = NOW()
+      WHERE id = ${battleId} RETURNING *
+    `
+    await sql.end()
+    return rowToBattle(updatedRows[0])
+  }
+
+  await sql.end()
+  return battle
+}
+
+export async function executeTurn(
+  battleId: string,
+  playerName: string,
+  moveIndex: number
+): Promise<BattleTurn> {
+  const sql = getDb()
+
+  // Get battle state with row lock
+  const battleRows = await sql`SELECT * FROM battles WHERE id = ${battleId} FOR UPDATE`
+  if (battleRows.length === 0) { await sql.end(); throw new Error('Battle not found') }
+  const battle = rowToBattle(battleRows[0])
+
+  if (battle.status !== 'battling') { await sql.end(); throw new Error('Battle not in progress') }
+  if (battle.turnPlayer !== playerName) { await sql.end(); throw new Error('Not your turn') }
+
+  // Get active cards
+  const deckRows = await sql`
+    SELECT d.*, h.player_name, h.hero_title, h.hero_type, h.hp, h.attack, h.defense, h.speed,
+           h.special_moves, h.weakness, h.catchphrase, h.flavor_text, h.week_key, h.created_at
+    FROM battle_decks d
+    JOIN hero_cards h ON h.id = d.card_id
+    WHERE d.battle_id = ${battleId} AND d.is_active = true
+  `
+
+  const attackerDeck = deckRows.find(r => r.player_name === playerName)
+  const defenderName = playerName === battle.challenger ? battle.opponent : battle.challenger
+  const defenderDeck = deckRows.find(r => r.player_name === defenderName)
+
+  if (!attackerDeck || !defenderDeck) { await sql.end(); throw new Error('Missing active cards') }
+
+  const attackerCard = rowToHeroCard(attackerDeck)
+  const defenderCard = rowToHeroCard(defenderDeck)
+
+  const { calculateDamage, checkBattleEnd, determineTurnOrder } = await import('./battleEngine')
+  const result = calculateDamage(attackerCard, defenderCard, moveIndex)
+
+  const newHp = Math.max(0, (defenderDeck.current_hp as number) - result.damage)
+  const isKo = newHp <= 0
+
+  // Update defender HP
+  await sql`
+    UPDATE battle_decks SET current_hp = ${newHp}, is_knocked_out = ${isKo}, is_active = ${!isKo}
+    WHERE id = ${defenderDeck.id}
+  `
+
+  // Record turn
+  const turnRows = await sql`
+    INSERT INTO battle_turns (battle_id, turn_number, attacker, attacker_card_id, defender_card_id,
+      move_used, move_damage, type_multiplier, damage_dealt, defender_hp_after, is_knockout)
+    VALUES (${battleId}, ${battle.currentTurn}, ${playerName}, ${attackerDeck.card_id},
+      ${defenderDeck.card_id}, ${result.moveName}, ${result.baseDamage}, ${result.multiplier},
+      ${result.damage}, ${newHp}, ${isKo})
+    RETURNING *
+  `
+
+  // If KO, activate next card
+  if (isKo) {
+    const nextCard = await sql`
+      SELECT id FROM battle_decks
+      WHERE battle_id = ${battleId} AND player_name = ${defenderName}
+        AND is_knocked_out = false AND is_active = false
+      ORDER BY position LIMIT 1
+    `
+    if (nextCard.length > 0) {
+      await sql`UPDATE battle_decks SET is_active = true WHERE id = ${nextCard[0].id}`
+    }
+  }
+
+  // Check battle end
+  const allDecks = await sql`
+    SELECT * FROM battle_decks WHERE battle_id = ${battleId}
+  `
+  const challengerDeck = allDecks.filter(d => d.player_name === battle.challenger).map(rowToDeckCard)
+  const opponentDeckCards = allDecks.filter(d => d.player_name === battle.opponent).map(rowToDeckCard)
+  const winner = checkBattleEnd(challengerDeck, opponentDeckCards)
+
+  if (winner) {
+    await sql`
+      UPDATE battles SET status = 'finished', winner = ${winner}, updated_at = NOW()
+      WHERE id = ${battleId}
+    `
+    // Update stats
+    const loser = winner === battle.challenger ? battle.opponent! : battle.challenger
+    await updateBattleStatsInternal(sql, winner, loser)
+  } else {
+    // Determine next turn player
+    let nextTurnPlayer: string
+    if (isKo) {
+      // After KO, the attacker gets another turn
+      nextTurnPlayer = playerName
+    } else {
+      nextTurnPlayer = defenderName!
+    }
+
+    // If KO'd and new card activated, recalculate speed order
+    if (isKo) {
+      const activeCards = await sql`
+        SELECT d.player_name, h.speed FROM battle_decks d
+        JOIN hero_cards h ON h.id = d.card_id
+        WHERE d.battle_id = ${battleId} AND d.is_active = true
+      `
+      if (activeCards.length === 2) {
+        const c1 = activeCards.find(r => r.player_name === battle.challenger)
+        const c2 = activeCards.find(r => r.player_name === battle.opponent)
+        if (c1 && c2) {
+          nextTurnPlayer = determineTurnOrder(
+            { playerName: battle.challenger, speed: c1.speed as number },
+            { playerName: battle.opponent!, speed: c2.speed as number }
+          )
+        }
+      }
+    }
+
+    await sql`
+      UPDATE battles SET current_turn = ${battle.currentTurn + 1}, turn_player = ${nextTurnPlayer}, updated_at = NOW()
+      WHERE id = ${battleId}
+    `
+  }
+
+  await sql.end()
+  return rowToTurn(turnRows[0])
+}
+
+async function updateBattleStatsInternal(sql: ReturnType<typeof getDb>, winner: string, loser: string) {
+  // Ensure rows exist
+  await sql`INSERT INTO battle_stats (player_name) VALUES (${winner}) ON CONFLICT DO NOTHING`
+  await sql`INSERT INTO battle_stats (player_name) VALUES (${loser}) ON CONFLICT DO NOTHING`
+
+  const statsRows = await sql`SELECT * FROM battle_stats WHERE player_name IN (${winner}, ${loser})`
+  const winnerStats = statsRows.find(r => r.player_name === winner)
+  const loserStats = statsRows.find(r => r.player_name === loser)
+
+  const { calculateElo } = await import('./battleEngine')
+  const { newWinnerElo, newLoserElo } = calculateElo(
+    (winnerStats?.elo_rating as number) ?? 1000,
+    (loserStats?.elo_rating as number) ?? 1000
+  )
+
+  await sql`UPDATE battle_stats SET wins = wins + 1, elo_rating = ${newWinnerElo} WHERE player_name = ${winner}`
+  await sql`UPDATE battle_stats SET losses = losses + 1, elo_rating = ${newLoserElo} WHERE player_name = ${loser}`
+}
+
+export async function getBattleLeaderboard(): Promise<BattleStats[]> {
+  const sql = getDb()
+  const rows = await sql`SELECT * FROM battle_stats ORDER BY elo_rating DESC`
+  await sql.end()
+  return rows.map(rowToBattleStats)
+}
+
+export async function ensureStarterCards(playerName: string): Promise<void> {
+  const sql = getDb()
+  // Check if starter cards already exist
+  const existing = await sql`
+    SELECT COUNT(*)::int AS count FROM hero_cards
+    WHERE player_name = ${playerName} AND week_key LIKE 'STARTER-%'
+  `
+  if ((existing[0].count as number) >= 5) {
+    await sql.end()
+    return
+  }
+
+  const { getStarterCards } = await import('./battleEngine')
+  const starters = getStarterCards()
+  for (const s of starters) {
+    await sql`
+      INSERT INTO hero_cards (player_name, hero_title, hero_type, hp, attack, defense, speed, special_moves, weakness, catchphrase, flavor_text, week_key)
+      VALUES (${playerName}, ${s.heroTitle}, ${s.heroType}, ${s.hp}, ${s.attack}, ${s.defense}, ${s.speed}, ${s.specialMoves}, ${s.weakness}, ${s.catchphrase}, ${s.flavorText}, ${s.weekKey})
+      ON CONFLICT (player_name, week_key) DO NOTHING
+    `
+  }
+  await sql.end()
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

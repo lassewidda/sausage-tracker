@@ -64,7 +64,66 @@ export interface HeroCard {
   weakness: string
   catchphrase: string
   flavorText: string
+  weekKey: string
   createdAt: string
+}
+
+export type BattleStatus = 'waiting' | 'selecting' | 'battling' | 'finished'
+
+export interface Battle {
+  id: string
+  challenger: string
+  opponent: string | null
+  status: BattleStatus
+  challengerReady: boolean
+  opponentReady: boolean
+  currentTurn: number
+  turnPlayer: string | null
+  winner: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BattleDeckCard {
+  id: string
+  battleId: string
+  playerName: string
+  cardId: string
+  position: number
+  currentHp: number
+  isActive: boolean
+  isKnockedOut: boolean
+  card?: HeroCard
+}
+
+export interface BattleTurn {
+  id: string
+  battleId: string
+  turnNumber: number
+  attacker: string
+  attackerCardId: string
+  defenderCardId: string
+  moveUsed: string
+  moveDamage: number
+  typeMultiplier: number
+  damageDealt: number
+  defenderHpAfter: number
+  isKnockout: boolean
+  createdAt: string
+}
+
+export interface BattleStats {
+  playerName: string
+  wins: number
+  losses: number
+  eloRating: number
+}
+
+export interface BattleState {
+  battle: Battle
+  challengerDeck: BattleDeckCard[]
+  opponentDeck: BattleDeckCard[]
+  turns: BattleTurn[]
 }
 
 export interface WeeklySummary {

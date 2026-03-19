@@ -618,3 +618,51 @@ body {
 .jerry-mode .amiga-screen {
   zoom: 2;
 }
+
+/* =====================
+   BATTLE ANIMATIONS
+   ===================== */
+@keyframes card-enter {
+  0%   { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes attack-lunge {
+  0%   { transform: translateX(0); }
+  40%  { transform: translateX(40px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes attack-lunge-left {
+  0%   { transform: translateX(0); }
+  40%  { transform: translateX(-40px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes hit-shake {
+  0%   { transform: translateX(0); }
+  25%  { transform: translateX(-6px); }
+  50%  { transform: translateX(6px); }
+  75%  { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes damage-float {
+  0%   { transform: translateY(0);    opacity: 1; }
+  100% { transform: translateY(-30px); opacity: 0; }
+}
+
+@keyframes ko-spin {
+  0%   { transform: rotate(0deg) scale(1);   opacity: 1; }
+  100% { transform: rotate(720deg) scale(0); opacity: 0; }
+}
+
+@keyframes victory-pulse {
+  0%, 100% { text-shadow: 0 0 10px rgba(68, 204, 68, 0.4); transform: scale(1); }
+  50%      { text-shadow: 0 0 30px rgba(68, 204, 68, 0.8); transform: scale(1.05); }
+}
+
+@keyframes defeat-fade {
+  0%   { filter: none; }
+  100% { filter: grayscale(1) brightness(0.5); }
+}
