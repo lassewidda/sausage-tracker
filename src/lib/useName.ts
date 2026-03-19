@@ -9,15 +9,16 @@ export function useName() {
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) ?? ''
+    const stored = (localStorage.getItem(STORAGE_KEY) ?? '').toLowerCase()
     setNameState(stored)
+    if (stored) localStorage.setItem(STORAGE_KEY, stored) // normalize existing
     setLoaded(true)
   }, [])
 
   const setName = useCallback((newName: string) => {
-    const trimmed = newName.trim()
-    localStorage.setItem(STORAGE_KEY, trimmed)
-    setNameState(trimmed)
+    const normalized = newName.trim().toLowerCase()
+    localStorage.setItem(STORAGE_KEY, normalized)
+    setNameState(normalized)
   }, [])
 
   return { name, setName, loaded }
