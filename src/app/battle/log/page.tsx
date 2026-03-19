@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import type { BattleLogEntry } from '@/lib/db'
+import { PixelAvatar, getTypeTheme } from '@/components/player/HeroCardDisplay'
+import type { HeroCard } from '@/types'
 
 export default function GameLogPage() {
   const [entries, setEntries] = useState<BattleLogEntry[]>([])
@@ -148,42 +150,60 @@ export default function GameLogPage() {
                             }}>
                               {deck.playerName}{deck.playerName === b.winner ? ' ★' : ''}
                             </div>
-                            {deck.cards.map((card, i) => (
-                              <div key={i} style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: '3px 0',
-                                borderBottom: i < deck.cards.length - 1 ? '1px solid #222' : 'none',
-                                opacity: card.isKnockedOut ? 0.4 : 1,
-                              }}>
-                                <div>
+                            {deck.cards.map((card, i) => {
+                              const theme = getTypeTheme(card.heroType)
+                              const fakeCard = { playerName: card.playerName, heroTitle: card.heroTitle, heroType: card.heroType } as HeroCard
+                              return (
+                                <div key={i} style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  padding: '4px 0',
+                                  borderBottom: i < deck.cards.length - 1 ? '1px solid #222' : 'none',
+                                  opacity: card.isKnockedOut ? 0.35 : 1,
+                                }}>
+                                  <div style={{
+                                    flexShrink: 0,
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '4px',
+                                    overflow: 'hidden',
+                                    background: theme.gradient,
+                                    border: `1px solid ${card.isKnockedOut ? '#FF444466' : theme.border}`,
+                                  }}>
+                                    <PixelAvatar card={fakeCard} theme={theme} size={32} />
+                                  </div>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{
+                                      fontFamily: 'var(--font-pixel)',
+                                      fontSize: '7px',
+                                      color: card.isKnockedOut ? '#FF4444' : '#ccc',
+                                      textDecoration: card.isKnockedOut ? 'line-through' : 'none',
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                    }}>
+                                      {card.heroTitle}
+                                    </div>
+                                    <div style={{
+                                      fontFamily: 'var(--font-pixel)',
+                                      fontSize: '6px',
+                                      color: '#666',
+                                    }}>
+                                      {card.heroType}
+                                    </div>
+                                  </div>
                                   <span style={{
                                     fontFamily: 'var(--font-pixel)',
                                     fontSize: '7px',
-                                    color: card.isKnockedOut ? '#FF4444' : '#ccc',
-                                    textDecoration: card.isKnockedOut ? 'line-through' : 'none',
+                                    flexShrink: 0,
+                                    color: card.isKnockedOut ? '#FF4444' : card.currentHp === card.hp ? '#44CC44' : '#FF8800',
                                   }}>
-                                    {card.heroTitle}
-                                  </span>
-                                  <span style={{
-                                    fontFamily: 'var(--font-pixel)',
-                                    fontSize: '6px',
-                                    color: '#666',
-                                    marginLeft: '4px',
-                                  }}>
-                                    {card.heroType}
+                                    {card.isKnockedOut ? 'KO' : `${card.currentHp}/${card.hp}`}
                                   </span>
                                 </div>
-                                <span style={{
-                                  fontFamily: 'var(--font-pixel)',
-                                  fontSize: '7px',
-                                  color: card.isKnockedOut ? '#FF4444' : card.currentHp === card.hp ? '#44CC44' : '#FF8800',
-                                }}>
-                                  {card.isKnockedOut ? 'KO' : `${card.currentHp}/${card.hp}`}
-                                </span>
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
                         ))}
                       </div>

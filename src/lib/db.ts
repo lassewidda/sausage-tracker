@@ -621,6 +621,7 @@ export interface BattleLogEntry {
   decks: {
     playerName: string
     cards: {
+      playerName: string
       heroTitle: string
       heroType: string
       hp: number
@@ -662,6 +663,7 @@ export async function getFinishedBattlesWithDecks(): Promise<BattleLogEntry[]> {
       playerName,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cards: cards.map((c: any) => ({
+        playerName: playerName,
         heroTitle: c.hero_title as string,
         heroType: c.hero_type as string,
         hp: c.hp as number,
