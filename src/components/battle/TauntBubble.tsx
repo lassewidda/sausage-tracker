@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import type { BattleTaunt } from '@/types'
 
 interface Props {
@@ -16,7 +16,24 @@ interface VisibleTaunt extends BattleTaunt {
 export function TauntBubble({ taunts, playerName, challengerName }: Props) {
   const [current, setCurrent] = useState<VisibleTaunt | null>(null)
   const seenIds = useRef(new Set<string>())
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([])
+  const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const removeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const showTaunt = useCallback((taunt: BattleTaunt) => {
+    // Clear any existing timers
+    if (fadeTimer.current) clearTimeout(fadeTimer.current)
+    if (removeTimer.current) clearTimeout(removeTimer.current)
+
+    setCurrent({ ...taunt, fadeOut: false })
+
+    fadeTimer.current = setTimeout(() => {
+      setCurrent(prev => prev?.id === taunt.id ? { ...prev, fadeOut: true } : prev)
+    }, 8000)
+
+    removeTimer.current = setTimeout(() => {
+      setCurrent(prev => prev?.id === taunt.id ? null : prev)
+    }, 10000)
+  }, [])
 
   useEffect(() => {
     // Find the newest taunt we haven't shown yet
@@ -26,30 +43,22 @@ export function TauntBubble({ taunts, playerName, challengerName }: Props) {
     // Mark all current taunts as seen
     for (const t of taunts) seenIds.current.add(t.id)
 
-    // Clear existing timers
-    for (const t of timers.current) clearTimeout(t)
-    timers.current = []
+    showTaunt(newest)
+  }, [taunts, showTaunt])
 
-    // Show only the latest taunt
-    setCurrent({ ...newest, fadeOut: false })
-
-    // Fade out after 8 seconds, remove after 10
-    timers.current.push(
-      setTimeout(() => setCurrent(prev => prev?.id === newest.id ? { ...prev, fadeOut: true } : prev), 8000),
-      setTimeout(() => setCurrent(prev => prev?.id === newest.id ? null : prev), 10000),
-    )
-
+  // Cleanup on unmount only
+  useEffect(() => {
     return () => {
-      for (const t of timers.current) clearTimeout(t)
+      if (fadeTimer.current) clearTimeout(fadeTimer.current)
+      if (removeTimer.current) clearTimeout(removeTimer.current)
     }
-  }, [taunts])
+  }, [])
 
   if (!current) return null
 
   const isMe = current.playerName === playerName
   const isChallenger = current.playerName === challengerName
   const side = isChallenger ? 'left' : 'right'
-  // Detect emoji-only messages (no letters/digits)
   const isEmojiOnly = !/[a-zA-Z0-9]/.test(current.message) && current.message.trim().length > 0
 
   return (
