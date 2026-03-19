@@ -49,6 +49,8 @@ export function TauntBubble({ taunts, playerName, challengerName }: Props) {
   const isMe = current.playerName === playerName
   const isChallenger = current.playerName === challengerName
   const side = isChallenger ? 'left' : 'right'
+  // Detect emoji-only messages (no letters/digits)
+  const isEmojiOnly = !/[a-zA-Z0-9]/.test(current.message) && current.message.trim().length > 0
 
   return (
     <div
@@ -82,7 +84,7 @@ export function TauntBubble({ taunts, playerName, challengerName }: Props) {
         }}>
           {current.playerName}
         </div>
-        {current.message}
+        <span style={isEmojiOnly ? { fontSize: '24px', lineHeight: '1.2' } : undefined}>{current.message}</span>
         {/* Speech bubble tail */}
         <div style={{
           position: 'absolute',
