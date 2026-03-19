@@ -653,11 +653,17 @@ export async function submitDeck(battleId: string, playerName: string, cardIds: 
   const sql = getDb()
   // Verify cards belong to this player
   const cards = await sql`
-    SELECT id, hp FROM hero_cards WHERE id = ANY(${cardIds}) AND player_name = ${playerName}
+    SELECT id, hp, week_key FROM hero_cards WHERE id = ANY(${cardIds}) AND player_name = ${playerName}
   `
   if (cards.length !== cardIds.length) {
     await sql.end()
     throw new Error('Invalid cards')
+  }
+  // Must include at least 1 starter card
+  const hasStarter = cards.some(c => (c.week_key as string).startsWith('STARTER'))
+  if (!hasStarter) {
+    await sql.end()
+    throw new Error('Must include at least 1 starter card')
   }
 
   // Delete existing deck entries for this player in this battle

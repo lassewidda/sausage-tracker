@@ -31,11 +31,30 @@ export function BattleCard({ deckCard, isAttacking, isHit, isKo, side }: Props) 
       borderRadius: '8px',
       padding: '8px',
       width: '160px',
+      position: 'relative' as const,
       opacity: deckCard.isKnockedOut ? 0.4 : 1,
       animation,
       transition: 'opacity 0.3s',
       boxShadow: deckCard.isKnockedOut ? 'none' : `0 0 12px ${theme.glow}`,
     }}>
+      {/* Starter badge */}
+      {card.weekKey.startsWith('STARTER') && (
+        <div style={{
+          position: 'absolute',
+          top: '4px',
+          left: '4px',
+          background: '#555',
+          color: '#ffd700',
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '6px',
+          padding: '2px 4px',
+          borderRadius: '2px',
+          zIndex: 2,
+          lineHeight: 1,
+        }}>
+          ★
+        </div>
+      )}
       {/* Name */}
       <div style={{
         fontFamily: 'var(--font-pixel)',

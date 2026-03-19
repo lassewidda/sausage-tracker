@@ -10,8 +10,8 @@ export async function POST(
   const playerName = (body.playerName || '').toLowerCase()
   const cardIds = body.cardIds
 
-  if (!playerName || !Array.isArray(cardIds) || cardIds.length !== 3) {
-    return NextResponse.json({ error: 'Must select exactly 3 cards' }, { status: 400 })
+  if (!playerName || !Array.isArray(cardIds) || cardIds.length !== 4) {
+    return NextResponse.json({ error: 'Must select exactly 4 cards (including 1 starter)' }, { status: 400 })
   }
 
   try {
