@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import type { Battle, HeroCard } from '@/types'
 import { useName } from '@/lib/useName'
 
@@ -84,6 +85,17 @@ export function BattleLobby() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Leaderboard link */}
+      <div style={{ textAlign: 'right' }}>
+        <Link
+          href="/battle/leaderboard"
+          className="amiga-btn"
+          style={{ fontFamily: 'var(--font-pixel)', fontSize: '8px', textDecoration: 'none' }}
+        >
+          LEADERBOARD
+        </Link>
+      </div>
+
       {/* Your deck collection */}
       <div className="amiga-window">
         <div className="amiga-window__titlebar">
