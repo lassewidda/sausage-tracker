@@ -15,10 +15,12 @@ export async function POST(
   }
 
   try {
+    console.log(`[deck] battleId=${id} player=${playerName} cards=${cardIds.join(',')}`)
     await submitDeck(id, playerName, cardIds)
     const battle = await markPlayerReady(id, playerName)
     return NextResponse.json(battle)
   } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 400 })
+    console.error(`[deck] FAILED battleId=${id} player=${playerName}:`, (e as Error).message)
+    return NextResponse.json({ error: (e as Error).message, player: playerName, battleId: id }, { status: 400 })
   }
 }

@@ -35,11 +35,17 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
     if (!name) return
     setIsReady(true)
     try {
-      await fetch(`/api/battle/${id}/deck`, {
+      const res = await fetch(`/api/battle/${id}/deck`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerName: name, cardIds }),
       })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        console.error('Deck submit failed:', err)
+        setIsReady(false)
+        return
+      }
       refetch()
     } catch {
       setIsReady(false)
