@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import type { BattleTurn } from '@/types'
 
@@ -206,6 +207,16 @@ export function BattleResult({ winner, playerName, battleId, turns }: Props) {
   const isWinner = winner === playerName
   const isDraw = winner === 'draw'
   const seed = hash(battleId)
+  const [summary, setSummary] = useState<string | null>(null)
+  const [loadingSummary, setLoadingSummary] = useState(true)
+
+  useEffect(() => {
+    fetch(`/api/battle/${battleId}/summary`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.summary) setSummary(data.summary) })
+      .catch(() => {})
+      .finally(() => setLoadingSummary(false))
+  }, [battleId])
 
   // Pick deterministic message
   const messages = isDraw ? DRAW_MESSAGES : isWinner ? VICTORY_MESSAGES : DEFEAT_MESSAGES
@@ -294,6 +305,55 @@ export function BattleResult({ winner, playerName, battleId, turns }: Props) {
         <div className="amiga-badge">
           {myKos} KOs
         </div>
+      </div>
+
+      {/* AI Battle Summary */}
+      <div style={{
+        position: 'relative',
+        zIndex: 20,
+        width: '100%',
+        maxWidth: '360px',
+        background: 'rgba(0,0,0,0.4)',
+        borderRadius: '8px',
+        padding: '14px',
+        border: '1px solid #44444466',
+        marginTop: '8px',
+      }}>
+        <div style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '8px',
+          color: 'var(--crt-amber)',
+          marginBottom: '8px',
+          textTransform: 'uppercase',
+        }}>
+          BATTLE RECAP
+        </div>
+        {loadingSummary ? (
+          <div className="amiga-blink" style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '8px',
+            color: '#888',
+          }}>
+            GENERATING RECAP...
+          </div>
+        ) : summary ? (
+          <div style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '9px',
+            lineHeight: '2',
+            color: '#ccc',
+          }}>
+            {summary}
+          </div>
+        ) : (
+          <div style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '8px',
+            color: '#666',
+          }}>
+            RECAP UNAVAILABLE
+          </div>
+        )}
       </div>
 
       {/* Navigation */}

@@ -80,6 +80,7 @@ export interface Battle {
   currentTurn: number
   turnPlayer: string | null
   winner: string | null
+  summary: string | null
   createdAt: string
   updatedAt: string
 }

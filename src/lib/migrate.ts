@@ -165,6 +165,9 @@ async function migrate() {
 
   await sql`CREATE INDEX IF NOT EXISTS idx_battle_taunts_battle ON battle_taunts(battle_id, created_at DESC)`
 
+  // Add summary column to battles
+  await sql`ALTER TABLE battles ADD COLUMN IF NOT EXISTS summary TEXT`
+
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_week_key ON meals(week_key DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_created_at ON meals(created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_player_name ON meals(player_name)`

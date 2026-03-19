@@ -503,6 +503,7 @@ function rowToBattle(row: any): Battle {
     currentTurn: row.current_turn,
     turnPlayer: row.turn_player,
     winner: row.winner,
+    summary: row.summary ?? null,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
     updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
   }
@@ -595,6 +596,81 @@ export async function getPlayerBattles(playerName: string): Promise<Battle[]> {
   `
   await sql.end()
   return rows.map(rowToBattle)
+}
+
+export async function saveBattleSummary(battleId: string, summary: string): Promise<void> {
+  const sql = getDb()
+  await sql`UPDATE battles SET summary = ${summary} WHERE id = ${battleId}`
+  await sql.end()
+}
+
+export async function getFinishedBattles(): Promise<Battle[]> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT * FROM battles
+    WHERE status = 'finished'
+    ORDER BY updated_at DESC
+    LIMIT 50
+  `
+  await sql.end()
+  return rows.map(rowToBattle)
+}
+
+export interface BattleLogEntry {
+  battle: Battle
+  decks: {
+    playerName: string
+    cards: {
+      heroTitle: string
+      heroType: string
+      hp: number
+      currentHp: number
+      isKnockedOut: boolean
+    }[]
+  }[]
+}
+
+export async function getFinishedBattlesWithDecks(): Promise<BattleLogEntry[]> {
+  const sql = getDb()
+  const [battleRows, deckRows] = await Promise.all([
+    sql`SELECT * FROM battles WHERE status = 'finished' ORDER BY updated_at DESC LIMIT 50`,
+    sql`
+      SELECT d.battle_id, d.player_name, d.current_hp, d.is_knocked_out, d.position,
+             h.hero_title, h.hero_type, h.hp
+      FROM battle_decks d
+      JOIN hero_cards h ON h.id = d.card_id
+      JOIN battles b ON b.id = d.battle_id
+      WHERE b.status = 'finished'
+      ORDER BY d.player_name, d.position
+    `,
+  ])
+  await sql.end()
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const decksByBattle = new Map<string, Map<string, any[]>>()
+  for (const row of deckRows) {
+    if (!decksByBattle.has(row.battle_id as string)) decksByBattle.set(row.battle_id as string, new Map())
+    const playerMap = decksByBattle.get(row.battle_id as string)!
+    if (!playerMap.has(row.player_name as string)) playerMap.set(row.player_name as string, [])
+    playerMap.get(row.player_name as string)!.push(row)
+  }
+
+  return battleRows.map(row => {
+    const battle = rowToBattle(row)
+    const playerMap = decksByBattle.get(battle.id) ?? new Map()
+    const decks = Array.from(playerMap.entries()).map(([playerName, cards]) => ({
+      playerName,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      cards: cards.map((c: any) => ({
+        heroTitle: c.hero_title as string,
+        heroType: c.hero_type as string,
+        hp: c.hp as number,
+        currentHp: c.current_hp as number,
+        isKnockedOut: c.is_knocked_out as boolean,
+      })),
+    }))
+    return { battle, decks }
+  })
 }
 
 export async function joinBattle(battleId: string, opponent: string): Promise<Battle> {

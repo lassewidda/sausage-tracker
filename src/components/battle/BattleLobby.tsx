@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Battle, HeroCard } from '@/types'
 import { useName } from '@/lib/useName'
+import { CardDetail } from './CardDetail'
 
 function getCurrentWeekKey(): string {
   const d = new Date()
@@ -29,6 +30,7 @@ export function BattleLobby() {
   const [deck, setDeck] = useState<HeroCard[]>([])
   const [loading, setLoading] = useState(false)
   const [hasMeals, setHasMeals] = useState(false)
+  const [selectedCard, setSelectedCard] = useState<HeroCard | null>(null)
 
   const fetchLobby = useCallback(async () => {
     if (!name) return
@@ -104,8 +106,15 @@ export function BattleLobby() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Leaderboard link */}
-      <div style={{ textAlign: 'right' }}>
+      {/* Links */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+        <Link
+          href="/battle/log"
+          className="amiga-btn"
+          style={{ fontFamily: 'var(--font-pixel)', fontSize: '8px', textDecoration: 'none' }}
+        >
+          GAME LOG
+        </Link>
         <Link
           href="/battle/leaderboard"
           className="amiga-btn"
@@ -175,13 +184,14 @@ export function BattleLobby() {
               {deck.map((card) => {
                 const isStarter = card.weekKey.startsWith('STARTER')
                 return (
-                  <div key={card.id} style={{
+                  <div key={card.id} onClick={() => setSelectedCard(card)} style={{
                     background: '#1a1a1a',
                     border: '2px solid #333',
                     borderRadius: '4px',
                     padding: '6px',
                     minWidth: '100px',
                     flexShrink: 0,
+                    cursor: 'pointer',
                   }}>
                     <div style={{
                       fontFamily: 'var(--font-pixel)',
@@ -329,6 +339,10 @@ export function BattleLobby() {
           )}
         </div>
       </div>
+
+      {selectedCard && (
+        <CardDetail card={selectedCard} onClose={() => setSelectedCard(null)} />
+      )}
     </div>
   )
 }

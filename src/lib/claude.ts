@@ -185,6 +185,51 @@ Include observations about their specific sausage choices and quantities. Commen
   return block.text.trim()
 }
 
+export async function generateBattleSummary(data: {
+  challenger: string
+  opponent: string
+  winner: string | null
+  turns: {
+    turnNumber: number
+    attacker: string
+    attackerCard: string
+    defenderCard: string
+    moveUsed: string
+    damageDealt: number
+    typeMultiplier: number
+    defenderHpAfter: number
+    isKnockout: boolean
+  }[]
+}): Promise<string> {
+  const client = getClient()
+
+  const turnLog = data.turns.map(t => {
+    const multi = t.typeMultiplier > 1 ? ' (SUPER EFFECTIVE!)' : t.typeMultiplier < 1 ? ' (not very effective)' : ''
+    const ko = t.isKnockout ? ' — KNOCKOUT!' : ''
+    return `Turn ${t.turnNumber}: ${t.attacker}'s ${t.attackerCard} used ${t.moveUsed} on ${t.defenderCard} → ${t.damageDealt} damage${multi}${ko} (${t.defenderHpAfter} HP left)`
+  }).join('\n')
+
+  const prompt = `Write a dramatic, funny battle recap for a sausage-themed Pokémon-style card game called "Wiener Battle".
+
+BATTLE: ${data.challenger.toUpperCase()} vs ${data.opponent.toUpperCase()}
+WINNER: ${data.winner ? data.winner.toUpperCase() : 'DRAW'}
+
+TURN-BY-TURN LOG:
+${turnLog}
+
+Write a 3-5 sentence dramatic sports-announcer-style recap of this battle. Be funny, use sausage puns, reference specific moves and knockouts from the log. Write like a breathless esports commentator crossed with a hot dog vendor. Keep it punchy and entertaining. No markdown formatting.`
+
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 300,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  const block = message.content.find((b) => b.type === 'text')
+  if (!block || block.type !== 'text') return 'THE BATTLE WAS TOO INTENSE TO DESCRIBE.'
+  return block.text.trim()
+}
+
 export async function analyzeSausages(imageUrl: string): Promise<AnalysisResult> {
   const client = getClient()
 
