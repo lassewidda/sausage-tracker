@@ -174,6 +174,7 @@ export interface PlayerItem {
   playerName: string
   itemKey: string
   obtainedAt: string
+  usedAt: string | null
 }
 
 export interface BattleEffect {

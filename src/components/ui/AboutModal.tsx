@@ -54,7 +54,6 @@ export function AboutModal() {
               width: 'calc(100% - 32px)',
               minWidth: 0,
               animation: 'card-enter 0.3s steps(4)',
-              overflow: 'hidden',
             }}
           >
             <div className="amiga-window__titlebar">
@@ -66,6 +65,7 @@ export function AboutModal() {
               overflowY: 'auto',
               overflowX: 'hidden',
               maxHeight: '70vh',
+              wordBreak: 'break-word',
             }}>
               <p style={{
                 fontFamily: 'var(--font-pixel)',

@@ -171,6 +171,9 @@ async function migrate() {
   // Add switch_player column for post-KO card selection
   await sql`ALTER TABLE battles ADD COLUMN IF NOT EXISTS switch_player TEXT`
 
+  // Add used_at column for item cooldowns (null = available, set = on 3-day cooldown)
+  await sql`ALTER TABLE player_items ADD COLUMN IF NOT EXISTS used_at TIMESTAMPTZ`
+
   // Player items (inventory) table
   await sql`
     CREATE TABLE IF NOT EXISTS player_items (

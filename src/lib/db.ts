@@ -553,6 +553,7 @@ function rowToPlayerItem(row: any): PlayerItem {
     playerName: row.player_name,
     itemKey: row.item_key,
     obtainedAt: row.obtained_at instanceof Date ? row.obtained_at.toISOString() : row.obtained_at,
+    usedAt: row.used_at ? (row.used_at instanceof Date ? row.used_at.toISOString() : row.used_at) : null,
   }
 }
 
@@ -869,11 +870,14 @@ export async function executeTurn(
 
   // ── ITEM PATH ─────────────────────────────────────────────
   if (itemId && moveIndex === null) {
-    // Validate item ownership and consume it
+    // Validate item ownership, check cooldown, and put on 3-day cooldown
     const consumed = await sql`
-      DELETE FROM player_items WHERE id = ${itemId} AND player_name = ${playerName} RETURNING item_key
+      UPDATE player_items SET used_at = NOW()
+      WHERE id = ${itemId} AND player_name = ${playerName}
+        AND (used_at IS NULL OR used_at < NOW() - INTERVAL '3 days')
+      RETURNING item_key
     `
-    if (consumed.length === 0) { await sql.end(); throw new Error('Item not found or not yours') }
+    if (consumed.length === 0) { await sql.end(); throw new Error('Item not found, not yours, or on cooldown') }
 
     const itemKey = consumed[0].item_key as string
     const item = getItemDefinition(itemKey)
@@ -1248,7 +1252,10 @@ export async function addPlayerItem(playerName: string, itemKey: string): Promis
 export async function consumePlayerItem(itemId: string, playerName: string): Promise<boolean> {
   const sql = getDb()
   const rows = await sql`
-    DELETE FROM player_items WHERE id = ${itemId} AND player_name = ${playerName} RETURNING id
+    UPDATE player_items SET used_at = NOW()
+    WHERE id = ${itemId} AND player_name = ${playerName}
+      AND (used_at IS NULL OR used_at < NOW() - INTERVAL '3 days')
+    RETURNING id
   `
   await sql.end()
   return rows.length > 0

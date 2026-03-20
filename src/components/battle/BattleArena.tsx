@@ -350,6 +350,7 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
                     definition={item.definition!}
                     disabled={submitting || !isMyTurn}
                     onUse={handleUseItem}
+                    usedAt={item.usedAt}
                   />
                 ))
               )}
