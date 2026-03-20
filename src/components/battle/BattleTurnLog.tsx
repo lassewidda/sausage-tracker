@@ -23,9 +23,12 @@ export function BattleTurnLog({ turns }: Props) {
       style={{
         maxHeight: '150px',
         overflowY: 'auto',
+        overflowX: 'hidden',
         fontSize: '8px',
         fontFamily: 'var(--font-pixel)',
         lineHeight: '2',
+        overflowWrap: 'anywhere',
+        wordBreak: 'break-word',
       }}
     >
       {turns.length === 0 && (

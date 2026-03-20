@@ -50,18 +50,19 @@ export function ItemButton({ itemId, definition, disabled, onUse, usedAt }: Prop
         gap: '8px',
         borderColor: onCooldown ? '#555' : color,
         borderWidth: '2px',
+        flexWrap: 'wrap',
       }}
     >
       <ItemIcon itemKey={definition.itemKey} rarity={definition.rarity} size={28} />
-      <span style={{ flex: 1, textAlign: 'left', color: onCooldown ? '#555' : color }}>
+      <span style={{ flex: 1, textAlign: 'left', color: onCooldown ? '#555' : color, minWidth: 0, overflowWrap: 'anywhere' }}>
         {definition.name}
       </span>
       {onCooldown ? (
-        <span style={{ color: '#FF6666', fontSize: '7px', textAlign: 'right' }}>
+        <span style={{ color: '#FF6666', fontSize: '7px', textAlign: 'right', flexShrink: 0 }}>
           COOLDOWN {cooldown}
         </span>
       ) : (
-        <span style={{ color: '#aaa', fontSize: '7px', textAlign: 'right' }}>
+        <span style={{ color: '#aaa', fontSize: '7px', width: '100%', paddingLeft: '36px' }}>
           {definition.description}
         </span>
       )}

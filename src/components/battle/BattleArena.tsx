@@ -92,6 +92,8 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
         borderLeft: '2px solid var(--bevel-shadow)',
         borderRight: '2px solid var(--bevel-light)',
         borderBottom: '2px solid var(--bevel-light)',
+        overflowWrap: 'anywhere',
+        wordBreak: 'break-word',
       }}>
         {isAwaitingSwitch
           ? (isMySwitchTurn ? 'YOUR CARD WAS KO\'D — CHOOSE NEXT CARD!' : `${battle.switchPlayer?.toUpperCase()} IS CHOOSING NEXT CARD...`)
@@ -249,10 +251,12 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
               }}
               style={{
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '8px 12px',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                padding: '8px 10px',
                 fontSize: '8px',
+                gap: '4px',
+                width: '100%',
               }}
             >
               <span style={{ fontFamily: 'var(--font-pixel)' }}>
@@ -261,8 +265,9 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
               <span style={{
                 fontFamily: 'var(--font-pixel)',
                 display: 'flex',
-                gap: '8px',
+                gap: '6px',
                 fontSize: '7px',
+                flexWrap: 'wrap',
               }}>
                 <span style={{ color: '#888' }}>{c.card?.heroType}</span>
                 <span style={{ color: '#44CC44' }}>HP {c.currentHp}/{c.card?.hp}</span>
