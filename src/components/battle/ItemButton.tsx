@@ -1,6 +1,7 @@
 'use client'
 
 import type { ItemDefinition } from '@/types'
+import { ItemIcon } from './ItemIcon'
 
 const RARITY_COLORS: Record<string, string> = {
   common: '#888888',
@@ -25,17 +26,17 @@ export function ItemButton({ itemId, definition, disabled, onUse }: Props) {
       onClick={() => onUse(itemId)}
       style={{
         display: 'flex',
-        justifyContent: 'space-between',
         alignItems: 'center',
         width: '100%',
         fontSize: '8px',
-        padding: '6px 10px',
+        padding: '4px 8px',
         opacity: disabled ? 0.35 : 1,
         gap: '8px',
         borderColor: color,
         borderWidth: '2px',
       }}
     >
+      <ItemIcon itemKey={definition.itemKey} rarity={definition.rarity} size={28} />
       <span style={{ flex: 1, textAlign: 'left', color }}>{definition.name}</span>
       <span style={{ color: '#aaa', fontSize: '7px', textAlign: 'right' }}>
         {definition.description}

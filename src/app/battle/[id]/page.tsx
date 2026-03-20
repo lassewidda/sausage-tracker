@@ -87,6 +87,18 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
     } catch { /* ignore */ }
   }, [id, name, refetch, fetchInventory])
 
+  const handleSwitch = useCallback(async (deckCardId: string) => {
+    if (!name) return
+    try {
+      await fetch(`/api/battle/${id}/switch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerName: name, deckCardId }),
+      })
+      refetch()
+    } catch { /* ignore */ }
+  }, [id, name, refetch])
+
   if (!name) {
     return (
       <div className="page-content">
@@ -217,12 +229,13 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
           )}
 
           {/* Battle in progress */}
-          {battle.status === 'battling' && (
+          {(battle.status === 'battling' || battle.status === 'awaiting_switch') && (
             <BattleArena
               state={state}
               playerName={name}
               onMove={handleMove}
               onUseItem={handleUseItem}
+              onSwitch={handleSwitch}
               inventory={inventory}
             />
           )}

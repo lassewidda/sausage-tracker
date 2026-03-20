@@ -9,6 +9,7 @@ import { useName } from '@/lib/useName'
 import { Button } from '@/components/amiga/Button'
 import { AnalysisResult } from './AnalysisResult'
 import { VictorySprite } from '@/components/ui/VictorySprite'
+import { ItemIcon } from '@/components/battle/ItemIcon'
 
 export function UploadZone() {
   const router = useRouter()
@@ -166,6 +167,9 @@ export function UploadZone() {
               <span className="amiga-window__title">ITEM FOUND!</span>
             </div>
             <div className="amiga-window__body" style={{ textAlign: 'center', padding: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                <ItemIcon itemKey={itemDrop.itemKey} rarity={itemDrop.rarity} size={48} />
+              </div>
               <div style={{
                 fontFamily: 'var(--font-pixel)',
                 fontSize: '11px',

@@ -19,10 +19,11 @@ interface Props {
   playerName: string
   onMove: (moveIndex: number) => void
   onUseItem: (itemId: string) => void
+  onSwitch: (deckCardId: string) => void
   inventory: InventoryItem[]
 }
 
-export function BattleArena({ state, playerName, onMove, onUseItem, inventory }: Props) {
+export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, inventory }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState<'moves' | 'items'>('moves')
   const { battle, challengerDeck, opponentDeck, turns, taunts, effects } = state
@@ -31,6 +32,8 @@ export function BattleArena({ state, playerName, onMove, onUseItem, inventory }:
   const myDeck = isChallenger ? challengerDeck : opponentDeck
   const theirDeck = isChallenger ? opponentDeck : challengerDeck
   const isMyTurn = battle.turnPlayer === playerName
+  const isAwaitingSwitch = battle.status === 'awaiting_switch'
+  const isMySwitchTurn = isAwaitingSwitch && battle.switchPlayer === playerName
 
   const myActive = myDeck.find(c => c.isActive)
   const theirActive = theirDeck.find(c => c.isActive)
@@ -82,7 +85,7 @@ export function BattleArena({ state, playerName, onMove, onUseItem, inventory }:
         textAlign: 'center',
         fontFamily: 'var(--font-pixel)',
         fontSize: '10px',
-        color: isMyTurn ? 'var(--crt-amber)' : 'var(--amiga-grey)',
+        color: (isMyTurn || isMySwitchTurn) ? 'var(--crt-amber)' : 'var(--amiga-grey)',
         padding: '8px',
         background: 'var(--amiga-black)',
         borderTop: '2px solid var(--bevel-shadow)',
@@ -90,7 +93,9 @@ export function BattleArena({ state, playerName, onMove, onUseItem, inventory }:
         borderRight: '2px solid var(--bevel-light)',
         borderBottom: '2px solid var(--bevel-light)',
       }}>
-        {isMyTurn ? 'YOUR TURN — CHOOSE A MOVE!' : `WAITING FOR ${battle.turnPlayer?.toUpperCase()}...`}
+        {isAwaitingSwitch
+          ? (isMySwitchTurn ? 'YOUR CARD WAS KO\'D — CHOOSE NEXT CARD!' : `${battle.switchPlayer?.toUpperCase()} IS CHOOSING NEXT CARD...`)
+          : (isMyTurn ? 'YOUR TURN — CHOOSE A MOVE!' : `WAITING FOR ${battle.turnPlayer?.toUpperCase()}...`)}
         <span style={{ color: '#666', marginLeft: '12px' }}>TURN {battle.currentTurn}</span>
       </div>
 
@@ -213,8 +218,65 @@ export function BattleArena({ state, playerName, onMove, onUseItem, inventory }:
         </div>
       )}
 
+      {/* Card switch selection */}
+      {isMySwitchTurn && (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          padding: '12px',
+          background: 'rgba(255, 136, 0, 0.1)',
+          border: '2px solid var(--amiga-orange)',
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '9px',
+            color: 'var(--amiga-orange)',
+            textAlign: 'center',
+          }}>
+            SEND OUT WHICH CARD?
+          </div>
+          {myDeck.filter(c => !c.isKnockedOut && !c.isActive).map(c => (
+            <button
+              key={c.id}
+              className="amiga-btn"
+              disabled={submitting}
+              onClick={() => {
+                if (submitting) return
+                setSubmitting(true)
+                onSwitch(c.id)
+                setTimeout(() => setSubmitting(false), 500)
+              }}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '8px 12px',
+                fontSize: '8px',
+              }}
+            >
+              <span style={{ fontFamily: 'var(--font-pixel)' }}>
+                {c.card?.heroTitle ?? 'Unknown'}
+              </span>
+              <span style={{
+                fontFamily: 'var(--font-pixel)',
+                display: 'flex',
+                gap: '8px',
+                fontSize: '7px',
+              }}>
+                <span style={{ color: '#888' }}>{c.card?.heroType}</span>
+                <span style={{ color: '#44CC44' }}>HP {c.currentHp}/{c.card?.hp}</span>
+                <span style={{ color: '#FF8800' }}>ATK {c.card?.attack}</span>
+                <span style={{ color: '#4488FF' }}>DEF {c.card?.defense}</span>
+                <span style={{ color: '#FFDD00' }}>SPD {c.card?.speed}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Move/Item buttons */}
-      {isMyTurn && myActive?.card && (
+      {isMyTurn && !isAwaitingSwitch && myActive?.card && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {/* Tab toggle */}
           <div style={{ display: 'flex', gap: '4px' }}>
@@ -297,7 +359,7 @@ export function BattleArena({ state, playerName, onMove, onUseItem, inventory }:
       )}
 
       {/* Type matchup hint */}
-      {isMyTurn && myActive?.card && theirActive?.card && (
+      {isMyTurn && !isAwaitingSwitch && myActive?.card && theirActive?.card && (
         <div style={{
           fontFamily: 'var(--font-pixel)',
           fontSize: '6px',

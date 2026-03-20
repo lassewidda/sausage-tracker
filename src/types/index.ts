@@ -68,7 +68,7 @@ export interface HeroCard {
   createdAt: string
 }
 
-export type BattleStatus = 'waiting' | 'selecting' | 'battling' | 'finished'
+export type BattleStatus = 'waiting' | 'selecting' | 'battling' | 'awaiting_switch' | 'finished'
 
 export interface Battle {
   id: string
@@ -81,6 +81,7 @@ export interface Battle {
   turnPlayer: string | null
   winner: string | null
   summary: string | null
+  switchPlayer: string | null
   createdAt: string
   updatedAt: string
 }

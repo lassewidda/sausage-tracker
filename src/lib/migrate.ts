@@ -168,6 +168,9 @@ async function migrate() {
   // Add summary column to battles
   await sql`ALTER TABLE battles ADD COLUMN IF NOT EXISTS summary TEXT`
 
+  // Add switch_player column for post-KO card selection
+  await sql`ALTER TABLE battles ADD COLUMN IF NOT EXISTS switch_player TEXT`
+
   // Player items (inventory) table
   await sql`
     CREATE TABLE IF NOT EXISTS player_items (

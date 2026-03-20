@@ -504,6 +504,7 @@ function rowToBattle(row: any): Battle {
     turnPlayer: row.turn_player,
     winner: row.winner,
     summary: row.summary ?? null,
+    switchPlayer: row.switch_player ?? null,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
     updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : row.updated_at,
   }
@@ -954,15 +955,17 @@ export async function executeTurn(
     // If KO, handle card swap + clear effects
     if (isKo) {
       await sql`DELETE FROM battle_effects WHERE battle_id = ${battleId} AND target_card_id = ${defenderDeck.id}`
-      const nextCard = await sql`
+      const remainingCards = await sql`
         SELECT id FROM battle_decks
         WHERE battle_id = ${battleId} AND player_name = ${defenderName}
           AND is_knocked_out = false AND is_active = false
-        ORDER BY position LIMIT 1
+        ORDER BY position
       `
-      if (nextCard.length > 0) {
-        await sql`UPDATE battle_decks SET is_active = true WHERE id = ${nextCard[0].id}`
+      if (remainingCards.length === 1) {
+        // Only 1 card left — auto-activate it
+        await sql`UPDATE battle_decks SET is_active = true WHERE id = ${remainingCards[0].id}`
       }
+      // If 2+ cards: leave none active, enter awaiting_switch (handled below)
     }
 
     // Check battle end + advance turn (same logic as move path)
@@ -975,6 +978,13 @@ export async function executeTurn(
       await sql`UPDATE battles SET status = 'finished', winner = ${winner}, updated_at = NOW() WHERE id = ${battleId}`
       const loser = winner === battle.challenger ? battle.opponent! : battle.challenger
       await updateBattleStatsInternal(sql, winner, loser)
+    } else if (isKo && allDecks.filter(d => d.player_name === defenderName && !d.is_knocked_out && !d.is_active).length >= 2) {
+      // Multiple cards remaining — let the KO'd player choose which to send out
+      await sql`
+        UPDATE battles SET status = 'awaiting_switch', switch_player = ${defenderName},
+          current_turn = ${battle.currentTurn + 1}, turn_player = ${playerName}, updated_at = NOW()
+        WHERE id = ${battleId}
+      `
     } else {
       const nextTurnPlayer = isKo ? playerName : defenderName!
       await sql`
@@ -1064,18 +1074,20 @@ export async function executeTurn(
     DELETE FROM battle_effects WHERE battle_id = ${battleId} AND remaining_turns <= 0
   `
 
-  // If KO, activate next card and clear effects on dead card
+  // If KO, handle card swap and clear effects on dead card
   if (isKo) {
     await sql`DELETE FROM battle_effects WHERE battle_id = ${battleId} AND target_card_id = ${defenderDeck.id}`
-    const nextCard = await sql`
+    const remainingCards = await sql`
       SELECT id FROM battle_decks
       WHERE battle_id = ${battleId} AND player_name = ${defenderName}
         AND is_knocked_out = false AND is_active = false
-      ORDER BY position LIMIT 1
+      ORDER BY position
     `
-    if (nextCard.length > 0) {
-      await sql`UPDATE battle_decks SET is_active = true WHERE id = ${nextCard[0].id}`
+    if (remainingCards.length === 1) {
+      // Only 1 card left — auto-activate it
+      await sql`UPDATE battle_decks SET is_active = true WHERE id = ${remainingCards[0].id}`
     }
+    // If 2+ cards: leave none active, enter awaiting_switch (handled below)
   }
 
   // Check battle end
@@ -1093,6 +1105,13 @@ export async function executeTurn(
     `
     const loser = winner === battle.challenger ? battle.opponent! : battle.challenger
     await updateBattleStatsInternal(sql, winner, loser)
+  } else if (isKo && allDecks.filter(d => d.player_name === defenderName && !d.is_knocked_out && !d.is_active).length >= 2) {
+    // Multiple cards remaining — let the KO'd player choose which to send out
+    await sql`
+      UPDATE battles SET status = 'awaiting_switch', switch_player = ${defenderName},
+        current_turn = ${battle.currentTurn + 1}, turn_player = ${playerName}, updated_at = NOW()
+      WHERE id = ${battleId}
+    `
   } else {
     let nextTurnPlayer: string
     if (isKo) {
@@ -1127,6 +1146,36 @@ export async function executeTurn(
 
   await sql.end()
   return rowToTurn(turnRows[0])
+}
+
+export async function switchCard(battleId: string, playerName: string, deckCardId: string): Promise<void> {
+  const sql = getDb()
+
+  const battleRows = await sql`SELECT * FROM battles WHERE id = ${battleId} FOR UPDATE`
+  if (battleRows.length === 0) { await sql.end(); throw new Error('Battle not found') }
+  const battle = rowToBattle(battleRows[0])
+
+  if (battle.status !== 'awaiting_switch') { await sql.end(); throw new Error('Not awaiting card switch') }
+  if (battle.switchPlayer !== playerName) { await sql.end(); throw new Error('Not your turn to switch') }
+
+  // Validate the card belongs to this player, is in this battle, and is alive + not active
+  const cardRows = await sql`
+    SELECT id FROM battle_decks
+    WHERE id = ${deckCardId} AND battle_id = ${battleId} AND player_name = ${playerName}
+      AND is_knocked_out = false AND is_active = false
+  `
+  if (cardRows.length === 0) { await sql.end(); throw new Error('Invalid card selection') }
+
+  // Activate the chosen card
+  await sql`UPDATE battle_decks SET is_active = true WHERE id = ${deckCardId}`
+
+  // Resume battle — attacker keeps turn (they got the KO)
+  await sql`
+    UPDATE battles SET status = 'battling', switch_player = NULL, updated_at = NOW()
+    WHERE id = ${battleId}
+  `
+
+  await sql.end()
 }
 
 async function updateBattleStatsInternal(sql: ReturnType<typeof getDb>, winner: string, loser: string) {

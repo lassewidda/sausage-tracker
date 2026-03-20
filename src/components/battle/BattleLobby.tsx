@@ -7,6 +7,7 @@ import type { Battle, HeroCard, PlayerItem, ItemDefinition } from '@/types'
 import { useName } from '@/lib/useName'
 import { CardDetail } from './CardDetail'
 import { PixelAvatar, getTypeTheme } from '@/components/player/HeroCardDisplay'
+import { ItemIcon } from './ItemIcon'
 
 function getCurrentWeekKey(): string {
   const d = new Date()
@@ -320,6 +321,7 @@ export function BattleLobby() {
                       alignItems: 'center',
                       gap: '6px',
                     }}>
+                      <ItemIcon itemKey={def.itemKey} rarity={def.rarity} size={24} />
                       {isNew && (
                         <span className="amiga-blink" style={{
                           fontSize: '6px',
