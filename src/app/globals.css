@@ -731,3 +731,302 @@ body {
 .chest-sparkle-1 { animation: victory-pulse 1.2s infinite 0s; }
 .chest-sparkle-2 { animation: victory-pulse 1.2s infinite 0.4s; }
 .chest-sparkle-3 { animation: victory-pulse 1.2s infinite 0.8s; }
+
+/* ── Hearthstone Battle Variant ─────────────────────────── */
+
+.battle-board {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: linear-gradient(180deg, #001133 0%, #002255 40%, #003377 60%, #001133 100%);
+  padding: 8px;
+  min-height: 400px;
+}
+
+.battle-divider {
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--amiga-orange) 0px,
+    var(--amiga-orange) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  margin: 6px 0;
+  opacity: 0.5;
+}
+
+.bench-strip {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.bench-card {
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  cursor: default;
+}
+
+.bench-card--active {
+  border-color: var(--amiga-orange);
+  box-shadow: 0 0 6px rgba(255, 136, 0, 0.4);
+}
+
+.bench-card--ko {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+.bench-card--selectable {
+  cursor: pointer;
+}
+
+.bench-card--selectable:hover {
+  border-color: var(--amiga-orange);
+  background: rgba(255, 136, 0, 0.15);
+}
+
+.bench-card__ko-x {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-pixel);
+  font-size: 16px;
+  color: #FF4444;
+  text-shadow: 0 0 4px rgba(255, 68, 68, 0.8);
+  z-index: 2;
+}
+
+.bench-card__hp-bar {
+  width: 100%;
+  height: 3px;
+  background: #0a0a0a;
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.bench-card__hp-fill {
+  height: 100%;
+  transition: width 0.3s steps(6);
+}
+
+.move-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.move-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 6px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid var(--bevel-shadow);
+  border-top-color: var(--bevel-light);
+  border-left-color: var(--bevel-light);
+  font-family: var(--font-pixel);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.move-cell:hover:not(:disabled):not(.move-cell--disabled) {
+  background: rgba(255, 136, 0, 0.15);
+  border-color: var(--amiga-orange);
+}
+
+.move-cell:active:not(:disabled):not(.move-cell--disabled) {
+  border-top-color: var(--bevel-shadow);
+  border-left-color: var(--bevel-shadow);
+  border-bottom-color: var(--bevel-light);
+  border-right-color: var(--bevel-light);
+}
+
+.move-cell--disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.move-cell__name {
+  font-size: 7px;
+  color: var(--amiga-white);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.move-cell__damage {
+  font-size: 8px;
+  color: var(--crt-amber);
+}
+
+.move-cell__pp {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 6px;
+  color: #888;
+}
+
+.pp-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--amiga-orange);
+  display: inline-block;
+}
+
+.pp-dot--empty {
+  background: #333;
+  border: 1px solid #555;
+}
+
+.bottom-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0 0;
+}
+
+.bottom-toolbar__btn {
+  flex: 1;
+  padding: 6px 4px;
+  font-family: var(--font-pixel);
+  font-size: 7px;
+  color: var(--amiga-white);
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--bevel-shadow);
+  border-top-color: var(--bevel-light);
+  border-left-color: var(--bevel-light);
+  cursor: pointer;
+  text-align: center;
+}
+
+.bottom-toolbar__btn:hover {
+  background: rgba(255, 136, 0, 0.15);
+}
+
+.bottom-toolbar__btn--active {
+  background: rgba(255, 136, 0, 0.2);
+  border-color: var(--amiga-orange);
+}
+
+.slide-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  transform: translateY(100%);
+  transition: transform 0.25s steps(6);
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.slide-panel--open {
+  transform: translateY(0);
+}
+
+.slide-panel__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.slide-panel__backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.slide-panel__content {
+  background: #111;
+  border-top: 3px solid var(--amiga-orange);
+  padding: 12px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.slide-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: var(--amiga-orange);
+  margin-bottom: 8px;
+}
+
+.slide-panel__close {
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  color: var(--amiga-orange);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+/* HS vertical attack animations */
+@keyframes hs-attack-up {
+  0%   { transform: translateY(0); }
+  40%  { transform: translateY(-30px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes hs-attack-down {
+  0%   { transform: translateY(0); }
+  40%  { transform: translateY(30px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes hp-pulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(255, 68, 68, 0.3); }
+  50%      { box-shadow: 0 0 12px rgba(255, 68, 68, 0.8); }
+}
+
+/* View toggle in titlebar */
+.view-toggle {
+  display: inline-flex;
+  gap: 0;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.view-toggle__btn {
+  font-family: var(--font-pixel);
+  font-size: 6px;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.4);
+  color: #888;
+  border: 1px solid #555;
+  cursor: pointer;
+}
+
+.view-toggle__btn:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+.view-toggle__btn:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
+.view-toggle__btn--active {
+  background: var(--amiga-orange);
+  color: #000;
+  border-color: var(--amiga-orange);
+}

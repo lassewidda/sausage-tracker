@@ -111,6 +111,7 @@ export interface BattleTurn {
   damageDealt: number
   defenderHpAfter: number
   isKnockout: boolean
+  isCritical: boolean
   itemUsed: string | null
   itemEffect: string | null
   createdAt: string

@@ -35,6 +35,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Player not found' }, { status: 404 })
   }
 
+  // Fetch existing cards to avoid repeating names/types
+  const existingCards = await getPlayerDeck(playerName)
+  const existingTitles = existingCards.map(c => c.heroTitle)
+  const existingTypes = existingCards.map(c => c.heroType)
+
   const generated = await generateHeroCard({
     playerName,
     totalSausages: stats.totalSausages,
@@ -44,6 +49,8 @@ export async function POST(request: Request) {
     activeWeeks: stats.activeWeeks,
     chainLength: stats.chainLength,
     recentMeals: stats.recentMeals,
+    existingTitles,
+    existingTypes,
   })
 
   const card = await insertHeroCard({

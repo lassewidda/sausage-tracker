@@ -5,6 +5,7 @@ import { useName } from '@/lib/useName'
 import { useBattleState } from '@/components/battle/useBattleState'
 import { BattleCardSelect } from '@/components/battle/BattleCardSelect'
 import { BattleArena } from '@/components/battle/BattleArena'
+import { BattleArenaHS } from '@/components/battle/BattleArenaHS'
 import { BattleResult } from '@/components/battle/BattleResult'
 import type { HeroCard, PlayerItem, ItemDefinition } from '@/types'
 import { useEffect } from 'react'
@@ -17,6 +18,12 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
   const [inventory, setInventory] = useState<(PlayerItem & { definition?: ItemDefinition })[]>([])
   const [isReady, setIsReady] = useState(false)
   const [joining, setJoining] = useState(false)
+  const [battleView, setBattleView] = useState<'classic' | 'hearthstone'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('sausage_battle_view') as 'classic' | 'hearthstone') || 'classic'
+    }
+    return 'classic'
+  })
 
   const fetchDeck = useCallback(() => {
     if (!name) return
@@ -148,6 +155,22 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
           <span className="amiga-window__gadget">&#9632;</span>
           <span className="amiga-window__title">
             {battle.challenger.toUpperCase()} VS {battle.opponent?.toUpperCase() ?? '???'}
+            {(battle.status === 'battling' || battle.status === 'awaiting_switch') && (
+              <span className="view-toggle">
+                <button
+                  className={`view-toggle__btn${battleView === 'classic' ? ' view-toggle__btn--active' : ''}`}
+                  onClick={() => { setBattleView('classic'); localStorage.setItem('sausage_battle_view', 'classic') }}
+                >
+                  CLASSIC
+                </button>
+                <button
+                  className={`view-toggle__btn${battleView === 'hearthstone' ? ' view-toggle__btn--active' : ''}`}
+                  onClick={() => { setBattleView('hearthstone'); localStorage.setItem('sausage_battle_view', 'hearthstone') }}
+                >
+                  HS
+                </button>
+              </span>
+            )}
           </span>
         </div>
         <div className="amiga-window__body">
@@ -230,14 +253,25 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
 
           {/* Battle in progress */}
           {(battle.status === 'battling' || battle.status === 'awaiting_switch') && (
-            <BattleArena
-              state={state}
-              playerName={name}
-              onMove={handleMove}
-              onUseItem={handleUseItem}
-              onSwitch={handleSwitch}
-              inventory={inventory}
-            />
+            battleView === 'hearthstone' ? (
+              <BattleArenaHS
+                state={state}
+                playerName={name}
+                onMove={handleMove}
+                onUseItem={handleUseItem}
+                onSwitch={handleSwitch}
+                inventory={inventory}
+              />
+            ) : (
+              <BattleArena
+                state={state}
+                playerName={name}
+                onMove={handleMove}
+                onUseItem={handleUseItem}
+                onSwitch={handleSwitch}
+                inventory={inventory}
+              />
+            )
           )}
 
           {/* Battle finished */}

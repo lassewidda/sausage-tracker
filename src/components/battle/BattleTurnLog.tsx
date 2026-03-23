@@ -51,7 +51,10 @@ export function BattleTurnLog({ turns }: Props) {
               {' used '}
               <span style={{ color: 'var(--amiga-orange)' }}>{turn.moveUsed}</span>
               {'! '}
-              <span style={{ color: '#FF4444' }}>{turn.damageDealt} dmg</span>
+              <span style={{ color: turn.isCritical ? '#FF44FF' : '#FF4444' }}>{turn.damageDealt} dmg</span>
+              {turn.isCritical && (
+                <span style={{ color: '#FF44FF', textShadow: '0 0 6px rgba(255, 68, 255, 0.8)' }}> CRITICAL HIT!</span>
+              )}
               {turn.typeMultiplier > 1 && (
                 <span style={{ color: '#44CC44' }}> (super effective!)</span>
               )}

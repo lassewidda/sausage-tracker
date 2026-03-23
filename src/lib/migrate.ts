@@ -174,6 +174,9 @@ async function migrate() {
   // Add used_at column for item cooldowns (null = available, set = on 3-day cooldown)
   await sql`ALTER TABLE player_items ADD COLUMN IF NOT EXISTS used_at TIMESTAMPTZ`
 
+  // Add is_critical column for critical hits
+  await sql`ALTER TABLE battle_turns ADD COLUMN IF NOT EXISTS is_critical BOOLEAN NOT NULL DEFAULT false`
+
   // Player items (inventory) table
   await sql`
     CREATE TABLE IF NOT EXISTS player_items (

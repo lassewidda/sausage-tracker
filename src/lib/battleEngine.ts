@@ -72,7 +72,12 @@ export interface DamageResult {
   multiplier: number
   moveName: string
   baseDamage: number
+  isCritical: boolean
 }
+
+// 12.5% crit chance, 1.5x crit multiplier
+const CRIT_CHANCE = 0.125
+const CRIT_MULTIPLIER = 1.5
 
 export function calculateDamage(
   attacker: HeroCard,
@@ -85,12 +90,22 @@ export function calculateDamage(
   const defenderTypes = getTypes(defender.heroType)
   const multiplier = getTypeMultiplier(attackerTypes, defenderTypes)
 
+  const isCritical = Math.random() < CRIT_CHANCE
+
   // Rebalanced formula: additive attack+baseDamage, softer defense scaling
   // Target: ~15-30 damage per hit against typical stats, games finish in 10-20 turns
   const raw = ((attacker.attack + baseDamage) / 2.5) * multiplier * (60 / (60 + defender.defense))
-  const damage = Math.max(1, Math.floor(raw))
+  const critRaw = isCritical ? raw * CRIT_MULTIPLIER : raw
+  const damage = Math.max(1, Math.floor(critRaw))
 
-  return { damage, multiplier, moveName: name, baseDamage }
+  return { damage, multiplier, moveName: name, baseDamage, isCritical }
+}
+
+// Exported for UI type matchup preview
+export function getTypeMatchupMultiplier(attackerType: string, defenderType: string): number {
+  const atkTypes = getTypes(attackerType)
+  const defTypes = getTypes(defenderType)
+  return getTypeMultiplier(atkTypes, defTypes)
 }
 
 export function determineTurnOrder(

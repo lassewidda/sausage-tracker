@@ -35,6 +35,7 @@ export async function GET(
       typeMultiplier: t.typeMultiplier,
       defenderHpAfter: t.defenderHpAfter,
       isKnockout: t.isKnockout,
+      isCritical: t.isCritical,
     }))
 
     const summary = await generateBattleSummary({

@@ -48,59 +48,58 @@ export function AboutModal() {
         >
           <div
             onClick={e => e.stopPropagation()}
-            className="amiga-window"
             style={{
-              maxWidth: '500px',
+              maxWidth: '420px',
               width: 'calc(100% - 32px)',
-              minWidth: 0,
               animation: 'card-enter 0.3s steps(4)',
+              background: 'var(--amiga-grey)',
+              borderTop: '2px solid var(--bevel-light)',
+              borderLeft: '2px solid var(--bevel-light)',
+              borderRight: '2px solid var(--bevel-deep)',
+              borderBottom: '2px solid var(--bevel-deep)',
             }}
           >
             <div className="amiga-window__titlebar">
               <span className="amiga-window__gadget" onClick={() => setOpen(false)} style={{ cursor: 'pointer' }}>&#9632;</span>
-              <span className="amiga-window__title">ABOUT SAUSAGE TRACKER V1.1</span>
+              <span className="amiga-window__title">ABOUT</span>
             </div>
-            <div className="amiga-window__body" style={{
-              padding: '16px',
+            <div style={{
+              padding: '14px',
               overflowY: 'auto',
-              overflowX: 'hidden',
               maxHeight: '70vh',
-              wordBreak: 'break-word',
+              fontSize: '13px',
+              lineHeight: '1.6',
+              color: 'var(--amiga-white)',
+              fontFamily: 'monospace',
             }}>
-              <p style={{
+              <div style={{
                 fontFamily: 'var(--font-pixel)',
-                fontSize: '8px',
-                lineHeight: '2.2',
-                color: 'var(--amiga-white)',
-                margin: 0,
-                overflowWrap: 'anywhere',
+                fontSize: '10px',
+                color: 'var(--amiga-orange)',
+                marginBottom: '10px',
+                textAlign: 'center',
               }}>
-                What started as a single-page photo uploader where Claude Haiku counted sausages in your lunch has, over 56 commits, mutated into a full competitive card battle game. The sausage logging still exists at its core, but each week your eating habits are now fed to an AI that generates a unique hero card — complete with sausage-pun moves like &quot;Mustard Megablast&quot; and types like CHORIZO/GRILLED — with stats directly influenced by how many sausages you actually consumed.
+                SAUSAGE TRACKER V1.1
+              </div>
+
+              <p style={{ margin: '0 0 10px 0' }}>
+                Photo uploader where AI counts your sausages. Each week, your eating
+                habits generate a unique hero card with sausage-pun moves and
+                stats based on your consumption.
               </p>
-              <p style={{
-                fontFamily: 'var(--font-pixel)',
-                fontSize: '8px',
-                lineHeight: '2.2',
-                color: 'var(--amiga-white)',
-                marginTop: '12px',
-                marginBottom: 0,
-                overflowWrap: 'anywhere',
-              }}>
-                A real-time multiplayer battle arena lets players challenge friends, pick decks of 4 cards (including one intentionally terrible starter like &quot;Soggy Microwave Frank&quot;), and duke it out in turn-based combat with type advantages and an ELO rating system. The social layer includes live taunts with speech bubbles, a treasure chest card reveal for weekly drops, and AI-generated dramatic play-by-play recaps of every battle.
+
+              <p style={{ margin: '0 0 10px 0' }}>
+                Challenge friends in turn-based card battles with type advantages,
+                items, deck building, and ELO rankings. Includes live taunts and
+                AI-generated battle recaps.
               </p>
-              <p style={{
-                fontFamily: 'var(--font-pixel)',
-                fontSize: '8px',
-                lineHeight: '2.2',
-                color: '#888',
-                marginTop: '12px',
-                marginBottom: 0,
-                fontStyle: 'italic',
-                overflowWrap: 'anywhere',
-              }}>
-                Built with Next.js, Claude Haiku, and an unhealthy obsession with processed meat. Proof that logging your lunch can spiral into a competitive esport.
+
+              <p style={{ margin: 0, color: '#888', fontStyle: 'italic', fontSize: '11px' }}>
+                Built with Next.js, Claude Haiku, and an unhealthy obsession with
+                processed meat.
               </p>
-              <div style={{ textAlign: 'center', marginTop: '16px' }}>
+
+              <div style={{ textAlign: 'center', marginTop: '14px' }}>
                 <button
                   className="amiga-btn amiga-btn--primary"
                   onClick={() => setOpen(false)}

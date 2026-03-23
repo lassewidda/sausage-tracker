@@ -8,7 +8,7 @@ import { ItemButton } from './ItemButton'
 import { BattleTurnLog } from './BattleTurnLog'
 import { TauntBar } from './TauntBar'
 import { TauntBubble } from './TauntBubble'
-import { parseMoveDamage } from '@/lib/battleEngine'
+import { parseMoveDamage, getTypeMatchupMultiplier } from '@/lib/battleEngine'
 
 interface InventoryItem extends PlayerItem {
   definition?: ItemDefinition
@@ -364,17 +364,65 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
         </div>
       )}
 
-      {/* Type matchup hint */}
-      {isMyTurn && !isAwaitingSwitch && myActive?.card && theirActive?.card && (
-        <div style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '6px',
-          color: '#666',
-          textAlign: 'center',
-        }}>
-          {myActive.card.heroType} vs {theirActive.card.heroType}
-        </div>
-      )}
+      {/* Type matchup indicator */}
+      {myActive?.card && theirActive?.card && (() => {
+        const myMultiplier = getTypeMatchupMultiplier(myActive.card.heroType, theirActive.card.heroType)
+        const theirMultiplier = getTypeMatchupMultiplier(theirActive.card.heroType, myActive.card.heroType)
+
+        const getMatchupStyle = (mult: number) => {
+          if (mult >= 2.0) return { color: '#44FF44', label: 'SUPER STRONG', bg: 'rgba(68, 255, 68, 0.15)' }
+          if (mult >= 1.5) return { color: '#44CC44', label: 'STRONG', bg: 'rgba(68, 204, 68, 0.1)' }
+          if (mult > 1.0) return { color: '#88DD88', label: 'ADVANTAGE', bg: 'rgba(136, 221, 136, 0.08)' }
+          if (mult < 0.5) return { color: '#FF4444', label: 'VERY WEAK', bg: 'rgba(255, 68, 68, 0.15)' }
+          if (mult < 0.75) return { color: '#FF8844', label: 'WEAK', bg: 'rgba(255, 136, 68, 0.1)' }
+          if (mult < 1.0) return { color: '#CCAA44', label: 'SLIGHT DISADVANTAGE', bg: 'rgba(204, 170, 68, 0.08)' }
+          return { color: '#888', label: 'NEUTRAL', bg: 'transparent' }
+        }
+
+        const myStyle = getMatchupStyle(myMultiplier)
+        const theirStyle = getMatchupStyle(theirMultiplier)
+
+        return (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '7px',
+            gap: '8px',
+          }}>
+            <div style={{
+              flex: 1,
+              padding: '4px 8px',
+              background: myStyle.bg,
+              border: `1px solid ${myStyle.color}33`,
+              textAlign: 'center',
+            }}>
+              <div style={{ color: '#aaa', marginBottom: '2px' }}>YOUR ATTACK</div>
+              <div style={{ color: myStyle.color }}>
+                {myStyle.label} ({myMultiplier.toFixed(2)}x)
+              </div>
+              <div style={{ color: '#666', fontSize: '6px', marginTop: '2px' }}>
+                {myActive.card.heroType} → {theirActive.card.heroType}
+              </div>
+            </div>
+            <div style={{
+              flex: 1,
+              padding: '4px 8px',
+              background: theirStyle.bg,
+              border: `1px solid ${theirStyle.color}33`,
+              textAlign: 'center',
+            }}>
+              <div style={{ color: '#aaa', marginBottom: '2px' }}>THEIR ATTACK</div>
+              <div style={{ color: theirStyle.color }}>
+                {theirStyle.label} ({theirMultiplier.toFixed(2)}x)
+              </div>
+              <div style={{ color: '#666', fontSize: '6px', marginTop: '2px' }}>
+                {theirActive.card.heroType} → {myActive.card.heroType}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Taunt bar */}
       <TauntBar battleId={battle.id} playerName={playerName} />

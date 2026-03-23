@@ -36,6 +36,8 @@ export async function generateHeroCard(data: {
   activeWeeks: number
   chainLength: number
   recentMeals: { description: string | null; sausageCount: number }[]
+  existingTitles?: string[]
+  existingTypes?: string[]
 }): Promise<{
   heroTitle: string
   heroType: string
@@ -55,6 +57,14 @@ export async function generateHeroCard(data: {
     .map(m => `- ${m.sausageCount} sausage(s): ${m.description}`)
     .join('\n')
 
+  const existingTitlesList = data.existingTitles?.length
+    ? `\n\nALREADY USED TITLES (DO NOT reuse or closely resemble any of these):\n${data.existingTitles.map(t => `- "${t}"`).join('\n')}`
+    : ''
+
+  const existingTypesList = data.existingTypes?.length
+    ? `\n\nALREADY USED TYPE COMBINATIONS (MUST pick a DIFFERENT combination):\n${Array.from(new Set(data.existingTypes)).map(t => `- ${t}`).join('\n')}`
+    : ''
+
   const prompt = `Create a superhero/Pokémon-style trading card for sausage champion "${data.playerName}".
 
 PLAYER STATS:
@@ -67,11 +77,12 @@ PLAYER STATS:
 
 RECENT MEALS:
 ${recentDescriptions || 'No recent meals'}
+${existingTitlesList}${existingTypesList}
 
 Generate a JSON card with these fields. Be creative, funny, and thematic around sausages:
 
-- heroTitle: A dramatic superhero/Pokémon name (e.g., "The Bratwurst Berserker", "Wiener Warlord", "Chorizo Champion"). Make it unique to this player's habits.
-- heroType: MUST be exactly two types from this list separated by /: BRATWURST, FRANKFURTER, CHORIZO, KIELBASA, ANDOUILLE, WEISSWURST, CURRYWURST, BLOOD_SAUSAGE, VEGGIE, MUSTARD, SAUERKRAUT, GRILLED. Example: "CHORIZO/GRILLED" or "FRANKFURTER/MUSTARD". Pick types that match the player's sausage eating patterns.
+- heroTitle: A dramatic superhero/Pokémon name (e.g., "The Bratwurst Berserker", "Wiener Warlord", "Chorizo Champion"). Make it unique to this player's habits. IMPORTANT: Every card MUST have a completely different, unique name — never repeat or closely resemble a previous title.
+- heroType: MUST be exactly two types from this list separated by /: BRATWURST, FRANKFURTER, CHORIZO, KIELBASA, ANDOUILLE, WEISSWURST, CURRYWURST, BLOOD_SAUSAGE, VEGGIE, MUSTARD, SAUERKRAUT, GRILLED. Example: "CHORIZO/GRILLED" or "FRANKFURTER/MUSTARD". Pick types that match the player's sausage eating patterns. IMPORTANT: Use a DIFFERENT type combination than any previously used.
 - hp: A number 30-120 based on total grams consumed (more grams = higher HP, but max 120)
 - attack: A number 10-60 based on max sausages in one meal
 - defense: A number 10-60 based on chain length (consistency)
@@ -199,14 +210,16 @@ export async function generateBattleSummary(data: {
     typeMultiplier: number
     defenderHpAfter: number
     isKnockout: boolean
+    isCritical: boolean
   }[]
 }): Promise<string> {
   const client = getClient()
 
   const turnLog = data.turns.map(t => {
     const multi = t.typeMultiplier > 1 ? ' (SUPER EFFECTIVE!)' : t.typeMultiplier < 1 ? ' (not very effective)' : ''
+    const crit = t.isCritical ? ' CRITICAL HIT!' : ''
     const ko = t.isKnockout ? ' — KNOCKOUT!' : ''
-    return `Turn ${t.turnNumber}: ${t.attacker}'s ${t.attackerCard} used ${t.moveUsed} on ${t.defenderCard} → ${t.damageDealt} damage${multi}${ko} (${t.defenderHpAfter} HP left)`
+    return `Turn ${t.turnNumber}: ${t.attacker}'s ${t.attackerCard} used ${t.moveUsed} on ${t.defenderCard} → ${t.damageDealt} damage${crit}${multi}${ko} (${t.defenderHpAfter} HP left)`
   }).join('\n')
 
   const prompt = `Write a dramatic, funny battle recap for a sausage-themed Pokémon-style card game called "Sausage Tracker".

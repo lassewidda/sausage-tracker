@@ -540,6 +540,7 @@ function rowToTurn(row: any): BattleTurn {
     damageDealt: row.damage_dealt,
     defenderHpAfter: row.defender_hp_after,
     isKnockout: row.is_knockout,
+    isCritical: row.is_critical ?? false,
     itemUsed: row.item_used ?? null,
     itemEffect: row.item_effect ?? null,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
@@ -1045,7 +1046,7 @@ export async function executeTurn(
 
   let result
   if (usedCount >= maxPp) {
-    result = { damage: 10, multiplier: 1.0, moveName: 'Struggle', baseDamage: 10 }
+    result = { damage: 10, multiplier: 1.0, moveName: 'Struggle', baseDamage: 10, isCritical: false }
   } else {
     result = calculateDamage(modAttacker, modDefender, moveIndex!)
   }
@@ -1062,10 +1063,10 @@ export async function executeTurn(
   // Record turn
   const turnRows = await sql`
     INSERT INTO battle_turns (battle_id, turn_number, attacker, attacker_card_id, defender_card_id,
-      move_used, move_damage, type_multiplier, damage_dealt, defender_hp_after, is_knockout)
+      move_used, move_damage, type_multiplier, damage_dealt, defender_hp_after, is_knockout, is_critical)
     VALUES (${battleId}, ${battle.currentTurn}, ${playerName}, ${attackerDeck.card_id},
       ${defenderDeck.card_id}, ${result.moveName}, ${result.baseDamage}, ${result.multiplier},
-      ${result.damage}, ${newHp}, ${isKo})
+      ${result.damage}, ${newHp}, ${isKo}, ${result.isCritical})
     RETURNING *
   `
 
