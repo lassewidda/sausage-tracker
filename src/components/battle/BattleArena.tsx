@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import type { BattleState, PlayerItem, ItemDefinition } from '@/types'
+import type { BattleState, PlayerItem, ItemDefinition, HeroCard } from '@/types'
 import { BattleCard } from './BattleCard'
+import { CardDetail } from './CardDetail'
 import { MoveButton } from './MoveButton'
 import { ItemButton } from './ItemButton'
 import { BattleTurnLog } from './BattleTurnLog'
@@ -26,6 +27,7 @@ interface Props {
 export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, inventory }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState<'moves' | 'items'>('moves')
+  const [inspectedCard, setInspectedCard] = useState<HeroCard | null>(null)
   const { battle, challengerDeck, opponentDeck, turns, taunts, effects } = state
 
   const isChallenger = playerName === battle.challenger
@@ -132,7 +134,8 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
         </div>
 
         {/* My card (left) */}
-        <div style={{ animation: 'card-enter 0.3s steps(4)' }}>
+        <div style={{ animation: 'card-enter 0.3s steps(4)', cursor: myActive?.card ? 'pointer' : 'default' }}
+          onClick={() => myActive?.card && setInspectedCard(myActive.card)}>
           {myActive ? (
             <BattleCard
               deckCard={myActive}
@@ -148,7 +151,8 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
         </div>
 
         {/* Their card (right) */}
-        <div style={{ animation: 'card-enter 0.3s steps(4)' }}>
+        <div style={{ animation: 'card-enter 0.3s steps(4)', cursor: theirActive?.card ? 'pointer' : 'default' }}
+          onClick={() => theirActive?.card && setInspectedCard(theirActive.card)}>
           {theirActive ? (
             <BattleCard
               deckCard={theirActive}
@@ -370,13 +374,13 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
         const theirMultiplier = getTypeMatchupMultiplier(theirActive.card.heroType, myActive.card.heroType)
 
         const getMatchupStyle = (mult: number) => {
-          if (mult >= 2.0) return { color: '#44FF44', label: 'SUPER STRONG', bg: 'rgba(68, 255, 68, 0.15)' }
-          if (mult >= 1.5) return { color: '#44CC44', label: 'STRONG', bg: 'rgba(68, 204, 68, 0.1)' }
-          if (mult > 1.0) return { color: '#88DD88', label: 'ADVANTAGE', bg: 'rgba(136, 221, 136, 0.08)' }
-          if (mult < 0.5) return { color: '#FF4444', label: 'VERY WEAK', bg: 'rgba(255, 68, 68, 0.15)' }
-          if (mult < 0.75) return { color: '#FF8844', label: 'WEAK', bg: 'rgba(255, 136, 68, 0.1)' }
-          if (mult < 1.0) return { color: '#CCAA44', label: 'SLIGHT DISADVANTAGE', bg: 'rgba(204, 170, 68, 0.08)' }
-          return { color: '#888', label: 'NEUTRAL', bg: 'transparent' }
+          if (mult >= 2.0) return { color: '#44FF44', label: 'SUPER STRONG', bg: '#0a2a0a', border: '#44FF44' }
+          if (mult >= 1.5) return { color: '#44FF44', label: 'STRONG', bg: '#0a2a0a', border: '#44CC44' }
+          if (mult > 1.0) return { color: '#88FF88', label: 'ADVANTAGE', bg: '#0a200a', border: '#448844' }
+          if (mult < 0.5) return { color: '#FF4444', label: 'VERY WEAK', bg: '#2a0a0a', border: '#FF4444' }
+          if (mult < 0.75) return { color: '#FF8844', label: 'WEAK', bg: '#2a150a', border: '#CC6633' }
+          if (mult < 1.0) return { color: '#FFCC44', label: 'DISADVANTAGE', bg: '#2a200a', border: '#AA8833' }
+          return { color: '#CCCCCC', label: 'NEUTRAL', bg: '#1a1a1a', border: '#555' }
         }
 
         const myStyle = getMatchupStyle(myMultiplier)
@@ -392,31 +396,33 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
           }}>
             <div style={{
               flex: 1,
-              padding: '4px 8px',
+              padding: '6px 8px',
               background: myStyle.bg,
-              border: `1px solid ${myStyle.color}33`,
+              border: `2px solid ${myStyle.border}`,
+              borderRadius: '4px',
               textAlign: 'center',
             }}>
-              <div style={{ color: '#aaa', marginBottom: '2px' }}>YOUR ATTACK</div>
-              <div style={{ color: myStyle.color }}>
+              <div style={{ color: '#ccc', marginBottom: '3px', fontSize: '6px' }}>YOUR ATTACK</div>
+              <div style={{ color: myStyle.color, fontSize: '8px', textShadow: `0 0 8px ${myStyle.color}66` }}>
                 {myStyle.label} ({myMultiplier.toFixed(2)}x)
               </div>
-              <div style={{ color: '#666', fontSize: '6px', marginTop: '2px' }}>
+              <div style={{ color: '#999', fontSize: '6px', marginTop: '3px' }}>
                 {myActive.card.heroType} → {theirActive.card.heroType}
               </div>
             </div>
             <div style={{
               flex: 1,
-              padding: '4px 8px',
+              padding: '6px 8px',
               background: theirStyle.bg,
-              border: `1px solid ${theirStyle.color}33`,
+              border: `2px solid ${theirStyle.border}`,
+              borderRadius: '4px',
               textAlign: 'center',
             }}>
-              <div style={{ color: '#aaa', marginBottom: '2px' }}>THEIR ATTACK</div>
-              <div style={{ color: theirStyle.color }}>
+              <div style={{ color: '#ccc', marginBottom: '3px', fontSize: '6px' }}>THEIR ATTACK</div>
+              <div style={{ color: theirStyle.color, fontSize: '8px', textShadow: `0 0 8px ${theirStyle.color}66` }}>
                 {theirStyle.label} ({theirMultiplier.toFixed(2)}x)
               </div>
-              <div style={{ color: '#666', fontSize: '6px', marginTop: '2px' }}>
+              <div style={{ color: '#999', fontSize: '6px', marginTop: '3px' }}>
                 {theirActive.card.heroType} → {myActive.card.heroType}
               </div>
             </div>
@@ -429,6 +435,11 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
 
       {/* Turn log */}
       <BattleTurnLog turns={turns} />
+
+      {/* Card detail modal */}
+      {inspectedCard && (
+        <CardDetail card={inspectedCard} onClose={() => setInspectedCard(null)} />
+      )}
     </div>
   )
 }

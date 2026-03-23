@@ -210,63 +210,146 @@ export function BattleLobby() {
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-              gap: '6px',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))',
+              gap: '10px',
               padding: '4px',
             }}>
               {deck.map((card) => {
                 const isStarter = card.weekKey.startsWith('STARTER')
                 const theme = getTypeTheme(card.heroType)
+                const types = card.heroType.split('/')
                 return (
                   <div key={card.id} onClick={() => setSelectedCard(card)} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: '#1a1a2a',
-                    border: `1px solid ${theme.border}66`,
-                    borderRadius: '4px',
-                    padding: '6px',
+                    background: 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #111 100%)',
+                    border: `3px solid ${isStarter ? '#8B7355' : theme.border}`,
+                    borderRadius: '10px',
                     cursor: 'pointer',
+                    overflow: 'hidden',
+                    boxShadow: `inset 0 0 20px rgba(0,0,0,0.3), 0 0 8px ${theme.glow}`,
+                    transition: 'box-shadow 0.2s, transform 0.2s',
                   }}>
+                    {/* Top bar: name + HP */}
                     <div style={{
-                      flexShrink: 0,
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '4px',
-                      overflow: 'hidden',
-                      background: theme.gradient,
-                      border: `1px solid ${theme.border}`,
+                      background: 'rgba(0,0,0,0.4)',
+                      padding: '6px 8px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      borderBottom: `2px solid ${theme.border}44`,
                     }}>
-                      <PixelAvatar card={card} theme={theme} size={32} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontFamily: 'var(--font-pixel)',
-                        fontSize: '7px',
-                        color: '#ccc',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}>
-                        {card.heroTitle}
-                        {isStarter && ' (S)'}
-                      </div>
                       <div style={{
                         fontFamily: 'var(--font-pixel)',
                         fontSize: '6px',
                         color: theme.accent,
-                        opacity: 0.7,
+                        flex: 1,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        textShadow: `0 0 6px ${theme.glow}`,
                       }}>
-                        {card.heroType}
+                        {isStarter && <span style={{ color: '#ffd700', marginRight: '3px' }}>★</span>}
+                        {card.heroTitle}
                       </div>
                       <div style={{
                         fontFamily: 'var(--font-pixel)',
-                        fontSize: '6px',
-                        color: '#666',
-                        marginTop: '2px',
+                        fontSize: '7px',
+                        color: '#FF4444',
+                        whiteSpace: 'nowrap',
+                        marginLeft: '4px',
                       }}>
-                        HP:{card.hp} A:{card.attack} D:{card.defense} S:{card.speed}
+                        HP {card.hp}
                       </div>
+                    </div>
+
+                    {/* Avatar frame */}
+                    <div style={{
+                      margin: '6px 8px',
+                      background: 'rgba(0,0,0,0.5)',
+                      border: `2px solid ${theme.border}44`,
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      padding: '4px 0',
+                    }}>
+                      <PixelAvatar card={card} theme={theme} size={90} />
+                    </div>
+
+                    {/* Type badges */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      marginBottom: '6px',
+                      padding: '0 8px',
+                    }}>
+                      {types.map((t, i) => {
+                        const tTheme = getTypeTheme(t.trim())
+                        return (
+                          <span key={i} style={{
+                            fontFamily: 'var(--font-pixel)',
+                            fontSize: '5px',
+                            color: tTheme.accent,
+                            background: `${tTheme.border}22`,
+                            border: `1px solid ${tTheme.border}55`,
+                            borderRadius: '8px',
+                            padding: '2px 6px',
+                            textTransform: 'uppercase',
+                          }}>
+                            {t.trim()}
+                          </span>
+                        )
+                      })}
+                    </div>
+
+                    {/* Stats bar */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-around',
+                      padding: '4px 6px',
+                      margin: '0 8px',
+                      background: 'rgba(0,0,0,0.3)',
+                      borderRadius: '4px',
+                      border: '1px solid #222',
+                    }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '8px', color: '#FF8800' }}>{card.attack}</div>
+                        <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '5px', color: '#888' }}>ATK</div>
+                      </div>
+                      <div style={{ width: '1px', background: '#333' }} />
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '8px', color: '#4488FF' }}>{card.defense}</div>
+                        <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '5px', color: '#888' }}>DEF</div>
+                      </div>
+                      <div style={{ width: '1px', background: '#333' }} />
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '8px', color: '#FFDD00' }}>{card.speed}</div>
+                        <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '5px', color: '#888' }}>SPD</div>
+                      </div>
+                    </div>
+
+                    {/* Moves list */}
+                    <div style={{
+                      padding: '6px 8px 8px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '2px',
+                    }}>
+                      {card.specialMoves.map((m, i) => (
+                        <div key={i} style={{
+                          fontFamily: 'var(--font-pixel)',
+                          fontSize: '5px',
+                          color: '#999',
+                          padding: '2px 4px',
+                          background: i % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'transparent',
+                          borderRadius: '2px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {m}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )

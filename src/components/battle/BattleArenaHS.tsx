@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import type { BattleState, PlayerItem, ItemDefinition } from '@/types'
+import type { BattleState, PlayerItem, ItemDefinition, HeroCard } from '@/types'
 import { BattleCardHS } from './BattleCardHS'
 import { BenchStrip } from './BenchStrip'
 import { MoveGrid } from './MoveGrid'
 import { SlidePanel } from './SlidePanel'
+import { CardDetail } from './CardDetail'
 import { ItemButton } from './ItemButton'
 import { TauntBar } from './TauntBar'
 import { TauntBubble } from './TauntBubble'
@@ -29,6 +30,7 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
   const [submitting, setSubmitting] = useState(false)
   const [activePanel, setActivePanel] = useState<'items' | 'taunt' | 'log' | null>(null)
   const [showSwitchFromGrid, setShowSwitchFromGrid] = useState(false)
+  const [inspectedCard, setInspectedCard] = useState<HeroCard | null>(null)
   const { battle, challengerDeck, opponentDeck, turns, taunts, effects } = state
 
   const isChallenger = playerName === battle.challenger
@@ -128,26 +130,29 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
       </div>
 
       {/* Opponent bench */}
-      <BenchStrip deckCards={theirDeck} />
+      <BenchStrip deckCards={theirDeck} onInspect={setInspectedCard} />
 
       <div className="battle-divider" />
 
       {/* Opponent active card */}
       <div style={{ position: 'relative', padding: '4px 0' }}>
         <TauntBubble taunts={taunts} playerName={playerName} challengerName={battle.challenger} />
-        {theirActive ? (
-          <BattleCardHS
-            deckCard={theirActive}
-            side="top"
-            isAttacking={!isLastAttacker && turns.length > 0}
-            isHit={isLastAttacker && turns.length > 0}
-            effects={theirActiveEffects}
-          />
-        ) : (
-          <div style={{ textAlign: 'center', color: '#666', fontFamily: 'var(--font-pixel)', fontSize: '8px', padding: '20px' }}>
-            NO CARDS LEFT
-          </div>
-        )}
+        <div onClick={() => theirActive?.card && setInspectedCard(theirActive.card)}
+          style={{ cursor: theirActive?.card ? 'pointer' : 'default' }}>
+          {theirActive ? (
+            <BattleCardHS
+              deckCard={theirActive}
+              side="top"
+              isAttacking={!isLastAttacker && turns.length > 0}
+              isHit={isLastAttacker && turns.length > 0}
+              effects={theirActiveEffects}
+            />
+          ) : (
+            <div style={{ textAlign: 'center', color: '#666', fontFamily: 'var(--font-pixel)', fontSize: '8px', padding: '20px' }}>
+              NO CARDS LEFT
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Type matchup bar */}
@@ -173,8 +178,57 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
         </div>
       )}
 
+      {/* Last turn display */}
+      {lastTurn && !lastTurn.itemUsed && (
+        <div style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '7px',
+          textAlign: 'center',
+          padding: '4px 8px',
+          background: 'rgba(0,0,0,0.4)',
+          borderRadius: '4px',
+          borderLeft: `3px solid ${lastTurn.isCritical ? '#FF44FF' : lastTurn.typeMultiplier > 1 ? '#44CC44' : lastTurn.typeMultiplier < 1 ? '#FF8844' : 'var(--amiga-orange)'}`,
+        }}>
+          <span style={{ color: 'var(--crt-amber)' }}>{lastTurn.attacker}</span>
+          {' used '}
+          <span style={{ color: 'var(--amiga-orange)' }}>{lastTurn.moveUsed}</span>
+          {'! '}
+          <span style={{ color: lastTurn.isCritical ? '#FF44FF' : '#FF4444' }}>{lastTurn.damageDealt} dmg</span>
+          {lastTurn.isCritical && (
+            <span style={{ color: '#FF44FF' }}> CRIT!</span>
+          )}
+          {lastTurn.typeMultiplier > 1 && (
+            <span style={{ color: '#44CC44' }}> (super effective!)</span>
+          )}
+          {lastTurn.typeMultiplier < 1 && (
+            <span style={{ color: '#888' }}> (not very effective)</span>
+          )}
+          {lastTurn.isKnockout && (
+            <span style={{ color: '#FF4444' }}> KO!</span>
+          )}
+        </div>
+      )}
+      {lastTurn && lastTurn.itemUsed && (
+        <div style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '7px',
+          textAlign: 'center',
+          padding: '4px 8px',
+          background: 'rgba(0,0,0,0.4)',
+          borderRadius: '4px',
+          borderLeft: '3px solid #44DDFF',
+        }}>
+          <span style={{ color: 'var(--crt-amber)' }}>{lastTurn.attacker}</span>
+          {' used '}
+          <span style={{ color: '#44DDFF' }}>{lastTurn.itemUsed.replace(/_/g, ' ')}</span>
+          {'! '}
+          <span style={{ color: '#88CCFF' }}>{lastTurn.itemEffect}</span>
+        </div>
+      )}
+
       {/* Your active card */}
-      <div style={{ padding: '4px 0' }}>
+      <div style={{ padding: '4px 0', cursor: myActive?.card ? 'pointer' : 'default' }}
+        onClick={() => myActive?.card && setInspectedCard(myActive.card)}>
         {myActive ? (
           <BattleCardHS
             deckCard={myActive}
@@ -196,6 +250,7 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
       <BenchStrip
         deckCards={myDeck}
         onSwitch={isMySwitchTurn || showSwitchFromGrid ? handleSwitch : undefined}
+        onInspect={!(isMySwitchTurn || showSwitchFromGrid) ? setInspectedCard : undefined}
         isSelecting={isMySwitchTurn || showSwitchFromGrid}
       />
 
@@ -308,6 +363,11 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
       <SlidePanel isOpen={activePanel === 'log'} onClose={() => setActivePanel(null)} title="BATTLE LOG">
         <BattleTurnLog turns={turns} />
       </SlidePanel>
+
+      {/* Card detail modal */}
+      {inspectedCard && (
+        <CardDetail card={inspectedCard} onClose={() => setInspectedCard(null)} />
+      )}
     </div>
   )
 }

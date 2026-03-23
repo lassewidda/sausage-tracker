@@ -1,15 +1,16 @@
 'use client'
 
-import type { BattleDeckCard } from '@/types'
+import type { BattleDeckCard, HeroCard } from '@/types'
 import { PixelAvatar, getTypeTheme } from '@/components/player/HeroCardDisplay'
 
 interface Props {
   deckCards: BattleDeckCard[]
   onSwitch?: (deckCardId: string) => void
+  onInspect?: (card: HeroCard) => void
   isSelecting?: boolean
 }
 
-export function BenchStrip({ deckCards, onSwitch, isSelecting }: Props) {
+export function BenchStrip({ deckCards, onSwitch, onInspect, isSelecting }: Props) {
   return (
     <div className="bench-strip">
       {deckCards.map(dc => {
@@ -25,13 +26,17 @@ export function BenchStrip({ deckCards, onSwitch, isSelecting }: Props) {
         if (dc.isActive) className += ' bench-card--active'
         if (dc.isKnockedOut) className += ' bench-card--ko'
         if (canSelect) className += ' bench-card--selectable'
+        if (onInspect && !canSelect) className += ' bench-card--selectable'
 
         return (
           <div
             key={dc.id}
             className={className}
             style={{ borderColor: dc.isActive ? theme.border : undefined }}
-            onClick={() => canSelect && onSwitch(dc.id)}
+            onClick={() => {
+              if (canSelect) { onSwitch(dc.id) }
+              else if (onInspect) { onInspect(card) }
+            }}
             title={card.heroTitle}
           >
             {dc.isKnockedOut && <span className="bench-card__ko-x">✕</span>}
