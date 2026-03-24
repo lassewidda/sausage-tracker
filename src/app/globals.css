@@ -981,6 +981,29 @@ body {
   padding: 4px 8px;
 }
 
+/* Critical hit animations */
+@keyframes crit-flash {
+  0%   { background: transparent; }
+  5%   { background: rgba(255, 68, 255, 0.3); }
+  10%  { background: rgba(255, 255, 255, 0.5); }
+  15%  { background: rgba(255, 68, 255, 0.2); }
+  25%  { background: rgba(255, 68, 255, 0.1); }
+  40%  { background: transparent; }
+  100% { background: transparent; }
+}
+
+@keyframes crit-text-enter {
+  0%   { transform: scale(3); opacity: 0; }
+  40%  { transform: scale(0.9); opacity: 1; }
+  60%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes crit-shake {
+  0%   { transform: translateX(-2px) rotate(-1deg); }
+  50%  { transform: translateX(2px) rotate(1deg); }
+}
+
 /* HS vertical attack animations */
 @keyframes hs-attack-up {
   0%   { transform: translateY(0); }

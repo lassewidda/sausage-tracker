@@ -208,6 +208,27 @@ async function migrate() {
   await sql`ALTER TABLE battle_turns ADD COLUMN IF NOT EXISTS item_used TEXT`
   await sql`ALTER TABLE battle_turns ADD COLUMN IF NOT EXISTS item_effect TEXT`
 
+  // Player wallets (Frankfurter currency)
+  await sql`
+    CREATE TABLE IF NOT EXISTS player_wallets (
+      player_name  TEXT PRIMARY KEY,
+      balance      INTEGER NOT NULL DEFAULT 0
+    )
+  `
+
+  // Shop transactions
+  await sql`
+    CREATE TABLE IF NOT EXISTS shop_transactions (
+      id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      player_name  TEXT NOT NULL,
+      item_slug    TEXT NOT NULL,
+      price        INTEGER NOT NULL,
+      created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_shop_transactions_player ON shop_transactions(player_name, created_at DESC)`
+
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_week_key ON meals(week_key DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_created_at ON meals(created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_player_name ON meals(player_name)`

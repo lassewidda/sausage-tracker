@@ -9,6 +9,7 @@ import { ItemButton } from './ItemButton'
 import { BattleTurnLog } from './BattleTurnLog'
 import { TauntBar } from './TauntBar'
 import { TauntBubble } from './TauntBubble'
+import { CriticalHitOverlay } from './CriticalHitOverlay'
 import { parseMoveDamage, getTypeMatchupMultiplier } from '@/lib/battleEngine'
 
 interface InventoryItem extends PlayerItem {
@@ -435,6 +436,9 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
 
       {/* Turn log */}
       <BattleTurnLog turns={turns} />
+
+      {/* Critical hit overlay */}
+      <CriticalHitOverlay turns={turns} />
 
       {/* Card detail modal */}
       {inspectedCard && (

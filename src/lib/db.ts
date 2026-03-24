@@ -1331,3 +1331,45 @@ function rowToMeal(row: any): Meal {
     playerName: row.player_name ?? 'Anonymous',
   }
 }
+
+// ── Shop / Wallet ──────────────────────────────────────────
+
+export async function getPlayerBalance(playerName: string): Promise<number> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT balance FROM player_wallets WHERE player_name = ${playerName}
+  `
+  await sql.end()
+  return rows.length > 0 ? (rows[0].balance as number) : 0
+}
+
+export async function deductBalance(playerName: string, amount: number): Promise<boolean> {
+  const sql = getDb()
+  const rows = await sql`
+    UPDATE player_wallets SET balance = balance - ${amount}
+    WHERE player_name = ${playerName} AND balance >= ${amount}
+    RETURNING balance
+  `
+  await sql.end()
+  return rows.length > 0
+}
+
+export async function addBalance(playerName: string, amount: number): Promise<number> {
+  const sql = getDb()
+  const rows = await sql`
+    INSERT INTO player_wallets (player_name, balance) VALUES (${playerName}, ${amount})
+    ON CONFLICT (player_name) DO UPDATE SET balance = player_wallets.balance + ${amount}
+    RETURNING balance
+  `
+  await sql.end()
+  return rows[0].balance as number
+}
+
+export async function recordShopPurchase(playerName: string, itemSlug: string, price: number): Promise<void> {
+  const sql = getDb()
+  await sql`
+    INSERT INTO shop_transactions (player_name, item_slug, price)
+    VALUES (${playerName}, ${itemSlug}, ${price})
+  `
+  await sql.end()
+}

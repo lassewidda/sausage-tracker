@@ -81,7 +81,7 @@ ${existingTitlesList}${existingTypesList}
 
 Generate a JSON card with these fields. Be creative, funny, and thematic around sausages:
 
-- heroTitle: A dramatic superhero/Pokémon name (e.g., "The Bratwurst Berserker", "Wiener Warlord", "Chorizo Champion"). Make it unique to this player's habits. IMPORTANT: Every card MUST have a completely different, unique name — never repeat or closely resemble a previous title.
+- heroTitle: A dramatic superhero/Pokémon name (e.g., "The Bratwurst Berserker", "Wiener Warlord", "Chorizo Champion"). Make it unique to this player's habits. IMPORTANT: Every card MUST have a completely different, unique name — never repeat or closely resemble a previous title. CRITICAL: Do NOT include the player's name in the heroTitle. The title should be a standalone character name like "The Frankfurter Phantom" not "Lars the Frankfurter Phantom".
 - heroType: MUST be exactly two types from this list separated by /: BRATWURST, FRANKFURTER, CHORIZO, KIELBASA, ANDOUILLE, WEISSWURST, CURRYWURST, BLOOD_SAUSAGE, VEGGIE, MUSTARD, SAUERKRAUT, GRILLED. Example: "CHORIZO/GRILLED" or "FRANKFURTER/MUSTARD". Pick types that match the player's sausage eating patterns. IMPORTANT: Use a DIFFERENT type combination than any previously used.
 - hp: A number 30-120 based on total grams consumed (more grams = higher HP, but max 120)
 - attack: A number 10-60 based on max sausages in one meal

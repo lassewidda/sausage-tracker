@@ -11,6 +11,7 @@ import { ItemButton } from './ItemButton'
 import { TauntBar } from './TauntBar'
 import { TauntBubble } from './TauntBubble'
 import { BattleTurnLog } from './BattleTurnLog'
+import { CriticalHitOverlay } from './CriticalHitOverlay'
 import { parseMoveDamage, getTypeMatchupMultiplier } from '@/lib/battleEngine'
 
 interface InventoryItem extends PlayerItem {
@@ -363,6 +364,9 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
       <SlidePanel isOpen={activePanel === 'log'} onClose={() => setActivePanel(null)} title="BATTLE LOG">
         <BattleTurnLog turns={turns} />
       </SlidePanel>
+
+      {/* Critical hit overlay */}
+      <CriticalHitOverlay turns={turns} />
 
       {/* Card detail modal */}
       {inspectedCard && (

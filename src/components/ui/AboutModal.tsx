@@ -49,8 +49,9 @@ export function AboutModal() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              maxWidth: '420px',
+              maxWidth: '500px',
               width: 'calc(100% - 32px)',
+              overflow: 'hidden',
               animation: 'card-enter 0.3s steps(4)',
               background: 'var(--amiga-grey)',
               borderTop: '2px solid var(--bevel-light)',
@@ -66,11 +67,9 @@ export function AboutModal() {
             <div style={{
               padding: '14px',
               overflowY: 'auto',
-              maxHeight: '70vh',
-              fontSize: '13px',
-              lineHeight: '1.6',
-              color: 'var(--amiga-white)',
-              fontFamily: 'monospace',
+              overflowX: 'hidden',
+              maxHeight: '85vh',
+              minHeight: '300px',
             }}>
               <div style={{
                 fontFamily: 'var(--font-pixel)',
@@ -82,19 +81,47 @@ export function AboutModal() {
                 SAUSAGE TRACKER V1.1
               </div>
 
-              <p style={{ margin: '0 0 10px 0' }}>
+              <p style={{
+                margin: '0 0 10px 0',
+                fontFamily: "'Courier New', Courier, monospace",
+                fontSize: '12px',
+                lineHeight: '1.8',
+                color: 'var(--amiga-white)',
+                textTransform: 'uppercase' as const,
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+              }}>
                 Photo uploader where AI counts your sausages. Each week, your eating
                 habits generate a unique hero card with sausage-pun moves and
                 stats based on your consumption.
               </p>
 
-              <p style={{ margin: '0 0 10px 0' }}>
+              <p style={{
+                margin: '0 0 10px 0',
+                fontFamily: "'Courier New', Courier, monospace",
+                fontSize: '12px',
+                lineHeight: '1.8',
+                color: 'var(--amiga-white)',
+                textTransform: 'uppercase' as const,
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+              }}>
                 Challenge friends in turn-based card battles with type advantages,
                 items, deck building, and ELO rankings. Includes live taunts and
                 AI-generated battle recaps.
               </p>
 
-              <p style={{ margin: 0, color: '#888', fontStyle: 'italic', fontSize: '11px' }}>
+              <p style={{
+                margin: 0,
+                fontFamily: "'Courier New', Courier, monospace",
+                fontSize: '11px',
+                lineHeight: '1.8',
+                color: '#888',
+                fontStyle: 'italic',
+                textTransform: 'uppercase' as const,
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+              }}>
                 Built with Next.js, Claude Haiku, and an unhealthy obsession with
                 processed meat.
               </p>

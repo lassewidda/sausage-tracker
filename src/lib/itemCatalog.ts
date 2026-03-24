@@ -423,3 +423,7 @@ export function rollItemDrop(): ItemDefinition | null {
 export function getItemDefinition(itemKey: string): ItemDefinition | undefined {
   return ITEM_CATALOG[itemKey]
 }
+
+export function getItemsByRarity(rarity: string): ItemDefinition[] {
+  return Object.values(ITEM_CATALOG).filter(item => item.rarity === rarity)
+}
