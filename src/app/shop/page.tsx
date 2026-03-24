@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useName } from '@/lib/useName'
 import type { ShopItem } from '@/lib/shopCatalog'
+import { ShopItemIcon } from '@/components/shop/ShopItemIcon'
 
 type Category = 'merch' | 'card_pack' | 'item'
 
@@ -165,7 +166,14 @@ export default function ShopPage() {
                 borderRadius: '6px',
                 padding: '12px',
                 opacity: item.available ? 1 : 0.7,
+                display: 'flex',
+                gap: '12px',
               }}>
+                {/* Icon */}
+                <ShopItemIcon slug={item.slug} category={item.category} size={56} />
+
+                {/* Content */}
+                <div style={{ flex: 1, minWidth: 0 }}>
                 {/* Header */}
                 <div style={{
                   display: 'flex',
@@ -264,6 +272,7 @@ export default function ShopPage() {
                     COMING SOON
                   </button>
                 )}
+                </div>
               </div>
             ))}
           </div>
