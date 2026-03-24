@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getPlayerInventory, addPlayerItem } from '@/lib/db'
-import { ITEM_CATALOG } from '@/lib/itemCatalog'
+import theme from '@/theme'
 import postgres from 'postgres'
 
 export const dynamic = 'force-dynamic'
@@ -16,7 +16,7 @@ export async function GET() {
   `
   await sql.end()
 
-  const allKeys = Object.keys(ITEM_CATALOG)
+  const allKeys = Object.keys(theme.itemCatalog)
   const results: string[] = []
 
   for (const row of players) {
@@ -28,7 +28,7 @@ export async function GET() {
     }
     const randomKey = allKeys[Math.floor(Math.random() * allKeys.length)]
     await addPlayerItem(name, randomKey)
-    results.push(`${name}: gave ${ITEM_CATALOG[randomKey].name} (${ITEM_CATALOG[randomKey].rarity})`)
+    results.push(`${name}: gave ${theme.itemCatalog[randomKey].name} (${theme.itemCatalog[randomKey].rarity})`)
   }
 
   return NextResponse.json({ results })

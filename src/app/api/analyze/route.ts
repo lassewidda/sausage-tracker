@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { analyzeSausages } from '@/lib/claude'
+import { analyzeImage } from '@/lib/claude'
 
 export async function POST(request: Request): Promise<NextResponse> {
   let imageUrl: string
@@ -16,7 +16,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const result = await analyzeSausages(imageUrl)
+    const result = await analyzeImage(imageUrl)
     return NextResponse.json(result)
   } catch (error) {
     console.error('Analysis error:', error)

@@ -1,22 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { AnalysisResult } from '@/types'
-
-const SAUSAGE_SYSTEM_PROMPT = `You are a precise food analysis assistant specialized in identifying sausages in meal photographs. Your task is to count sausages, estimate their weight, and respond with valid JSON only.
-
-A "sausage" includes: bratwurst, frankfurters, hot dogs, chorizo, merguez, breakfast sausages, chipolatas, weisswurst, bangers, and any similar cylindrical cased meat product. Do NOT count meatballs, nuggets, or other non-sausage items.
-
-Also estimate the weight of a single sausage in grams based on its apparent type and size. Use these reference weights:
-- Mini/cocktail sausage: 20-30g
-- Chipolata / breakfast sausage: 35-50g
-- Hot dog / frankfurter: 60-80g
-- Standard bratwurst / banger: 90-120g
-- Large bratwurst / thick sausage: 130-180g
-- Extra large / jumbo sausage: 200g+
-
-Always respond with ONLY a JSON object in this exact format, no other text, no markdown:
-{"count":<integer>,"description":"<one sentence describing the meal and sausages>","confidence":"<high|medium|low>","sausage_types":["<type>"],"grams_per_sausage":<integer>}
-
-If you cannot determine whether sausages are present, set count to 0, confidence to "low", and grams_per_sausage to 0.`
+import theme from '@/theme'
 
 let _client: Anthropic | null = null
 
@@ -29,13 +13,13 @@ function getClient(): Anthropic {
 
 export async function generateHeroCard(data: {
   playerName: string
-  totalSausages: number
+  totalItems: number
   totalGrams: number
   mealCount: number
   maxInOneMeal: number
   activeWeeks: number
   chainLength: number
-  recentMeals: { description: string | null; sausageCount: number }[]
+  recentMeals: { description: string | null; itemCount: number }[]
   existingTitles?: string[]
   existingTypes?: string[]
 }): Promise<{
@@ -54,7 +38,7 @@ export async function generateHeroCard(data: {
 
   const recentDescriptions = data.recentMeals
     .filter(m => m.description)
-    .map(m => `- ${m.sausageCount} sausage(s): ${m.description}`)
+    .map(m => `- ${m.itemCount} item(s): ${m.description}`)
     .join('\n')
 
   const existingTitlesList = data.existingTitles?.length
@@ -65,38 +49,18 @@ export async function generateHeroCard(data: {
     ? `\n\nALREADY USED TYPE COMBINATIONS (MUST pick a DIFFERENT combination):\n${Array.from(new Set(data.existingTypes)).map(t => `- ${t}`).join('\n')}`
     : ''
 
-  const prompt = `Create a superhero/Pokémon-style trading card for sausage champion "${data.playerName}".
-
-PLAYER STATS:
-- Total lifetime sausages: ${data.totalSausages}
-- Total weight consumed: ${data.totalGrams}g
-- Meals logged: ${data.mealCount}
-- Max sausages in a single meal: ${data.maxInOneMeal}
-- Active weeks: ${data.activeWeeks}
-- Current sausage chain: ${data.chainLength} consecutive weeks
-
-RECENT MEALS:
-${recentDescriptions || 'No recent meals'}
-${existingTitlesList}${existingTypesList}
-
-Generate a JSON card with these fields. Be creative, funny, and thematic around sausages:
-
-- heroTitle: A dramatic superhero/Pokémon name (e.g., "The Bratwurst Berserker", "Wiener Warlord", "Chorizo Champion"). Make it unique to this player's habits. IMPORTANT: Every card MUST have a completely different, unique name — never repeat or closely resemble a previous title. CRITICAL: Do NOT include the player's name in the heroTitle. The title should be a standalone character name like "The Frankfurter Phantom" not "Lars the Frankfurter Phantom".
-- heroType: MUST be exactly two types from this list separated by /: BRATWURST, FRANKFURTER, CHORIZO, KIELBASA, ANDOUILLE, WEISSWURST, CURRYWURST, BLOOD_SAUSAGE, VEGGIE, MUSTARD, SAUERKRAUT, GRILLED. Example: "CHORIZO/GRILLED" or "FRANKFURTER/MUSTARD". Pick types that match the player's sausage eating patterns. IMPORTANT: Use a DIFFERENT type combination than any previously used.
-- hp: A number 30-120 based on total grams consumed (more grams = higher HP, but max 120)
-- attack: A number 10-60 based on max sausages in one meal
-- defense: A number 10-60 based on chain length (consistency)
-- speed: A number 10-60 based on meals per active week
-- specialMoves: Array of exactly 3 special moves. Format: "Move Name (damage/PP)" where damage is the attack power and PP is how many times it can be used. Design a balanced set:
-  * One strong move: high damage (40-50), low PP (2-3). Example: "Mustard Megablast (45/2)"
-  * One medium move: moderate damage (25-35), medium PP (5-7). Example: "Casing Crush (30/6)"
-  * One weak but reliable move: low damage (15-25), high PP (10-15). Example: "Link Slap (20/12)"
-  Make each move a sausage pun or food reference!
-- weakness: A funny weakness (one short sentence)
-- catchphrase: A dramatic one-liner this hero would say
-- flavorText: 1-2 sentences of dramatic Pokédex-style lore about this sausage warrior
-
-Respond with ONLY valid JSON, no markdown, no explanation.`
+  const prompt = theme.prompts.heroCardPrompt({
+    playerName: data.playerName,
+    totalItems: data.totalItems,
+    totalWeight: data.totalGrams,
+    mealCount: data.mealCount,
+    maxInOneMeal: data.maxInOneMeal,
+    activeWeeks: data.activeWeeks,
+    chainLength: data.chainLength,
+    recentDescriptions: recentDescriptions || 'No recent meals',
+    existingTitlesList,
+    existingTypesList,
+  })
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
@@ -134,7 +98,7 @@ export async function rewriteDescriptionForCount(
     messages: [
       {
         role: 'user',
-        content: `The following meal description was written assuming there are ${oldCount} sausage(s): "${description}"\n\nRewrite ONLY that sentence so it correctly says there are ${newCount} sausage(s) instead. Return just the rewritten sentence, nothing else.`,
+        content: theme.prompts.descriptionRewritePrompt(description, oldCount, newCount),
       },
     ],
   })
@@ -147,43 +111,36 @@ export async function rewriteDescriptionForCount(
 export async function generateWeeklySummary(data: {
   playerName: string
   weekLabel: string
-  meals: { description: string | null; sausageCount: number; estimatedGrams: number | null }[]
-  totalSausages: number
+  meals: { description: string | null; itemCount: number; estimatedGrams: number | null }[]
+  totalItems: number
   totalGrams: number
   chainLength: number
-  prevWeekSausages: number
+  prevWeekItems: number
 }): Promise<string> {
   const client = getClient()
 
   const mealList = data.meals
-    .map((m, i) => `  Meal ${i + 1}: ${m.sausageCount} sausage(s), ~${m.estimatedGrams ?? '?'}g — "${m.description ?? 'no description'}"`)
+    .map((m, i) => `  Meal ${i + 1}: ${m.itemCount} item(s), ~${m.estimatedGrams ?? '?'}g — "${m.description ?? 'no description'}"`)
     .join('\n')
 
   const chainStatus = data.chainLength > 0
-    ? `Active sausage chain: ${data.chainLength} consecutive week(s) with 3+ sausages.`
-    : 'Sausage chain: BROKEN (failed to reach 3 sausages this week).'
+    ? `Active chain: ${data.chainLength} consecutive week(s) with 3+ items.`
+    : 'Chain: BROKEN (failed to reach 3 items this week).'
 
-  const trend = data.prevWeekSausages > 0
-    ? `Previous week: ${data.prevWeekSausages} sausages. Change: ${data.totalSausages > data.prevWeekSausages ? '+' : ''}${data.totalSausages - data.prevWeekSausages}.`
+  const trend = data.prevWeekItems > 0
+    ? `Previous week: ${data.prevWeekItems} items. Change: ${data.totalItems > data.prevWeekItems ? '+' : ''}${data.totalItems - data.prevWeekItems}.`
     : 'No data from previous week for comparison.'
 
-  const prompt = `Write a brief weekly sausage consumption report for "${data.playerName}" for ${data.weekLabel}.
-
-DATA:
-- Total sausages consumed: ${data.totalSausages}
-- Total estimated weight: ${data.totalGrams}g
-- Number of meals logged: ${data.meals.length}
-- ${chainStatus}
-- ${trend}
-
-MEALS:
-${mealList}
-
-STYLE: Write 2-4 sentences in the tone of a scientific research paper abstract, but about sausages. Be humorous and absurd while referencing real scientific terminology (e.g., "caloric intake patterns", "protein acquisition events", "longitudinal consumption metrics", "gastrointestinal throughput", "cylindrical meat product utilization").
-
-IMPORTANT: Vary your opening every time. NEVER start with "This longitudinal analysis" or any repetitive pattern. Use creative, different openings — start with the player's name, a dramatic observation, a fake citation, a surprising statistic, a metaphor, or jump straight into the findings. Every report should feel fresh and unique.
-
-Include observations about their specific sausage choices and quantities. Comment on their chain status. Keep it SHORT and punchy. Do not use markdown formatting.`
+  const prompt = theme.prompts.weeklySummaryPrompt({
+    playerName: data.playerName,
+    weekLabel: data.weekLabel,
+    mealList,
+    totalItems: data.totalItems,
+    totalWeight: data.totalGrams,
+    mealCount: data.meals.length,
+    chainStatus,
+    trend,
+  })
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
@@ -222,15 +179,12 @@ export async function generateBattleSummary(data: {
     return `Turn ${t.turnNumber}: ${t.attacker}'s ${t.attackerCard} used ${t.moveUsed} on ${t.defenderCard} → ${t.damageDealt} damage${crit}${multi}${ko} (${t.defenderHpAfter} HP left)`
   }).join('\n')
 
-  const prompt = `Write a dramatic, funny battle recap for a sausage-themed Pokémon-style card game called "Sausage Tracker".
-
-BATTLE: ${data.challenger.toUpperCase()} vs ${data.opponent.toUpperCase()}
-WINNER: ${data.winner ? data.winner.toUpperCase() : 'DRAW'}
-
-TURN-BY-TURN LOG:
-${turnLog}
-
-Write a 3-5 sentence dramatic sports-announcer-style recap of this battle. Be funny, use sausage puns, reference specific moves and knockouts from the log. Write like a breathless esports commentator crossed with a hot dog vendor. Keep it punchy and entertaining. No markdown formatting.`
+  const prompt = theme.prompts.battleSummaryPrompt({
+    challenger: data.challenger,
+    opponent: data.opponent,
+    winner: data.winner,
+    turnLog,
+  })
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
@@ -243,13 +197,13 @@ Write a 3-5 sentence dramatic sports-announcer-style recap of this battle. Be fu
   return block.text.trim()
 }
 
-export async function analyzeSausages(imageUrl: string): Promise<AnalysisResult> {
+export async function analyzeImage(imageUrl: string): Promise<AnalysisResult> {
   const client = getClient()
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 256,
-    system: SAUSAGE_SYSTEM_PROMPT,
+    system: theme.prompts.visionSystemPrompt,
     messages: [
       {
         role: 'user',
@@ -263,7 +217,7 @@ export async function analyzeSausages(imageUrl: string): Promise<AnalysisResult>
           },
           {
             type: 'text',
-            text: 'Count the sausages in this meal photo and respond with JSON only.',
+            text: theme.prompts.visionUserPrompt,
           },
         ],
       },
@@ -295,7 +249,7 @@ export async function analyzeSausages(imageUrl: string): Promise<AnalysisResult>
     confidence: (['high', 'medium', 'low'].includes(parsed.confidence)
       ? parsed.confidence
       : 'low') as AnalysisResult['confidence'],
-    sausageTypes: Array.isArray(parsed.sausage_types) ? parsed.sausage_types : [],
-    gramsPerSausage: Math.max(0, Math.round(Number(parsed.grams_per_sausage) || 0)),
+    detectedTypes: Array.isArray(parsed.sausage_types) ? parsed.sausage_types : [],
+    weightPerItem: Math.max(0, Math.round(Number(parsed.grams_per_sausage) || 0)),
   }
 }

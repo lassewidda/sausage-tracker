@@ -2,7 +2,7 @@ export interface Meal {
   id: string
   imageUrl: string
   blobPath: string
-  sausageCount: number
+  itemCount: number
   aiSuggestedCount: number | null
   aiDescription: string | null
   estimatedGrams: number | null
@@ -13,7 +13,7 @@ export interface Meal {
 
 export interface LeaderboardEntry {
   playerName: string
-  totalSausages: number
+  totalItems: number
   totalGrams: number
   rank: number
 }
@@ -28,14 +28,14 @@ export interface AnalysisResult {
   count: number
   description: string
   confidence: 'high' | 'medium' | 'low'
-  sausageTypes: string[]
-  gramsPerSausage: number
+  detectedTypes: string[]
+  weightPerItem: number
 }
 
 export interface WeekGroup {
   weekKey: string
   weekLabel: string
-  totalSausages: number
+  totalItems: number
   totalGrams: number
   meals: Meal[]
 }
@@ -46,7 +46,7 @@ export interface GalleryData {
   grandTotalGrams: number
 }
 
-export interface SausageChainEntry {
+export interface ChainEntry {
   playerName: string
   streakWeeks: number
 }
@@ -146,7 +146,7 @@ export interface WeeklySummary {
   playerName: string
   weekKey: string
   summaryText: string
-  totalSausages: number
+  totalItems: number
   totalGrams: number
   mealCount: number
   chainLength: number

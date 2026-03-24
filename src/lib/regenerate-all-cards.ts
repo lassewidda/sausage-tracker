@@ -32,9 +32,9 @@ async function regenerateAll() {
     const statsRows = await sql`
       SELECT
         COUNT(*)::int AS meal_count,
-        SUM(sausage_count)::int AS total_sausages,
+        SUM(item_count)::int AS total_items,
         COALESCE(SUM(estimated_grams), 0)::int AS total_grams,
-        MAX(sausage_count)::int AS max_in_one_meal,
+        MAX(item_count)::int AS max_in_one_meal,
         COUNT(DISTINCT week_key)::int AS active_weeks
       FROM meals
       WHERE player_name = ${playerName} AND week_key <= ${weekKey}
@@ -42,7 +42,7 @@ async function regenerateAll() {
     const stats = statsRows[0]
 
     const recentRows = await sql`
-      SELECT ai_description, sausage_count
+      SELECT ai_description, item_count
       FROM meals
       WHERE player_name = ${playerName} AND week_key <= ${weekKey}
       ORDER BY created_at DESC LIMIT 10
@@ -51,7 +51,7 @@ async function regenerateAll() {
     try {
       const generated = await generateHeroCard({
         playerName,
-        totalSausages: (stats.total_sausages as number) || 0,
+        totalItems: (stats.total_items as number) || 0,
         totalGrams: (stats.total_grams as number) || 0,
         mealCount: (stats.meal_count as number) || 0,
         maxInOneMeal: (stats.max_in_one_meal as number) || 0,
@@ -59,7 +59,7 @@ async function regenerateAll() {
         chainLength: 0,
         recentMeals: recentRows.map(r => ({
           description: r.ai_description as string | null,
-          sausageCount: r.sausage_count as number,
+          itemCount: r.item_count as number,
         })),
       })
 
@@ -91,8 +91,8 @@ async function regenerateAll() {
   }
 
   // Insert starter cards for all players
-  const { getStarterCards } = await import('./battleEngine')
-  const starters = getStarterCards()
+  const themeModule = await import('@/theme')
+  const starters = themeModule.default.starterCards
   const allPlayers = Array.from(new Set(playerWeeks.map(pw => pw.player_name as string)))
   console.log(`\n=== Inserting starter cards for ${allPlayers.length} players ===`)
   for (const player of allPlayers) {

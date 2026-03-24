@@ -1,33 +1,5 @@
 import type { HeroCard, BattleDeckCard } from '@/types'
-
-// Sausage-themed type advantage matrix
-// Super effective = 1.5x, not very effective = 0.66x
-const TYPE_CHART: Record<string, Record<string, number>> = {
-  BRATWURST:    { FRANKFURTER: 1.5, VEGGIE: 1.5, WEISSWURST: 0.66 },
-  FRANKFURTER:  { WEISSWURST: 1.5, VEGGIE: 1.5, MUSTARD: 0.66, CHORIZO: 0.66 },
-  CHORIZO:      { FRANKFURTER: 1.5, WEISSWURST: 1.5, KIELBASA: 1.5, SAUERKRAUT: 0.66 },
-  KIELBASA:     { BRATWURST: 1.5, ANDOUILLE: 1.5, CHORIZO: 0.66, CURRYWURST: 0.66 },
-  ANDOUILLE:    { FRANKFURTER: 1.5, CURRYWURST: 1.5, KIELBASA: 0.66, BLOOD_SAUSAGE: 0.66 },
-  WEISSWURST:   { KIELBASA: 1.5, BLOOD_SAUSAGE: 1.5, CHORIZO: 0.66, GRILLED: 0.66 },
-  CURRYWURST:   { KIELBASA: 1.5, BRATWURST: 1.5, ANDOUILLE: 0.66, SAUERKRAUT: 0.66 },
-  BLOOD_SAUSAGE:{ VEGGIE: 1.5, ANDOUILLE: 1.5, WEISSWURST: 0.66, MUSTARD: 0.66 },
-  VEGGIE:       { SAUERKRAUT: 1.5, MUSTARD: 1.5, BRATWURST: 0.66, BLOOD_SAUSAGE: 0.66, CHORIZO: 0.66 },
-  MUSTARD:      { FRANKFURTER: 1.5, BLOOD_SAUSAGE: 1.5, SAUERKRAUT: 0.66, VEGGIE: 0.66 },
-  SAUERKRAUT:   { MUSTARD: 1.5, CHORIZO: 1.5, CURRYWURST: 1.5, VEGGIE: 0.66, BRATWURST: 0.66 },
-  GRILLED:      { WEISSWURST: 1.5, VEGGIE: 1.5, SAUERKRAUT: 0.66, MUSTARD: 0.66 },
-  // Legacy types still work with neutral multiplier
-  FIRE: { GRASS: 1.5, ICE: 1.5 },
-  WATER: { FIRE: 1.5 },
-  MEAT: {},
-  NORMAL: {},
-  DARK: {},
-  STEEL: {},
-  POISON: {},
-  ELECTRIC: {},
-  ICE: {},
-  GRASS: {},
-  SMOKED: {},
-}
+import theme from '@/theme'
 
 export interface ParsedMove {
   name: string
@@ -56,7 +28,7 @@ function getTypeMultiplier(attackerTypes: string[], defenderTypes: string[]): nu
   let multiplier = 1.0
 
   for (const atkType of attackerTypes) {
-    const chart = TYPE_CHART[atkType]
+    const chart = theme.typeChart[atkType]
     if (!chart) continue
     for (const defType of defenderTypes) {
       const mod = chart[defType]
@@ -145,71 +117,3 @@ export function calculateElo(
   }
 }
 
-export interface StarterCard {
-  heroTitle: string
-  heroType: string
-  hp: number
-  attack: number
-  defense: number
-  speed: number
-  specialMoves: string[]
-  weakness: string
-  catchphrase: string
-  flavorText: string
-  weekKey: string
-}
-
-export function getStarterCards(): StarterCard[] {
-  return [
-    {
-      heroTitle: 'Soggy Microwave Frank',
-      heroType: 'FRANKFURTER/MUSTARD',
-      hp: 45, attack: 15, defense: 10, speed: 8,
-      specialMoves: ['Lukewarm Splash (25/10)', 'Sad Sizzle (35/5)', 'Ketchup Drizzle (45/2)'],
-      weakness: 'Any form of seasoning',
-      catchphrase: 'I was frozen five minutes ago...',
-      flavorText: 'Found behind the office microwave. Still slightly cold in the middle.',
-      weekKey: 'STARTER-1',
-    },
-    {
-      heroTitle: 'The Uncooked Rookie',
-      heroType: 'BRATWURST/VEGGIE',
-      hp: 40, attack: 10, defense: 20, speed: 6,
-      specialMoves: ['Raw Slap (20/15)', 'Refrigerator Chill (30/6)', 'Expiry Date Panic (40/3)'],
-      weakness: 'Room temperature',
-      catchphrase: 'Please... just cook me...',
-      flavorText: 'Straight out of the package with the little absorbent pad still attached.',
-      weekKey: 'STARTER-2',
-    },
-    {
-      heroTitle: 'Leftover Link',
-      heroType: 'KIELBASA/BLOOD_SAUSAGE',
-      hp: 50, attack: 12, defense: 12, speed: 15,
-      specialMoves: ['Day-Old Toss (20/12)', 'Suspicious Smell (30/6)', 'Microwave Spin (40/3)'],
-      weakness: 'Being sniffed before eating',
-      catchphrase: 'I was great yesterday, I swear!',
-      flavorText: 'Three days in the back of the fridge. Character building.',
-      weekKey: 'STARTER-3',
-    },
-    {
-      heroTitle: 'Bargain Bin Banger',
-      heroType: 'ANDOUILLE/SAUERKRAUT',
-      hp: 35, attack: 18, defense: 8, speed: 12,
-      specialMoves: ['Discount Slam (30/8)', 'Shrink-Wrap Shield (20/12)', 'Best Before Blitz (45/2)'],
-      weakness: 'Quality control',
-      catchphrase: '50% off and worth every penny!',
-      flavorText: 'The yellow sticker special. Questionable origin, unbeatable price.',
-      weekKey: 'STARTER-4',
-    },
-    {
-      heroTitle: 'Mystery Meat Cylinder',
-      heroType: 'CURRYWURST/CHORIZO',
-      hp: 55, attack: 8, defense: 15, speed: 5,
-      specialMoves: ['Ambiguous Ooze (20/15)', 'Label Confusion (35/5)', 'Preservative Burst (45/2)'],
-      weakness: 'Ingredient lists',
-      catchphrase: 'You don\'t want to know what\'s inside...',
-      flavorText: 'Contents: meat (probably). May contain traces of everything.',
-      weekKey: 'STARTER-5',
-    },
-  ]
-}

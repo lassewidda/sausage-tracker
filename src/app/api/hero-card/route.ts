@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getHeroCard, getPlayerDeck, insertHeroCard, getPlayerAllTimeStats, getWeekKey } from '@/lib/db'
 import { generateHeroCard } from '@/lib/claude'
+import theme from '@/theme'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
 
   const generated = await generateHeroCard({
     playerName,
-    totalSausages: stats.totalSausages,
+    totalItems: stats.totalItems,
     totalGrams: stats.totalGrams,
     mealCount: stats.mealCount,
     maxInOneMeal: stats.maxInOneMeal,
@@ -55,13 +56,13 @@ export async function POST(request: Request) {
 
   const card = await insertHeroCard({
     playerName,
-    heroTitle: generated.heroTitle || 'The Sausage Warrior',
-    heroType: generated.heroType || 'FIRE/MEAT',
+    heroTitle: generated.heroTitle || theme.fallbackCardTitle,
+    heroType: generated.heroType || theme.fallbackCardType,
     hp: generated.hp || 100,
     attack: generated.attack || 50,
     defense: generated.defense || 50,
     speed: generated.speed || 50,
-    specialMoves: Array.isArray(generated.specialMoves) ? generated.specialMoves : ['Sausage Slam (40)', 'Mustard Blast (30)', 'Link Storm (50)'],
+    specialMoves: Array.isArray(generated.specialMoves) ? generated.specialMoves : theme.fallbackCardMoves,
     weakness: generated.weakness || 'Vegetarian restaurants',
     catchphrase: generated.catchphrase || 'Fear the sausage!',
     flavorText: generated.flavorText || 'A mighty warrior of the cylindrical meat arts.',

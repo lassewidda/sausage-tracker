@@ -11,7 +11,7 @@ const MEDALS = ['🥇', '🥈', '🥉']
 const BAR_COLORS = ['#FF8800', '#AAAAAA', '#CC7700']
 
 export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: LeaderboardProps) {
-  const max = entries[0]?.totalSausages ?? 1
+  const max = entries[0]?.totalItems ?? 1
 
   return (
     <div className="amiga-window">
@@ -26,7 +26,7 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {entries.map((entry) => {
-              const barWidth = Math.round((entry.totalSausages / max) * 100)
+              const barWidth = Math.round((entry.totalItems / max) * 100)
               const color = BAR_COLORS[entry.rank - 1] ?? 'var(--amiga-dark-grey)'
               const medal = MEDALS[entry.rank - 1] ?? `#${entry.rank}`
 
@@ -65,7 +65,7 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
                         </span>
                       )}
                       <div className="amiga-gauge amiga-gauge--small">
-                        {entry.totalSausages}
+                        {entry.totalItems}
                       </div>
                     </div>
                   </div>

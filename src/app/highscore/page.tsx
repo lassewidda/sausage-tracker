@@ -1,19 +1,20 @@
-import { getLeaderboard, getSausageChains } from '@/lib/db'
+import { getLeaderboard, getChains } from '@/lib/db'
 import { Leaderboard } from '@/components/highscore/Leaderboard'
-import { SausageChain } from '@/components/highscore/SausageChain'
+import { ItemChain } from '@/components/highscore/ItemChain'
 import { Window } from '@/components/amiga/Window'
 import Link from 'next/link'
 import { Button } from '@/components/amiga/Button'
-import type { Leaderboard as ILeaderboard, SausageChainEntry } from '@/types'
+import type { Leaderboard as ILeaderboard, ChainEntry } from '@/types'
 import { formatWeekLabel } from '@/lib/db'
+import theme from '@/theme'
 
 export const dynamic = 'force-dynamic'
 
 export default async function HighscorePage() {
   let data: ILeaderboard = { allTime: [], thisWeek: [], weekKey: '' }
-  let chains: SausageChainEntry[] = []
+  let chains: ChainEntry[] = []
   try {
-    ;[data, chains] = await Promise.all([getLeaderboard(), getSausageChains()])
+    ;[data, chains] = await Promise.all([getLeaderboard(), getChains()])
   } catch (err) {
     console.error('Highscore fetch error:', err)
   }
@@ -22,11 +23,11 @@ export default async function HighscorePage() {
 
   return (
     <main className="page-content">
-      <Window title="SAUSAGE HIGHSCORE">
+      <Window title={theme.strings.highscoreTitle}>
         <div className="stack">
           {/* Trophy banner */}
           <div className="grand-total" style={{ fontSize: '11px', letterSpacing: '3px' }}>
-            🏆 WHO ATE THE MOST SAUSAGES? 🏆
+            {theme.strings.highscoreBanner}
           </div>
 
           <div className="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
@@ -38,18 +39,18 @@ export default async function HighscorePage() {
           <Leaderboard
             title={`THIS WEEK — ${weekLabel.toUpperCase()}`}
             entries={data.thisWeek}
-            emptyMessage="NO MEALS THIS WEEK YET"
+            emptyMessage={theme.strings.noMealsThisWeek}
           />
 
           {/* All-time leaderboard */}
           <Leaderboard
             title="ALL TIME HIGHSCORE"
             entries={data.allTime}
-            emptyMessage="NO SCORES YET — LOG A MEAL!"
+            emptyMessage={theme.strings.noScoresYet}
           />
 
           {/* Sausage chain */}
-          <SausageChain entries={chains} />
+          <ItemChain entries={chains} />
         </div>
       </Window>
     </main>

@@ -3,11 +3,12 @@ import Link from 'next/link'
 import { JerryMode } from '@/components/ui/JerryMode'
 import { NameSetter } from '@/components/ui/NameSetter'
 import { AboutModal } from '@/components/ui/AboutModal'
+import theme from '@/theme'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Sausage Tracker',
-  description: 'Log sausages, build hero cards, battle your friends',
+  title: theme.strings.metaTitle,
+  description: theme.strings.metaDescription,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -16,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <div className="amiga-screen">
           <nav className="amiga-menubar">
-            <span className="amiga-menubar__title">SAUSAGE TRACKER V1.1<AboutModal /></span>
+            <span className="amiga-menubar__title">{theme.strings.menubarTitle}<AboutModal /></span>
             <div className="amiga-menubar__spacer" />
             <Link href="/" className="amiga-menubar__item">LOG</Link>
             <Link href="/feed" className="amiga-menubar__item">FEED</Link>

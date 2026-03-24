@@ -67,17 +67,17 @@ export async function POST(request: Request): Promise<NextResponse> {
           playerName: pd.playerName,
           weekLabel,
           meals: pd.meals,
-          totalSausages: pd.totalSausages,
+          totalItems: pd.totalItems,
           totalGrams: pd.totalGrams,
           chainLength: pd.chainLength,
-          prevWeekSausages: pd.prevWeekSausages,
+          prevWeekItems: pd.prevWeekItems,
         })
 
         return insertWeeklySummary({
           playerName: pd.playerName,
           weekKey,
           summaryText,
-          totalSausages: pd.totalSausages,
+          totalItems: pd.totalItems,
           totalGrams: pd.totalGrams,
           mealCount: pd.meals.length,
           chainLength: pd.chainLength,

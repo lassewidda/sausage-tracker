@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import theme from '@/theme'
 
 export function AboutModal() {
   const [open, setOpen] = useState(false)
@@ -27,7 +28,7 @@ export function AboutModal() {
           verticalAlign: 'middle',
           lineHeight: 1,
         }}
-        title="About Sausage Tracker"
+        title={theme.strings.aboutTagline}
       >
         i
       </button>
@@ -78,53 +79,24 @@ export function AboutModal() {
                 marginBottom: '10px',
                 textAlign: 'center',
               }}>
-                SAUSAGE TRACKER V1.1
+                {theme.strings.aboutVersion}
               </div>
 
-              <p style={{
-                margin: '0 0 10px 0',
-                fontFamily: "'Courier New', Courier, monospace",
-                fontSize: '12px',
-                lineHeight: '1.8',
-                color: 'var(--amiga-white)',
-                textTransform: 'uppercase' as const,
-                whiteSpace: 'normal',
-                wordBreak: 'break-word',
-              }}>
-                Photo uploader where AI counts your sausages. Each week, your eating
-                habits generate a unique hero card with sausage-pun moves and
-                stats based on your consumption.
-              </p>
-
-              <p style={{
-                margin: '0 0 10px 0',
-                fontFamily: "'Courier New', Courier, monospace",
-                fontSize: '12px',
-                lineHeight: '1.8',
-                color: 'var(--amiga-white)',
-                textTransform: 'uppercase' as const,
-                whiteSpace: 'normal',
-                wordBreak: 'break-word',
-              }}>
-                Challenge friends in turn-based card battles with type advantages,
-                items, deck building, and ELO rankings. Includes live taunts and
-                AI-generated battle recaps.
-              </p>
-
-              <p style={{
-                margin: 0,
-                fontFamily: "'Courier New', Courier, monospace",
-                fontSize: '11px',
-                lineHeight: '1.8',
-                color: '#888',
-                fontStyle: 'italic',
-                textTransform: 'uppercase' as const,
-                whiteSpace: 'normal',
-                wordBreak: 'break-word',
-              }}>
-                Built with Next.js, Claude Haiku, and an unhealthy obsession with
-                processed meat.
-              </p>
+              {theme.strings.aboutParagraphs.map((paragraph, i) => (
+                <p key={i} style={{
+                  margin: i < theme.strings.aboutParagraphs.length - 1 ? '0 0 10px 0' : 0,
+                  fontFamily: "'Courier New', Courier, monospace",
+                  fontSize: i < theme.strings.aboutParagraphs.length - 1 ? '12px' : '11px',
+                  lineHeight: '1.8',
+                  color: i < theme.strings.aboutParagraphs.length - 1 ? 'var(--amiga-white)' : '#888',
+                  fontStyle: i === theme.strings.aboutParagraphs.length - 1 ? 'italic' : 'normal',
+                  textTransform: 'uppercase' as const,
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                }}>
+                  {paragraph}
+                </p>
+              ))}
 
               <div style={{ textAlign: 'center', marginTop: '14px' }}>
                 <button

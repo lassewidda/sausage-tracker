@@ -31,7 +31,7 @@ export default async function FeedPage() {
     console.error('Feed fetch error:', err)
   }
 
-  const grandTotal = meals.reduce((sum, m) => sum + m.sausageCount, 0)
+  const grandTotal = meals.reduce((sum, m) => sum + m.itemCount, 0)
 
   // Group meals by week
   const mealsByWeek = new Map<string, Meal[]>()
@@ -97,7 +97,7 @@ export default async function FeedPage() {
                     <div className="week-group__header">
                       <span>{formatWeekLabel(weekKey).toUpperCase()}</span>
                       <span style={{ fontSize: '9px' }}>
-                        {weekMeals.reduce((s, m) => s + m.sausageCount, 0)} PTS
+                        {weekMeals.reduce((s, m) => s + m.itemCount, 0)} PTS
                       </span>
                     </div>
 

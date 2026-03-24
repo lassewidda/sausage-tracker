@@ -6,6 +6,7 @@ import { useName } from '@/lib/useName'
 import { PixelAvatar, getTypeTheme } from '@/components/player/HeroCardDisplay'
 import type { HeroCard } from '@/types'
 import { parseMoveDamage } from '@/lib/battleEngine'
+import themeConfig from '@/theme'
 
 type Phase = 'intro' | 'opening' | 'glow' | 'reveal' | 'stats'
 
@@ -92,7 +93,7 @@ export default function NewCardPage() {
               textAlign: 'center',
               textShadow: '0 0 10px rgba(255, 170, 0, 0.4)',
             }}>
-              A MYSTERIOUS SAUSAGE CRATE APPEARS...
+              {themeConfig.strings.crateAppearText}
             </div>
 
             {/* Pixel art chest */}
@@ -130,7 +131,7 @@ export default function NewCardPage() {
                 animation: 'victory-pulse 1.5s infinite',
               }}
             >
-              OPEN THE CRATE!
+              {themeConfig.strings.openCrateButton}
             </button>
 
             {error && (

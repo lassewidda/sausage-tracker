@@ -55,7 +55,7 @@ export function WeeklySummaryCard({ summary }: Props) {
         {/* Stats row */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <div className="amiga-badge">
-            🌭 {summary.totalSausages} SAUSAGE{summary.totalSausages !== 1 ? 'S' : ''}
+            🌭 {summary.totalItems} SAUSAGE{summary.totalItems !== 1 ? 'S' : ''}
           </div>
           {summary.totalGrams > 0 && (
             <div className="amiga-badge" style={{ background: 'var(--amiga-dark-grey)' }}>

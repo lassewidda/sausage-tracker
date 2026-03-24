@@ -13,9 +13,9 @@ export function WeekGroup({ group }: WeekGroupProps) {
         <span>{group.weekLabel.toUpperCase()}</span>
         <div className="row" style={{ gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '9px' }}>TOTAL:</span>
-          <Gauge value={group.totalSausages} size="small" />
+          <Gauge value={group.totalItems} size="small" />
           <span style={{ fontSize: '9px' }}>
-            SAUSAGE{group.totalSausages !== 1 ? 'S' : ''}
+            SAUSAGE{group.totalItems !== 1 ? 'S' : ''}
           </span>
           {group.totalGrams > 0 && (
             <span style={{ fontSize: '9px', color: 'var(--amiga-dark-grey)' }}>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPlayerBalance, deductBalance, recordShopPurchase, addPlayerItem } from '@/lib/db'
-import { SHOP_CATALOG, getShopItem } from '@/lib/shopCatalog'
+import { getShopItem } from '@/lib/shopCatalog'
+import theme from '@/theme'
 import { getItemsByRarity } from '@/lib/itemCatalog'
 
 export const dynamic = 'force-dynamic'
@@ -10,7 +11,7 @@ export async function GET(request: Request) {
   const playerName = (searchParams.get('playerName') || '').toLowerCase()
 
   const balance = playerName ? await getPlayerBalance(playerName) : 0
-  return NextResponse.json({ catalog: SHOP_CATALOG, balance })
+  return NextResponse.json({ catalog: theme.shopCatalog, balance })
 }
 
 export async function POST(request: Request) {

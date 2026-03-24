@@ -27,7 +27,7 @@ export function MealCard({ meal }: MealCardProps) {
         />
         <div className="meal-card__score">
           <div className="amiga-gauge amiga-gauge--small">
-            {String(meal.sausageCount).padStart(2, '0')}
+            {String(meal.itemCount).padStart(2, '0')}
           </div>
         </div>
       </div>
@@ -56,7 +56,7 @@ export function MealCard({ meal }: MealCardProps) {
                 padding: '2px 4px',
               }}
             >
-              +{meal.sausageCount}PTS
+              +{meal.itemCount}PTS
             </span>
             {meal.estimatedGrams != null && meal.estimatedGrams > 0 && (
               <span

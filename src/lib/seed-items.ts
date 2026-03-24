@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import { ITEM_CATALOG } from './itemCatalog'
+import theme from '@/theme'
 
 async function seedItems() {
   const sql = postgres(process.env.DATABASE_URL!, { max: 1, idle_timeout: 5, connect_timeout: 30, prepare: false, ssl: { rejectUnauthorized: false } })
@@ -11,7 +11,7 @@ async function seedItems() {
     SELECT DISTINCT player_name FROM hero_cards
   `
 
-  const allKeys = Object.keys(ITEM_CATALOG)
+  const allKeys = Object.keys(theme.itemCatalog)
 
   for (const row of players) {
     const name = row.player_name as string
@@ -29,7 +29,7 @@ async function seedItems() {
     await sql`
       INSERT INTO player_items (player_name, item_key) VALUES (${name}, ${randomKey})
     `
-    console.log(`Gave ${name} a ${ITEM_CATALOG[randomKey].name} (${ITEM_CATALOG[randomKey].rarity})`)
+    console.log(`Gave ${name} a ${theme.itemCatalog[randomKey].name} (${theme.itemCatalog[randomKey].rarity})`)
   }
 
   await sql.end()

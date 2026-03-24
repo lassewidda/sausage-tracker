@@ -2,11 +2,12 @@ import Link from 'next/link'
 import { Window } from '@/components/amiga/Window'
 import { Button } from '@/components/amiga/Button'
 import { UploadZone } from '@/components/upload/UploadZone'
+import theme from '@/theme'
 
 export default function HomePage() {
   return (
     <main className="page-content">
-      <Window title="ADD MEAL - SAUSAGE TRACKER">
+      <Window title={theme.strings.windowTitle}>
         <div className="stack">
           <div
             style={{
@@ -18,9 +19,9 @@ export default function HomePage() {
               lineHeight: '2',
             }}
           >
-            UPLOAD A PHOTO OF YOUR MEAL. AI WILL COUNT THE SAUSAGES.
+            {theme.strings.uploadInstruction}
             <br />
-            EACH SAUSAGE EARNS YOU ONE POINT.
+            {theme.strings.uploadSubInstruction}
           </div>
 
           <div
@@ -31,10 +32,9 @@ export default function HomePage() {
               fontSize: '7px',
             }}
           >
-            <span className="amiga-step amiga-step--active">1. UPLOAD</span>
-            <span className="amiga-step">2. ANALYZE</span>
-            <span className="amiga-step">3. CONFIRM</span>
-            <span className="amiga-step">4. SCORE</span>
+            {theme.strings.steps.map((step, i) => (
+              <span key={i} className={`amiga-step${i === 0 ? ' amiga-step--active' : ''}`}>{step}</span>
+            ))}
           </div>
 
           <UploadZone />
@@ -47,7 +47,7 @@ export default function HomePage() {
       </Window>
 
       {/* Tips window */}
-      <Window title="TIPS" showGadgets={false}>
+      <Window title={theme.strings.tipsTitle} showGadgets={false}>
         <div
           style={{
             fontFamily: 'var(--font-pixel)',
@@ -58,18 +58,14 @@ export default function HomePage() {
             color: 'var(--amiga-dark-grey)',
           }}
         >
-          &gt; SAUSAGES COUNTED: BRATWURST, FRANKFURTERS, CHORIZO, HOT DOGS,
-          <br />
-          &nbsp;&nbsp;CHIPOLATAS, MERGUEZ, WEISSWURST, BANGERS AND MORE
-          <br />
-          &gt; YOU CAN ADJUST THE AI COUNT BEFORE CONFIRMING
-          <br />
-          &gt; BEST RESULTS: CLEAR PHOTO, GOOD LIGHTING, SAUSAGES VISIBLE
+          {theme.strings.tipsLines.map((line, i) => (
+            <span key={i}>&gt; {line}{i < theme.strings.tipsLines.length - 1 && <br />}</span>
+          ))}
         </div>
       </Window>
 
       {/* Rules window */}
-      <Window title="RULES" showGadgets={false}>
+      <Window title={theme.strings.rulesTitle} showGadgets={false}>
         <div
           style={{
             fontFamily: 'var(--font-pixel)',
@@ -79,18 +75,11 @@ export default function HomePage() {
             lineHeight: '2.2',
           }}
         >
-          <span style={{ color: '#AA0000' }}>&gt; NO RETROSPECTIVE LOGGING.</span>
-          <span style={{ color: 'var(--amiga-dark-grey)' }}>
-            {' '}SAUSAGES MUST BE LOGGED
-            <br />
-            &nbsp;&nbsp;THE SAME DAY THEY ARE EATEN. LOGGING MEALS FROM
-            <br />
-            &nbsp;&nbsp;YESTERDAY, LAST WEEK OR EARLIER IS NOT ALLOWED.
-          </span>
-          <br />
-          <span style={{ color: 'var(--amiga-dark-grey)' }}>
-            &gt; PHOTO MUST SHOW THE ACTUAL MEAL YOU ARE EATING RIGHT NOW.
-          </span>
+          {theme.strings.rulesLines.map((line, i) => (
+            <span key={i} style={{ color: i === 0 ? '#AA0000' : 'var(--amiga-dark-grey)' }}>
+              &gt; {line}{i < theme.strings.rulesLines.length - 1 && <br />}
+            </span>
+          ))}
         </div>
       </Window>
     </main>

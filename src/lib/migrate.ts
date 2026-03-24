@@ -10,7 +10,7 @@ async function migrate() {
       id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       image_url        TEXT NOT NULL,
       blob_path        TEXT NOT NULL,
-      sausage_count    INTEGER NOT NULL CHECK (sausage_count >= 0),
+      item_count       INTEGER NOT NULL CHECK (item_count >= 0),
       ai_suggested_count INTEGER,
       ai_description   TEXT,
       created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -36,7 +36,7 @@ async function migrate() {
       player_name    TEXT NOT NULL,
       week_key       TEXT NOT NULL,
       summary_text   TEXT NOT NULL,
-      total_sausages INTEGER NOT NULL DEFAULT 0,
+      total_items    INTEGER NOT NULL DEFAULT 0,
       total_grams    INTEGER NOT NULL DEFAULT 0,
       meal_count     INTEGER NOT NULL DEFAULT 0,
       chain_length   INTEGER NOT NULL DEFAULT 0,
@@ -232,6 +232,20 @@ async function migrate() {
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_week_key ON meals(week_key DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_created_at ON meals(created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_meals_player_name ON meals(player_name)`
+
+  // Rename sausage-specific columns to generic names
+  await sql`
+    DO $$ BEGIN
+      ALTER TABLE meals RENAME COLUMN sausage_count TO item_count;
+    EXCEPTION WHEN undefined_column THEN NULL;
+    END $$
+  `
+  await sql`
+    DO $$ BEGIN
+      ALTER TABLE weekly_summaries RENAME COLUMN total_sausages TO total_items;
+    EXCEPTION WHEN undefined_column THEN NULL;
+    END $$
+  `
 
   await sql.end()
   console.log('Migration complete.')

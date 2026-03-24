@@ -15,7 +15,7 @@ export default async function GalleryPage() {
   try {
     meals = await getAllMeals()
     weeks = groupByWeek(meals)
-    grandTotal = meals.reduce((sum, m) => sum + m.sausageCount, 0)
+    grandTotal = meals.reduce((sum, m) => sum + m.itemCount, 0)
   } catch (err) {
     console.error('Gallery fetch error:', err)
   }

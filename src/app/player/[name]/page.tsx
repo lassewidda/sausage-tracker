@@ -53,7 +53,7 @@ export default async function PlayerPage({ params }: Props) {
     try {
       const generated = await generateHeroCard({
         playerName,
-        totalSausages: stats.totalSausages,
+        totalItems: stats.totalItems,
         totalGrams: stats.totalGrams,
         mealCount: stats.mealCount,
         maxInOneMeal: stats.maxInOneMeal,

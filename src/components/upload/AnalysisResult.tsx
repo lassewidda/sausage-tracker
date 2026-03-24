@@ -5,6 +5,7 @@ import { useState } from 'react'
 import type { AnalysisResult as IAnalysisResult } from '@/types'
 import { Button } from '@/components/amiga/Button'
 import { CountStepper } from './CountStepper'
+import theme from '@/theme'
 
 interface AnalysisResultProps {
   blobUrl: string
@@ -24,8 +25,7 @@ export function AnalysisResult({
   const [count, setCount] = useState(analysis.count)
   const [healthConfirmed, setHealthConfirmed] = useState(false)
 
-  const HEALTH_THRESHOLD = 5
-  const needsHealthWarning = count >= HEALTH_THRESHOLD
+  const needsHealthWarning = count >= theme.strings.healthWarningThreshold
 
   return (
     <div className="stack">
@@ -57,16 +57,9 @@ export function AnalysisResult({
       {/* AI detection badge */}
       <div className="row row--center">
         <div className="amiga-badge">
-          AI DETECTED:&nbsp;
-          <span style={{ color: 'var(--crt-amber)' }}>
-            {analysis.count} SAUSAGE{analysis.count !== 1 ? 'S' : ''}
-          </span>
-          &nbsp;&mdash;&nbsp;
-          <span className={`confidence-${analysis.confidence}`}>
-            {analysis.confidence.toUpperCase()} CONFIDENCE
-          </span>
-          {analysis.gramsPerSausage > 0 && (
-            <>&nbsp;&mdash;&nbsp;~{analysis.gramsPerSausage}G/SAUSAGE</>
+          {theme.strings.aiDetectedLabel(analysis.count, analysis.confidence)}
+          {analysis.weightPerItem > 0 && (
+            <>&nbsp;&mdash;&nbsp;~{analysis.weightPerItem}G/{theme.strings.itemName.toUpperCase()}</>
           )}
         </div>
       </div>
@@ -90,7 +83,7 @@ export function AnalysisResult({
             textAlign: 'center',
           }}
         >
-          ADJUST COUNT IF NEEDED:
+          {theme.strings.adjustCountLabel}
         </div>
         <CountStepper count={count} onChange={(n) => { setCount(n); setHealthConfirmed(false) }} />
       </div>
@@ -110,10 +103,10 @@ export function AnalysisResult({
           }}
         >
           <div style={{ color: '#FFFF00', marginBottom: '8px' }}>
-            ⚠ HEALTH WARNING ⚠
+            {theme.strings.healthWarningTitle}
           </div>
           <div style={{ marginBottom: '12px' }}>
-            {count} SAUSAGES IN ONE MEAL IS A LOT. EATING THIS MANY SAUSAGES MAY NEGATIVELY IMPACT YOUR HEALTH. PLEASE CONFIRM YOU REALLY ATE THIS MANY.
+            {theme.strings.healthWarningText(count)}
           </div>
           <label style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }}>
             <input
@@ -122,20 +115,19 @@ export function AnalysisResult({
               onChange={(e) => setHealthConfirmed(e.target.checked)}
               style={{ marginTop: '2px', accentColor: '#FFFF00', flexShrink: 0 }}
             />
-            <span>I CONFIRM I ATE {count} SAUSAGES AND UNDERSTAND THIS MAY IMPACT MY HEALTH NEGATIVELY</span>
+            <span>{theme.strings.healthConfirmText(count)}</span>
           </label>
         </div>
       )}
 
       {/* Estimated weight */}
-      {analysis.gramsPerSausage > 0 && (
+      {analysis.weightPerItem > 0 && (
         <div className="row row--center">
           <div className="amiga-badge" style={{ background: 'var(--amiga-dark-grey)' }}>
-            EST. WEIGHT:&nbsp;
+            {theme.strings.weightLabel}&nbsp;
             <span style={{ color: 'var(--crt-amber)' }}>
-              ~{analysis.gramsPerSausage * count}G
+              {theme.strings.weightEstLabel(analysis.weightPerItem, count)}
             </span>
-            &nbsp;({analysis.gramsPerSausage}G &times; {count})
           </div>
         </div>
       )}
@@ -148,7 +140,7 @@ export function AnalysisResult({
           onClick={() => onConfirm(count)}
           disabled={isSaving || (needsHealthWarning && !healthConfirmed)}
         >
-          {isSaving ? 'SAVING...' : `CONFIRM  +${count} POINT${count !== 1 ? 'S' : ''}`}
+          {isSaving ? 'SAVING...' : theme.strings.pointsLabel(count)}
         </Button>
       </div>
     </div>

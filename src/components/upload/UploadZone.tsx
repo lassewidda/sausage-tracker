@@ -10,6 +10,7 @@ import { Button } from '@/components/amiga/Button'
 import { AnalysisResult } from './AnalysisResult'
 import { VictorySprite } from '@/components/ui/VictorySprite'
 import { ItemIcon } from '@/components/battle/ItemIcon'
+import theme from '@/theme'
 
 export function UploadZone() {
   const router = useRouter()
@@ -115,10 +116,10 @@ export function UploadZone() {
           body: JSON.stringify({
             imageUrl: state.blobUrl,
             blobPath: state.blobPath,
-            sausageCount: confirmedCount,
+            itemCount: confirmedCount,
             aiSuggestedCount: state.analysis.count,
             aiDescription: state.analysis.description,
-            gramsPerSausage: state.analysis.gramsPerSausage,
+            weightPerItem: state.analysis.weightPerItem,
             playerName: name || 'Anonymous',
           }),
         })
@@ -151,9 +152,7 @@ export function UploadZone() {
         <VictorySprite />
         <div className="amiga-gauge amiga-gauge--large">+{state.confirmedCount}</div>
         <div className="success-score">
-          SAUSAGE{state.confirmedCount !== 1 ? 'S' : ''} RECORDED!
-          <br />
-          {state.confirmedCount} POINT{state.confirmedCount !== 1 ? 'S' : ''} ADDED TO YOUR SCORE
+          {theme.strings.successLabel(state.confirmedCount ?? 0)}
         </div>
         {itemDrop && (
           <div className="amiga-window" style={{
@@ -294,7 +293,7 @@ export function UploadZone() {
     return (
       <div className="stack" style={{ alignItems: 'center', padding: '24px' }}>
         <div className="amiga-info" style={{ textAlign: 'center', maxWidth: '360px' }}>
-          ENTER YOUR NAME TO START TRACKING SAUSAGES
+          {theme.strings.namePrompt}
         </div>
         <div className="row row--center" style={{ gap: '8px' }}>
           <input
@@ -346,8 +345,8 @@ export function UploadZone() {
         onDrop={handleDrop}
       >
         <input type="file" accept="image/*,.heic,.heif" onChange={handleFileInput} />
-        <div style={{ fontSize: '32px' }}>🌭</div>
-        <div>DROP MEAL PHOTO HERE</div>
+        <div style={{ fontSize: '32px' }}>{theme.strings.uploadDropzoneEmoji}</div>
+        <div>{theme.strings.uploadDropzoneLabel}</div>
         <div style={{ color: 'var(--amiga-grey)', fontSize: '7px' }}>
           OR CLICK TO SELECT FILE
         </div>

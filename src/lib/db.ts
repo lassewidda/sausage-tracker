@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, SausageChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleTaunt, BattleStats, BattleState, PlayerItem, BattleEffect, ItemEffectType } from '@/types'
+import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, ChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleTaunt, BattleStats, BattleState, PlayerItem, BattleEffect, ItemEffectType } from '@/types'
 
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
@@ -41,7 +41,7 @@ export function formatWeekLabel(weekKey: string): string {
 export async function insertMeal(data: {
   imageUrl: string
   blobPath: string
-  sausageCount: number
+  itemCount: number
   aiSuggestedCount: number | null
   aiDescription: string | null
   estimatedGrams: number | null
@@ -51,9 +51,9 @@ export async function insertMeal(data: {
   const weekKey = getWeekKey()
 
   const rows = await sql`
-    INSERT INTO meals (image_url, blob_path, sausage_count, ai_suggested_count, ai_description, estimated_grams, week_key, player_name)
-    VALUES (${data.imageUrl}, ${data.blobPath}, ${data.sausageCount}, ${data.aiSuggestedCount}, ${data.aiDescription}, ${data.estimatedGrams}, ${weekKey}, ${data.playerName})
-    RETURNING id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name
+    INSERT INTO meals (image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, week_key, player_name)
+    VALUES (${data.imageUrl}, ${data.blobPath}, ${data.itemCount}, ${data.aiSuggestedCount}, ${data.aiDescription}, ${data.estimatedGrams}, ${weekKey}, ${data.playerName})
+    RETURNING id, image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name
   `
 
   await sql.end()
@@ -63,7 +63,7 @@ export async function insertMeal(data: {
 export async function getAllMeals(): Promise<Meal[]> {
   const sql = getDb()
   const rows = await sql`
-    SELECT id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name
+    SELECT id, image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name
     FROM meals
     ORDER BY created_at DESC
   `
@@ -78,7 +78,7 @@ export async function deleteMeal(id: string, playerName: string): Promise<Meal |
     DELETE FROM meals
     WHERE id = ${id}
       AND (player_name = ${playerName} OR player_name = 'Anonymous')
-    RETURNING id, image_url, blob_path, sausage_count, ai_suggested_count, ai_description, created_at, week_key, player_name
+    RETURNING id, image_url, blob_path, item_count, ai_suggested_count, ai_description, created_at, week_key, player_name
   `
   await sql.end()
   return rows.length > 0 ? rowToMeal(rows[0]) : null
@@ -90,13 +90,13 @@ export async function getLeaderboard(): Promise<Leaderboard> {
 
   const [allTimeRows, weekRows] = await Promise.all([
     sql`
-      SELECT player_name, SUM(sausage_count)::int AS total, COALESCE(SUM(estimated_grams), 0)::int AS total_grams
+      SELECT player_name, SUM(item_count)::int AS total, COALESCE(SUM(estimated_grams), 0)::int AS total_grams
       FROM meals
       GROUP BY player_name
       ORDER BY total DESC
     `,
     sql`
-      SELECT player_name, SUM(sausage_count)::int AS total, COALESCE(SUM(estimated_grams), 0)::int AS total_grams
+      SELECT player_name, SUM(item_count)::int AS total, COALESCE(SUM(estimated_grams), 0)::int AS total_grams
       FROM meals
       WHERE week_key = ${weekKey}
       GROUP BY player_name
@@ -109,7 +109,7 @@ export async function getLeaderboard(): Promise<Leaderboard> {
   const toEntries = (rows: typeof allTimeRows): LeaderboardEntry[] =>
     rows.map((r, i) => ({
       playerName: r.player_name as string,
-      totalSausages: r.total as number,
+      totalItems: r.total as number,
       totalGrams: r.total_grams as number,
       rank: i + 1,
     }))
@@ -133,11 +133,11 @@ function prevWeekKey(weekKey: string): string {
   return getWeekKey(monday)
 }
 
-export async function getSausageChains(): Promise<SausageChainEntry[]> {
+export async function getChains(): Promise<ChainEntry[]> {
   const sql = getDb()
 
   const rows = await sql`
-    SELECT player_name, week_key, SUM(sausage_count)::int AS week_total
+    SELECT player_name, week_key, SUM(item_count)::int AS week_total
     FROM meals
     GROUP BY player_name, week_key
   `
@@ -154,7 +154,7 @@ export async function getSausageChains(): Promise<SausageChainEntry[]> {
   }
 
   const currentWeek = getWeekKey()
-  const entries: SausageChainEntry[] = []
+  const entries: ChainEntry[] = []
 
   for (const [playerName, weekMap] of Array.from(byPlayer.entries())) {
     let streak = 0
@@ -195,7 +195,7 @@ export function groupByWeek(meals: Meal[]): WeekGroup[] {
   const weeks: WeekGroup[] = Array.from(map.entries()).map(([weekKey, weekMeals]) => ({
     weekKey,
     weekLabel: formatWeekLabel(weekKey),
-    totalSausages: weekMeals.reduce((sum, m) => sum + m.sausageCount, 0),
+    totalItems: weekMeals.reduce((sum, m) => sum + m.itemCount, 0),
     totalGrams: weekMeals.reduce((sum, m) => sum + (m.estimatedGrams ?? 0), 0),
     meals: weekMeals,
   }))
@@ -209,11 +209,11 @@ export function groupByWeek(meals: Meal[]): WeekGroup[] {
 export interface PlayerWeekData {
   playerName: string
   weekKey: string
-  meals: { description: string | null; sausageCount: number; estimatedGrams: number | null }[]
-  totalSausages: number
+  meals: { description: string | null; itemCount: number; estimatedGrams: number | null }[]
+  totalItems: number
   totalGrams: number
   chainLength: number
-  prevWeekSausages: number
+  prevWeekItems: number
 }
 
 export async function getPlayerWeekData(weekKey: string): Promise<PlayerWeekData[]> {
@@ -221,16 +221,16 @@ export async function getPlayerWeekData(weekKey: string): Promise<PlayerWeekData
 
   const [mealRows, chainRows, prevRows] = await Promise.all([
     sql`
-      SELECT player_name, ai_description, sausage_count, estimated_grams
+      SELECT player_name, ai_description, item_count, estimated_grams
       FROM meals WHERE week_key = ${weekKey}
       ORDER BY player_name, created_at
     `,
     sql`
-      SELECT player_name, week_key, SUM(sausage_count)::int AS week_total
+      SELECT player_name, week_key, SUM(item_count)::int AS week_total
       FROM meals GROUP BY player_name, week_key
     `,
     sql`
-      SELECT player_name, SUM(sausage_count)::int AS total
+      SELECT player_name, SUM(item_count)::int AS total
       FROM meals WHERE week_key = ${prevWeekKey(weekKey)}
       GROUP BY player_name
     `,
@@ -262,7 +262,7 @@ export async function getPlayerWeekData(weekKey: string): Promise<PlayerWeekData
     return streak
   }
 
-  // Prev week sausages per player
+  // Prev week items per player
   const prevMap = new Map<string, number>()
   for (const r of prevRows) prevMap.set(r.player_name as string, r.total as number)
 
@@ -275,21 +275,21 @@ export async function getPlayerWeekData(weekKey: string): Promise<PlayerWeekData
         playerName: name,
         weekKey,
         meals: [],
-        totalSausages: 0,
+        totalItems: 0,
         totalGrams: 0,
         chainLength: computeChain(name),
-        prevWeekSausages: prevMap.get(name) ?? 0,
+        prevWeekItems: prevMap.get(name) ?? 0,
       })
     }
     const pd = byPlayer.get(name)!
-    const count = r.sausage_count as number
+    const count = r.item_count as number
     const grams = (r.estimated_grams as number | null) ?? 0
     pd.meals.push({
       description: r.ai_description as string | null,
-      sausageCount: count,
+      itemCount: count,
       estimatedGrams: r.estimated_grams as number | null,
     })
-    pd.totalSausages += count
+    pd.totalItems += count
     pd.totalGrams += grams
   }
 
@@ -299,10 +299,10 @@ export async function getPlayerWeekData(weekKey: string): Promise<PlayerWeekData
 export async function getWeeklySummaries(weekKey: string): Promise<WeeklySummary[]> {
   const sql = getDb()
   const rows = await sql`
-    SELECT id, player_name, week_key, summary_text, total_sausages, total_grams, meal_count, chain_length, created_at
+    SELECT id, player_name, week_key, summary_text, total_items, total_grams, meal_count, chain_length, created_at
     FROM weekly_summaries
     WHERE week_key = ${weekKey}
-    ORDER BY total_sausages DESC
+    ORDER BY total_items DESC
   `
   await sql.end()
   return rows.map(rowToSummary)
@@ -311,9 +311,9 @@ export async function getWeeklySummaries(weekKey: string): Promise<WeeklySummary
 export async function getAllWeeklySummaries(): Promise<WeeklySummary[]> {
   const sql = getDb()
   const rows = await sql`
-    SELECT id, player_name, week_key, summary_text, total_sausages, total_grams, meal_count, chain_length, created_at
+    SELECT id, player_name, week_key, summary_text, total_items, total_grams, meal_count, chain_length, created_at
     FROM weekly_summaries
-    ORDER BY week_key DESC, total_sausages DESC
+    ORDER BY week_key DESC, total_items DESC
   `
   await sql.end()
   return rows.map(rowToSummary)
@@ -323,22 +323,22 @@ export async function insertWeeklySummary(data: {
   playerName: string
   weekKey: string
   summaryText: string
-  totalSausages: number
+  totalItems: number
   totalGrams: number
   mealCount: number
   chainLength: number
 }): Promise<WeeklySummary> {
   const sql = getDb()
   const rows = await sql`
-    INSERT INTO weekly_summaries (player_name, week_key, summary_text, total_sausages, total_grams, meal_count, chain_length)
-    VALUES (${data.playerName}, ${data.weekKey}, ${data.summaryText}, ${data.totalSausages}, ${data.totalGrams}, ${data.mealCount}, ${data.chainLength})
+    INSERT INTO weekly_summaries (player_name, week_key, summary_text, total_items, total_grams, meal_count, chain_length)
+    VALUES (${data.playerName}, ${data.weekKey}, ${data.summaryText}, ${data.totalItems}, ${data.totalGrams}, ${data.mealCount}, ${data.chainLength})
     ON CONFLICT (player_name, week_key) DO UPDATE SET
       summary_text = EXCLUDED.summary_text,
-      total_sausages = EXCLUDED.total_sausages,
+      total_items = EXCLUDED.total_items,
       total_grams = EXCLUDED.total_grams,
       meal_count = EXCLUDED.meal_count,
       chain_length = EXCLUDED.chain_length
-    RETURNING id, player_name, week_key, summary_text, total_sausages, total_grams, meal_count, chain_length, created_at
+    RETURNING id, player_name, week_key, summary_text, total_items, total_grams, meal_count, chain_length, created_at
   `
   await sql.end()
   return rowToSummary(rows[0])
@@ -365,7 +365,7 @@ function rowToSummary(row: any): WeeklySummary {
     playerName: row.player_name,
     weekKey: row.week_key,
     summaryText: row.summary_text,
-    totalSausages: row.total_sausages,
+    totalItems: row.total_items,
     totalGrams: row.total_grams,
     mealCount: row.meal_count,
     chainLength: row.chain_length,
@@ -423,19 +423,19 @@ export async function getPlayerAllTimeStats(playerName: string) {
     sql`
       SELECT
         COUNT(*)::int AS meal_count,
-        SUM(sausage_count)::int AS total_sausages,
+        SUM(item_count)::int AS total_items,
         COALESCE(SUM(estimated_grams), 0)::int AS total_grams,
-        MAX(sausage_count)::int AS max_in_one_meal,
+        MAX(item_count)::int AS max_in_one_meal,
         COUNT(DISTINCT week_key)::int AS active_weeks
       FROM meals WHERE player_name = ${playerName}
     `,
     sql`
-      SELECT ai_description, sausage_count, estimated_grams
+      SELECT ai_description, item_count, estimated_grams
       FROM meals WHERE player_name = ${playerName}
       ORDER BY created_at DESC LIMIT 10
     `,
     sql`
-      SELECT week_key, SUM(sausage_count)::int AS week_total
+      SELECT week_key, SUM(item_count)::int AS week_total
       FROM meals WHERE player_name = ${playerName}
       GROUP BY week_key
     `,
@@ -457,14 +457,14 @@ export async function getPlayerAllTimeStats(playerName: string) {
 
   return {
     mealCount: (stats.meal_count as number) || 0,
-    totalSausages: (stats.total_sausages as number) || 0,
+    totalItems: (stats.total_items as number) || 0,
     totalGrams: (stats.total_grams as number) || 0,
     maxInOneMeal: (stats.max_in_one_meal as number) || 0,
     activeWeeks: (stats.active_weeks as number) || 0,
     chainLength: chain,
     recentMeals: mealRows.map(r => ({
       description: r.ai_description as string | null,
-      sausageCount: r.sausage_count as number,
+      itemCount: r.item_count as number,
     })),
   }
 }
@@ -1283,8 +1283,8 @@ export async function ensureStarterItem(playerName: string): Promise<void> {
     return
   }
   // Give one random item
-  const { ITEM_CATALOG } = await import('./itemCatalog')
-  const allKeys = Object.keys(ITEM_CATALOG)
+  const themeModule = await import('@/theme')
+  const allKeys = Object.keys(themeModule.default.itemCatalog)
   const randomKey = allKeys[Math.floor(Math.random() * allKeys.length)]
   await sql`
     INSERT INTO player_items (player_name, item_key) VALUES (${playerName}, ${randomKey})
@@ -1304,8 +1304,8 @@ export async function ensureStarterCards(playerName: string): Promise<void> {
     return
   }
 
-  const { getStarterCards } = await import('./battleEngine')
-  const starters = getStarterCards()
+  const themeModule = await import('@/theme')
+  const starters = themeModule.default.starterCards
   for (const s of starters) {
     await sql`
       INSERT INTO hero_cards (player_name, hero_title, hero_type, hp, attack, defense, speed, special_moves, weakness, catchphrase, flavor_text, week_key)
@@ -1322,7 +1322,7 @@ function rowToMeal(row: any): Meal {
     id: row.id,
     imageUrl: row.image_url,
     blobPath: row.blob_path,
-    sausageCount: row.sausage_count,
+    itemCount: row.item_count,
     aiSuggestedCount: row.ai_suggested_count,
     aiDescription: row.ai_description,
     estimatedGrams: row.estimated_grams ?? null,

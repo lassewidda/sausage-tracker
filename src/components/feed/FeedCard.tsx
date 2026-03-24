@@ -52,7 +52,7 @@ export function FeedCard({ meal }: FeedCardProps) {
         }}>
           {/* Score */}
           <div className="row" style={{ gap: '10px', alignItems: 'center' }}>
-            <div className="amiga-gauge amiga-gauge--small">{String(meal.sausageCount).padStart(2, '0')}</div>
+            <div className="amiga-gauge amiga-gauge--small">{String(meal.itemCount).padStart(2, '0')}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
               <span style={{
                 fontFamily: 'var(--font-pixel)',
@@ -60,7 +60,7 @@ export function FeedCard({ meal }: FeedCardProps) {
                 textTransform: 'uppercase',
                 color: 'var(--amiga-black)',
               }}>
-                SAUSAGE{meal.sausageCount !== 1 ? 'S' : ''}
+                SAUSAGE{meal.itemCount !== 1 ? 'S' : ''}
               </span>
               {meal.estimatedGrams != null && meal.estimatedGrams > 0 && (
                 <span style={{

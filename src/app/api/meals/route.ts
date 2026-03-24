@@ -7,7 +7,7 @@ export async function GET(): Promise<NextResponse> {
   try {
     const meals = await getAllMeals()
     const weeks = groupByWeek(meals)
-    const grandTotal = meals.reduce((sum, m) => sum + m.sausageCount, 0)
+    const grandTotal = meals.reduce((sum, m) => sum + m.itemCount, 0)
     return NextResponse.json({ weeks, grandTotal, meals })
   } catch (error) {
     console.error('GET /api/meals error:', error)
@@ -19,10 +19,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   let body: {
     imageUrl: string
     blobPath: string
-    sausageCount: number
+    itemCount: number
     aiSuggestedCount?: number
     aiDescription?: string
-    gramsPerSausage?: number
+    weightPerItem?: number
     playerName?: string
   }
 
@@ -32,18 +32,18 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { imageUrl, blobPath, sausageCount, aiSuggestedCount, aiDescription, gramsPerSausage, playerName } = body
+  const { imageUrl, blobPath, itemCount, aiSuggestedCount, aiDescription, weightPerItem, playerName } = body
 
-  if (!imageUrl || !blobPath || sausageCount === undefined) {
+  if (!imageUrl || !blobPath || itemCount === undefined) {
     return NextResponse.json(
-      { error: 'imageUrl, blobPath, and sausageCount are required' },
+      { error: 'imageUrl, blobPath, and itemCount are required' },
       { status: 400 }
     )
   }
 
-  if (typeof sausageCount !== 'number' || sausageCount < 0 || !Number.isInteger(sausageCount)) {
+  if (typeof itemCount !== 'number' || itemCount < 0 || !Number.isInteger(itemCount)) {
     return NextResponse.json(
-      { error: 'sausageCount must be a non-negative integer' },
+      { error: 'itemCount must be a non-negative integer' },
       { status: 400 }
     )
   }
@@ -53,24 +53,24 @@ export async function POST(request: Request): Promise<NextResponse> {
     finalDescription &&
     aiSuggestedCount !== undefined &&
     aiSuggestedCount !== null &&
-    sausageCount !== aiSuggestedCount
+    itemCount !== aiSuggestedCount
   ) {
     try {
-      finalDescription = await rewriteDescriptionForCount(finalDescription, aiSuggestedCount, sausageCount)
+      finalDescription = await rewriteDescriptionForCount(finalDescription, aiSuggestedCount, itemCount)
     } catch {
       // keep original description if rewrite fails
     }
   }
 
   const estimatedGrams =
-    gramsPerSausage && gramsPerSausage > 0 ? gramsPerSausage * sausageCount : null
+    weightPerItem && weightPerItem > 0 ? weightPerItem * itemCount : null
 
   try {
     const normalizedName = (playerName ?? 'Anonymous').trim() || 'Anonymous'
     const meal = await insertMeal({
       imageUrl,
       blobPath,
-      sausageCount,
+      itemCount,
       aiSuggestedCount: aiSuggestedCount ?? null,
       aiDescription: finalDescription,
       estimatedGrams,

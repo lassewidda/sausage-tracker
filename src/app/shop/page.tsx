@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useName } from '@/lib/useName'
 import type { ShopItem } from '@/lib/shopCatalog'
 import { ShopItemIcon } from '@/components/shop/ShopItemIcon'
+import theme from '@/theme'
 
 type Category = 'merch' | 'card_pack' | 'item'
 
@@ -78,7 +79,7 @@ export default function ShopPage() {
       <div className="amiga-window" style={{ maxWidth: '700px', margin: '0 auto' }}>
         <div className="amiga-window__titlebar">
           <span className="amiga-window__gadget">&#9632;</span>
-          <span className="amiga-window__title">THE SAUSAGE EMPORIUM</span>
+          <span className="amiga-window__title">{theme.strings.shopTitle}</span>
         </div>
         <div className="amiga-window__body">
           {/* Balance */}
@@ -107,7 +108,7 @@ export default function ShopPage() {
                 color: '#FFD700',
                 textShadow: '0 0 10px rgba(255, 215, 0, 0.5)',
               }}>
-                {balance.toLocaleString()} FR
+                {balance.toLocaleString()} {theme.strings.currencyCode}
               </div>
             </div>
             <div style={{
@@ -117,11 +118,9 @@ export default function ShopPage() {
               textAlign: 'right',
               maxWidth: '160px',
             }}>
-              FRANKFURTERS
+              {theme.strings.currencyName}
               <br />
-              THE OFFICIAL CURRENCY
-              <br />
-              OF SAUSAGE TRACKER
+              {theme.strings.currencyTagline}
             </div>
           </div>
 
@@ -197,7 +196,7 @@ export default function ShopPage() {
                     marginLeft: '8px',
                     textShadow: '0 0 6px rgba(255, 215, 0, 0.3)',
                   }}>
-                    {item.price.toLocaleString()} FR
+                    {item.price.toLocaleString()} {theme.strings.currencyCode}
                   </div>
                 </div>
 
@@ -257,7 +256,7 @@ export default function ShopPage() {
                       ? 'PURCHASING...'
                       : !name
                         ? 'SET NAME TO BUY'
-                        : `BUY FOR ${item.price.toLocaleString()} FR`}
+                        : `BUY FOR ${item.price.toLocaleString()} {theme.strings.currencyCode}`}
                   </button>
                 ) : (
                   <button
