@@ -11,10 +11,26 @@ export const metadata: Metadata = {
   description: theme.strings.metaDescription,
 }
 
+const themeVars = {
+  '--amiga-bg': theme.colors.bg,
+  '--amiga-orange': theme.colors.accent,
+  '--amiga-orange-dark': theme.colors.accentDark,
+  '--amiga-grey': theme.colors.windowBody,
+  '--amiga-dark-grey': theme.colors.textMuted,
+  '--amiga-black': theme.colors.textDark,
+  '--amiga-white': theme.colors.textLight,
+  '--bevel-light': theme.colors.bevelLight,
+  '--bevel-mid': theme.colors.bevelMid,
+  '--bevel-shadow': theme.colors.bevelShadow,
+  '--bevel-deep': theme.colors.bevelDeep,
+  '--crt-amber': theme.colors.crtGlow,
+  '--crt-amber-dim': theme.colors.crtGlowDim,
+} as React.CSSProperties
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" style={themeVars}>
+      <body style={{ backgroundColor: theme.colors.bodyBg }}>
         <div className="amiga-screen">
           <nav className="amiga-menubar">
             <span className="amiga-menubar__title">{theme.strings.menubarTitle}<AboutModal /></span>

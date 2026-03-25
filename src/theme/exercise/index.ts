@@ -23,6 +23,24 @@ export const exerciseTheme: ThemeConfig = {
 
   strings: exerciseStrings,
 
+  // Colors — Iron & Blood gym palette
+  colors: {
+    bg: '#111111',
+    accent: '#FF2200',
+    accentDark: '#AA1100',
+    windowBody: '#222222',
+    textMuted: '#666666',
+    textDark: '#CCCCCC',
+    textLight: '#FFFFFF',
+    bevelLight: '#444444',
+    bevelMid: '#333333',
+    bevelShadow: '#111111',
+    bevelDeep: '#000000',
+    crtGlow: '#FF3300',
+    crtGlowDim: '#661100',
+    bodyBg: '#0D0D0D',
+  },
+
   fallbackCardTitle: 'Gym Newbie',
   fallbackCardType: 'CARDIO/STRENGTH',
   fallbackCardMoves: [

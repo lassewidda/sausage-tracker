@@ -29,6 +29,24 @@ export const sausageTheme: ThemeConfig = {
   // UI strings
   strings: STRINGS,
 
+  // Colors — Amiga Workbench 2.x palette
+  colors: {
+    bg: '#0055AA',
+    accent: '#FF8800',
+    accentDark: '#CC6600',
+    windowBody: '#AAAAAA',
+    textMuted: '#555555',
+    textDark: '#000000',
+    textLight: '#FFFFFF',
+    bevelLight: '#FFFFFF',
+    bevelMid: '#CCCCCC',
+    bevelShadow: '#555555',
+    bevelDeep: '#000000',
+    crtGlow: '#FF6600',
+    crtGlowDim: '#883300',
+    bodyBg: '#0055AA',
+  },
+
   // Fallbacks
   fallbackCardTitle: 'Mystery Sausage',
   fallbackCardType: 'BRATWURST/GRILLED',

@@ -168,8 +168,28 @@ export interface ThemeConfig {
   // UI strings
   strings: ThemeStrings
 
+  // Colors (CSS variable overrides)
+  colors: ThemeColors
+
   // Fallbacks
   fallbackCardTitle: string
   fallbackCardType: string
   fallbackCardMoves: string[]
+}
+
+export interface ThemeColors {
+  bg: string
+  accent: string
+  accentDark: string
+  windowBody: string
+  textMuted: string
+  textDark: string
+  textLight: string
+  bevelLight: string
+  bevelMid: string
+  bevelShadow: string
+  bevelDeep: string
+  crtGlow: string
+  crtGlowDim: string
+  bodyBg: string           // background-image base gradient
 }

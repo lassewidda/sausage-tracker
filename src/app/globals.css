@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 :root {
-  /* Amiga Workbench 2.x palette */
+  /* Theme colors — defaults (overridden by inline style on <html>) */
   --amiga-bg:         #0055AA;
   --amiga-orange:     #FF8800;
   --amiga-orange-dark:#CC6600;
