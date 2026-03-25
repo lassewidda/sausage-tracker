@@ -31,7 +31,7 @@ export default async function HighscorePage() {
           </div>
 
           <div className="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
-            <Link href="/"><Button>+ ADD MEAL</Button></Link>
+            <Link href="/"><Button>{theme.strings.feedAddButton}</Button></Link>
             <Link href="/feed"><Button>FEED</Button></Link>
           </div>
 
