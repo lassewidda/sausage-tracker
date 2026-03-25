@@ -6,6 +6,7 @@ import { GenerateSummaries } from '@/components/feed/GenerateSummaries'
 import Link from 'next/link'
 import { Button } from '@/components/amiga/Button'
 import type { Meal, WeeklySummary } from '@/types'
+import theme from '@/theme'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,14 +68,14 @@ export default async function FeedPage() {
 
   return (
     <main className="page-content">
-      <Window title="SAUSAGE FEED — ALL MEALS">
+      <Window title={theme.strings.feedTitle}>
         <div className="stack">
           <div className="grand-total">
-            COMMUNITY SAUSAGE COUNT: {String(grandTotal).padStart(4, '0')} 🌭
+            {theme.strings.feedCommunityCount(grandTotal)}
           </div>
 
           <div className="row" style={{ gap: '8px', flexWrap: 'wrap' }}>
-            <Link href="/"><Button>+ ADD MEAL</Button></Link>
+            <Link href="/"><Button>{theme.strings.feedAddButton}</Button></Link>
             <Link href="/highscore"><Button variant="primary">HIGHSCORE</Button></Link>
           </div>
 
@@ -83,7 +84,7 @@ export default async function FeedPage() {
 
           {allWeekKeys.length === 0 ? (
             <div className="amiga-info" style={{ textAlign: 'center' }}>
-              NO MEALS YET. BE THE FIRST TO LOG A SAUSAGE!
+              {theme.strings.feedEmpty}
             </div>
           ) : (
             <div className="stack" style={{ gap: '16px' }}>

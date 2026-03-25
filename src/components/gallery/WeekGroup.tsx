@@ -1,6 +1,7 @@
 import type { WeekGroup as IWeekGroup } from '@/types'
 import { MealCard } from './MealCard'
 import { Gauge } from '@/components/amiga/Gauge'
+import theme from '@/theme'
 
 interface WeekGroupProps {
   group: IWeekGroup
@@ -15,7 +16,7 @@ export function WeekGroup({ group }: WeekGroupProps) {
           <span style={{ fontSize: '9px' }}>TOTAL:</span>
           <Gauge value={group.totalItems} size="small" />
           <span style={{ fontSize: '9px' }}>
-            SAUSAGE{group.totalItems !== 1 ? 'S' : ''}
+            {theme.strings.weekGroupItemLabel(group.totalItems)}
           </span>
           {group.totalGrams > 0 && (
             <span style={{ fontSize: '9px', color: 'var(--amiga-dark-grey)' }}>

@@ -99,6 +99,20 @@ export interface ThemeStrings {
   currencyCode: string
   currencyTagline: string
 
+  // Gallery
+  galleryTitle: string
+  galleryLifetimeScore: (total: number) => string
+  galleryAddButton: string
+  galleryEmpty: string
+  galleryEmptySub: string
+  weekGroupItemLabel: (count: number) => string
+
+  // Feed
+  feedTitle: string
+  feedCommunityCount: (total: number) => string
+  feedAddButton: string
+  feedEmpty: string
+
   // Items unit
   itemName: string
   itemNamePlural: string

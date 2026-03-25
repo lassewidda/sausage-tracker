@@ -4,6 +4,7 @@ import { Window } from '@/components/amiga/Window'
 import { WeekGroup } from '@/components/gallery/WeekGroup'
 import { Button } from '@/components/amiga/Button'
 import type { Meal, WeekGroup as IWeekGroup } from '@/types'
+import theme from '@/theme'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,26 +23,26 @@ export default async function GalleryPage() {
 
   return (
     <main className="page-content">
-      <Window title="WEEKLY SAUSAGE LOG">
+      <Window title={theme.strings.galleryTitle}>
         <div className="stack">
           {/* Grand total */}
           <div className="grand-total">
-            LIFETIME SAUSAGE SCORE: {String(grandTotal).padStart(4, '0')} POINTS
+            {theme.strings.galleryLifetimeScore(grandTotal)}
           </div>
 
           {/* Add meal button */}
           <div className="row">
             <Link href="/">
-              <Button variant="primary">+ ADD NEW MEAL</Button>
+              <Button variant="primary">{theme.strings.galleryAddButton}</Button>
             </Link>
           </div>
 
           {/* Week groups */}
           {weeks.length === 0 ? (
             <div className="amiga-info" style={{ textAlign: 'center' }}>
-              NO MEALS RECORDED YET.
+              {theme.strings.galleryEmpty}
               <br />
-              UPLOAD YOUR FIRST MEAL TO GET STARTED!
+              {theme.strings.galleryEmptySub}
             </div>
           ) : (
             <div className="stack" style={{ gap: '20px' }}>

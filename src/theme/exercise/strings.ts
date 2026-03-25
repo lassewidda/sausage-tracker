@@ -89,6 +89,20 @@ export const exerciseStrings: ThemeStrings = {
   currencyCode: 'PC',
   currencyTagline: 'Earned through sweat. Spent on gains.',
 
+  // Gallery
+  galleryTitle: 'WEEKLY WORKOUT LOG',
+  galleryLifetimeScore: (total: number) => `LIFETIME GAINS SCORE: ${String(total).padStart(4, '0')} POINTS`,
+  galleryAddButton: '+ LOG NEW WORKOUT',
+  galleryEmpty: 'NO WORKOUTS RECORDED YET.',
+  galleryEmptySub: 'UPLOAD YOUR FIRST WORKOUT TO GET STARTED!',
+  weekGroupItemLabel: (count: number) => `WORKOUT${count !== 1 ? 'S' : ''}`,
+
+  // Feed
+  feedTitle: 'WORKOUT FEED — ALL SESSIONS',
+  feedCommunityCount: (total: number) => `COMMUNITY WORKOUT COUNT: ${String(total).padStart(4, '0')} 💪`,
+  feedAddButton: '+ LOG WORKOUT',
+  feedEmpty: 'NO WORKOUTS YET. BE THE FIRST TO LOG A SESSION!',
+
   // Items unit
   itemName: 'workout',
   itemNamePlural: 'workouts',

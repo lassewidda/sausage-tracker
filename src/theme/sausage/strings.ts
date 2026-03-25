@@ -79,6 +79,20 @@ export const STRINGS: ThemeStrings = {
   currencyCode: 'FR',
   currencyTagline: 'THE OFFICIAL CURRENCY OF SAUSAGE TRACKER',
 
+  // Gallery
+  galleryTitle: 'WEEKLY SAUSAGE LOG',
+  galleryLifetimeScore: (total: number) => `LIFETIME SAUSAGE SCORE: ${String(total).padStart(4, '0')} POINTS`,
+  galleryAddButton: '+ ADD NEW MEAL',
+  galleryEmpty: 'NO MEALS RECORDED YET.',
+  galleryEmptySub: 'UPLOAD YOUR FIRST MEAL TO GET STARTED!',
+  weekGroupItemLabel: (count: number) => `SAUSAGE${count !== 1 ? 'S' : ''}`,
+
+  // Feed
+  feedTitle: 'SAUSAGE FEED — ALL MEALS',
+  feedCommunityCount: (total: number) => `COMMUNITY SAUSAGE COUNT: ${String(total).padStart(4, '0')} \u{1F32D}`,
+  feedAddButton: '+ ADD MEAL',
+  feedEmpty: 'NO MEALS YET. BE THE FIRST TO LOG A SAUSAGE!',
+
   // Items unit
   itemName: 'sausage',
   itemNamePlural: 'sausages',
