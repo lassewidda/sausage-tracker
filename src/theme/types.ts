@@ -113,6 +113,22 @@ export interface ThemeStrings {
   feedAddButton: string
   feedEmpty: string
 
+  // Battle messages
+  victoryMessages: string[]
+  defeatMessages: string[]
+  drawMessages: string[]
+  victoryEmojis: string[]
+  tauntPresets: { label: string; text: string }[]
+
+  // Battle empty states
+  noCardsYet: string
+  noItemsLog: string
+  noItemsLogLobby: string
+
+  // Misc UI
+  photoAltText: string
+  deleteTooltip: string
+
   // Items unit
   itemName: string
   itemNamePlural: string

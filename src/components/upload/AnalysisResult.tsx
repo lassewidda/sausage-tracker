@@ -47,7 +47,7 @@ export function AnalysisResult({
       >
         <Image
           src={blobUrl || preview}
-          alt="Uploaded meal"
+          alt={theme.strings.photoAltText}
           fill
           style={{ objectFit: 'cover' }}
           unoptimized

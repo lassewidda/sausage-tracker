@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import type { Meal } from '@/types'
+import theme from '@/theme'
 
 interface MealCardProps {
   meal: Meal
@@ -19,7 +20,7 @@ export function MealCard({ meal }: MealCardProps) {
       <div className="meal-card__image-wrap">
         <Image
           src={meal.imageUrl}
-          alt={meal.aiDescription ?? 'Meal photo'}
+          alt={meal.aiDescription ?? theme.strings.photoAltText}
           fill
           style={{ objectFit: 'cover' }}
           unoptimized

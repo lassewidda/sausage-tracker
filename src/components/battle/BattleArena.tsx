@@ -11,6 +11,7 @@ import { TauntBar } from './TauntBar'
 import { TauntBubble } from './TauntBubble'
 import { CriticalHitOverlay } from './CriticalHitOverlay'
 import { parseMoveDamage, getTypeMatchupMultiplier } from '@/lib/battleEngine'
+import theme from '@/theme'
 
 interface InventoryItem extends PlayerItem {
   definition?: ItemDefinition
@@ -350,7 +351,7 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
                   textAlign: 'center',
                   padding: '12px',
                 }}>
-                  NO ITEMS. LOG MEALS TO FIND ITEMS!
+                  {theme.strings.noItemsLog}
                 </div>
               ) : (
                 usableItems.map((item) => (

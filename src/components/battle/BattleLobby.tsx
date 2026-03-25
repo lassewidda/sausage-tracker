@@ -8,6 +8,7 @@ import { useName } from '@/lib/useName'
 import { CardDetail } from './CardDetail'
 import { PixelAvatar, getTypeTheme } from '@/components/player/HeroCardDisplay'
 import { ItemIcon } from './ItemIcon'
+import theme from '@/theme'
 
 function getCurrentWeekKey(): string {
   const d = new Date()
@@ -204,7 +205,7 @@ export function BattleLobby() {
               textAlign: 'center',
               padding: '16px',
             }}>
-              NO CARDS YET. LOG MEALS TO EARN WEEKLY CARDS!
+              {theme.strings.noCardsYet}
               <br />STARTER CARDS WILL BE GIVEN WHEN YOU JOIN A BATTLE.
             </div>
           ) : (
@@ -374,7 +375,7 @@ export function BattleLobby() {
               textAlign: 'center',
               padding: '16px',
             }}>
-              NO ITEMS. LOG MEALS FOR A CHANCE TO FIND ITEMS!
+              {theme.strings.noItemsLogLobby}
             </div>
           ) : (
             <div style={{

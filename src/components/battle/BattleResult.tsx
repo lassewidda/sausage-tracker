@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import type { BattleTurn } from '@/types'
+import theme from '@/theme'
 
 interface Props {
   winner: string | null
@@ -17,43 +18,14 @@ function hash(s: string): number {
   return Math.abs(h)
 }
 
-const VICTORY_MESSAGES = [
-  'YOUR SAUSAGES REIGN SUPREME!',
-  'THE WURST IS YET TO COME... FOR THEM!',
-  'FRANKTASTIC VICTORY!',
-  'THEY\'VE BEEN THOROUGHLY GRILLED!',
-  'ABSOLUTE BANGER OF A WIN!',
-  'MUSTARD-CLASS DOMINANCE!',
-  'YOU REALLY LINKED THOSE COMBOS!',
-  'EXTRA CRISPY VICTORY!',
-  'THEY GOT SMOKED!',
-  'BRATWURST BRILLIANCE!',
-]
-
-const DEFEAT_MESSAGES = [
-  'YOUR LINKS HAVE BEEN SEVERED!',
-  'ROASTED... LITERALLY.',
-  'YOU\'VE BEEN WURST\'D!',
-  'BACK TO THE FRIDGE WITH YOU!',
-  'OVERCOOKED AND OUTMATCHED!',
-  'YOUR CASING HAS BEEN BUSTED!',
-  'SERVED WITH A SIDE OF DEFEAT!',
-  'THAT WAS RARE... MEDIUM RARE... WELL DONE.',
-  'KETCHUP ON YOUR GRAVE!',
-  'TIME TO RECONSIDER YOUR CONDIMENTS!',
-]
-
-const DRAW_MESSAGES = [
-  'MUTUAL DESTRUCTION... RESPECT.',
-  'BOTH SIDES WELL DONE.',
-  'A TIE? HOW UNAPPETIZING!',
-  'NOBODY GETS THE LAST SAUSAGE!',
-]
+const VICTORY_MESSAGES = theme.strings.victoryMessages
+const DEFEAT_MESSAGES = theme.strings.defeatMessages
+const DRAW_MESSAGES = theme.strings.drawMessages
 
 function VictoryParticles({ seed }: { seed: number }) {
   const particles = Array.from({ length: 35 }, (_, i) => {
     const h = hash(`${seed}-${i}`)
-    const emoji = ['🌭', '🎉', '🟡', '🔥', '⭐', '🏆', '💥'][h % 7]
+    const emoji = theme.strings.victoryEmojis[h % theme.strings.victoryEmojis.length]
     return {
       emoji,
       left: `${(h * 7 + i * 13) % 100}%`,

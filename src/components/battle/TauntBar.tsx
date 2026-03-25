@@ -1,21 +1,9 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import theme from '@/theme'
 
-const PRESET_TAUNTS = [
-  { label: '🌭', text: '🌭' },
-  { label: '🔥', text: '🔥🔥🔥' },
-  { label: '💀', text: '💀' },
-  { label: '😂', text: '😂' },
-  { label: '🍖', text: '🍖' },
-  { label: '💩', text: '💩' },
-  { label: 'GG', text: 'GG!' },
-  { label: 'RIP', text: 'R.I.P. your sausage' },
-  { label: 'WOW', text: 'WOW what a move!' },
-  { label: 'OOF', text: 'OOF that hurt...' },
-  { label: '???', text: 'What are you doing?!' },
-  { label: 'YUM', text: 'Mmm tasty sausage!' },
-]
+const PRESET_TAUNTS = theme.strings.tauntPresets
 
 interface Props {
   battleId: string

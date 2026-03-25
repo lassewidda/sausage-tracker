@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useName } from '@/lib/useName'
+import theme from '@/theme'
 
 interface DeleteButtonProps {
   mealId: string
@@ -80,7 +81,7 @@ export function DeleteButton({ mealId, mealPlayerName }: DeleteButtonProps) {
   return (
     <button
       onClick={() => setConfirming(true)}
-      title="Delete this meal"
+      title={theme.strings.deleteTooltip}
       style={{
         fontFamily: 'var(--font-pixel)',
         fontSize: '6px',

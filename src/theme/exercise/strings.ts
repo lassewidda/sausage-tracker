@@ -103,6 +103,62 @@ export const exerciseStrings: ThemeStrings = {
   feedAddButton: '+ LOG WORKOUT',
   feedEmpty: 'NO WORKOUTS YET. BE THE FIRST TO LOG A SESSION!',
 
+  // Battle messages
+  victoryMessages: [
+    'ABSOLUTE GAINS! YOU CRUSHED IT!',
+    'THEY SKIPPED LEG DAY... YOU DIDN\'T!',
+    'PR ACHIEVED! FLAWLESS VICTORY!',
+    'THEY COULDN\'T EVEN LIFT YOUR WARM-UP!',
+    'BEAST MODE ACTIVATED!',
+    'REP AFTER REP OF PURE DOMINANCE!',
+    'THEY NEED A SPOTTER... AND A THERAPIST!',
+    'PUMPED UP AND POWERED THROUGH!',
+    'NO REST DAYS FOR CHAMPIONS!',
+    'SWOLE PATROL REPORTING FOR DUTY!',
+  ],
+  defeatMessages: [
+    'YOU GOT OUTLIFTED!',
+    'BACK TO THE BENCH, ROOKIE.',
+    'THEY HAD BETTER FORM...',
+    'OVERWORKED AND OUTMATCHED!',
+    'TIME TO RECONSIDER YOUR ROUTINE!',
+    'YOUR MUSCLES FAILED THE REP CHECK!',
+    'SOMEONE SKIPPED THEIR PRE-WORKOUT...',
+    'THAT WAS HEAVY... FOR YOU.',
+    'DROPPED THE WEIGHT ON THAT ONE!',
+    'SPOTTERLESS AND SORRY!',
+  ],
+  drawMessages: [
+    'MUTUAL EXHAUSTION... RESPECT.',
+    'BOTH SIDES HIT FAILURE!',
+    'A TIE? NO ONE GOES HOME SWOLE!',
+    'NOBODY GETS THE LAST REP!',
+  ],
+  victoryEmojis: ['💪', '🎉', '🟡', '🔥', '⭐', '🏆', '💥'],
+  tauntPresets: [
+    { label: '💪', text: '💪' },
+    { label: '🔥', text: '🔥🔥🔥' },
+    { label: '💀', text: '💀' },
+    { label: '😂', text: '😂' },
+    { label: '🏋️', text: '🏋️' },
+    { label: '💩', text: '💩' },
+    { label: 'GG', text: 'GG!' },
+    { label: 'RIP', text: 'R.I.P. your gains' },
+    { label: 'WOW', text: 'WOW what a move!' },
+    { label: 'OOF', text: 'OOF that hurt...' },
+    { label: '???', text: 'What are you doing?!' },
+    { label: 'BRO', text: 'Do you even lift, bro?' },
+  ],
+
+  // Battle empty states
+  noCardsYet: 'NO CARDS YET. LOG WORKOUTS TO EARN WEEKLY CARDS!',
+  noItemsLog: 'NO ITEMS. LOG WORKOUTS TO FIND ITEMS!',
+  noItemsLogLobby: 'NO ITEMS. LOG WORKOUTS FOR A CHANCE TO FIND ITEMS!',
+
+  // Misc UI
+  photoAltText: 'Workout screenshot',
+  deleteTooltip: 'Delete this workout',
+
   // Items unit
   itemName: 'workout',
   itemNamePlural: 'workouts',

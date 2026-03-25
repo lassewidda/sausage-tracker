@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { ChainEntry } from '@/types'
+import theme from '@/theme'
 
 interface Props {
   entries: ChainEntry[]
@@ -132,19 +133,19 @@ export function SausageChain({ entries }: Props) {
     <div className="amiga-window">
       <div className="amiga-window__titlebar">
         <div className="amiga-window__gadget" />
-        <span className="amiga-window__title">🌭 THE SAUSAGE CHAIN 🌭</span>
+        <span className="amiga-window__title">{theme.strings.itemEmoji} {theme.strings.chainTitle} {theme.strings.itemEmoji}</span>
         <div className="amiga-window__gadget" />
       </div>
       <div className="amiga-window__body">
         <div style={{ marginBottom: '10px' }}>
           <div className="amiga-info">
-            EACH LINK = 1 WEEK WITH 3+ SAUSAGES. MISS A WEEK AND YOUR CHAIN BREAKS!
+            {theme.strings.chainExplanation}
           </div>
         </div>
 
         {entries.length === 0 ? (
           <div className="amiga-info" style={{ textAlign: 'center' }}>
-            NO CHAINS YET — LOG 3+ SAUSAGES IN A WEEK TO START YOURS!
+            {theme.strings.chainEmptyText}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

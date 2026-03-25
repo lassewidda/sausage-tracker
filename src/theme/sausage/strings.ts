@@ -93,6 +93,62 @@ export const STRINGS: ThemeStrings = {
   feedAddButton: '+ ADD MEAL',
   feedEmpty: 'NO MEALS YET. BE THE FIRST TO LOG A SAUSAGE!',
 
+  // Battle messages
+  victoryMessages: [
+    'YOUR SAUSAGES REIGN SUPREME!',
+    'THE WURST IS YET TO COME... FOR THEM!',
+    'FRANKTASTIC VICTORY!',
+    'THEY\'VE BEEN THOROUGHLY GRILLED!',
+    'ABSOLUTE BANGER OF A WIN!',
+    'MUSTARD-CLASS DOMINANCE!',
+    'YOU REALLY LINKED THOSE COMBOS!',
+    'EXTRA CRISPY VICTORY!',
+    'THEY GOT SMOKED!',
+    'BRATWURST BRILLIANCE!',
+  ],
+  defeatMessages: [
+    'YOUR LINKS HAVE BEEN SEVERED!',
+    'ROASTED... LITERALLY.',
+    'YOU\'VE BEEN WURST\'D!',
+    'BACK TO THE FRIDGE WITH YOU!',
+    'OVERCOOKED AND OUTMATCHED!',
+    'YOUR CASING HAS BEEN BUSTED!',
+    'SERVED WITH A SIDE OF DEFEAT!',
+    'THAT WAS RARE... MEDIUM RARE... WELL DONE.',
+    'KETCHUP ON YOUR GRAVE!',
+    'TIME TO RECONSIDER YOUR CONDIMENTS!',
+  ],
+  drawMessages: [
+    'MUTUAL DESTRUCTION... RESPECT.',
+    'BOTH SIDES WELL DONE.',
+    'A TIE? HOW UNAPPETIZING!',
+    'NOBODY GETS THE LAST SAUSAGE!',
+  ],
+  victoryEmojis: ['\u{1F32D}', '\u{1F389}', '\u{1F7E1}', '\u{1F525}', '\u2B50', '\u{1F3C6}', '\u{1F4A5}'],
+  tauntPresets: [
+    { label: '\u{1F32D}', text: '\u{1F32D}' },
+    { label: '\u{1F525}', text: '\u{1F525}\u{1F525}\u{1F525}' },
+    { label: '\u{1F480}', text: '\u{1F480}' },
+    { label: '\u{1F602}', text: '\u{1F602}' },
+    { label: '\u{1F356}', text: '\u{1F356}' },
+    { label: '\u{1F4A9}', text: '\u{1F4A9}' },
+    { label: 'GG', text: 'GG!' },
+    { label: 'RIP', text: 'R.I.P. your sausage' },
+    { label: 'WOW', text: 'WOW what a move!' },
+    { label: 'OOF', text: 'OOF that hurt...' },
+    { label: '???', text: 'What are you doing?!' },
+    { label: 'YUM', text: 'Mmm tasty sausage!' },
+  ],
+
+  // Battle empty states
+  noCardsYet: 'NO CARDS YET. LOG MEALS TO EARN WEEKLY CARDS!',
+  noItemsLog: 'NO ITEMS. LOG MEALS TO FIND ITEMS!',
+  noItemsLogLobby: 'NO ITEMS. LOG MEALS FOR A CHANCE TO FIND ITEMS!',
+
+  // Misc UI
+  photoAltText: 'Meal photo',
+  deleteTooltip: 'Delete this meal',
+
   // Items unit
   itemName: 'sausage',
   itemNamePlural: 'sausages',

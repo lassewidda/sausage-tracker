@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { WeeklySummary } from '@/types'
+import theme from '@/theme'
 
 interface Props {
   summary: WeeklySummary
@@ -41,7 +42,7 @@ export function WeeklySummaryCard({ summary }: Props) {
               }}>
                 <Image
                   src={url}
-                  alt={`Meal ${i + 1}`}
+                  alt={`${theme.strings.photoAltText} ${i + 1}`}
                   fill
                   style={{ objectFit: 'cover' }}
                   unoptimized

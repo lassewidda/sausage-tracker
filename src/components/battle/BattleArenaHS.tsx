@@ -13,6 +13,7 @@ import { TauntBubble } from './TauntBubble'
 import { BattleTurnLog } from './BattleTurnLog'
 import { CriticalHitOverlay } from './CriticalHitOverlay'
 import { parseMoveDamage, getTypeMatchupMultiplier } from '@/lib/battleEngine'
+import theme from '@/theme'
 
 interface InventoryItem extends PlayerItem {
   definition?: ItemDefinition
@@ -339,7 +340,7 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
       <SlidePanel isOpen={activePanel === 'items'} onClose={() => setActivePanel(null)} title="ITEMS">
         {usableItems.length === 0 ? (
           <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '8px', color: '#666', textAlign: 'center', padding: '16px' }}>
-            NO ITEMS. LOG MEALS TO FIND ITEMS!
+            {theme.strings.noItemsLog}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
