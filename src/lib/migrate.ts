@@ -171,9 +171,6 @@ async function migrate() {
   // Add switch_player column for post-KO card selection
   await sql`ALTER TABLE battles ADD COLUMN IF NOT EXISTS switch_player TEXT`
 
-  // Add used_at column for item cooldowns (null = available, set = on 3-day cooldown)
-  await sql`ALTER TABLE player_items ADD COLUMN IF NOT EXISTS used_at TIMESTAMPTZ`
-
   // Add is_critical column for critical hits
   await sql`ALTER TABLE battle_turns ADD COLUMN IF NOT EXISTS is_critical BOOLEAN NOT NULL DEFAULT false`
 
@@ -186,6 +183,9 @@ async function migrate() {
       obtained_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
+
+  // Add used_at column for item cooldowns (null = available, set = on 3-day cooldown)
+  await sql`ALTER TABLE player_items ADD COLUMN IF NOT EXISTS used_at TIMESTAMPTZ`
 
   await sql`CREATE INDEX IF NOT EXISTS idx_player_items_player ON player_items(player_name)`
 
