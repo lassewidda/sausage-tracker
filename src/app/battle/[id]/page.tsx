@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useName } from '@/lib/useName'
 import { useBattleState } from '@/components/battle/useBattleState'
 import { BattleCardSelect } from '@/components/battle/BattleCardSelect'
@@ -12,7 +12,8 @@ import { useEffect } from 'react'
 
 export default function BattleArenaPage({ params }: { params: { id: string } }) {
   const { id } = params
-  const { name } = useName()
+  const { name, setName } = useName()
+  const nameInputRef = useRef<HTMLInputElement>(null)
   const { state, refetch } = useBattleState(id)
   const [deck, setDeck] = useState<HeroCard[]>([])
   const [inventory, setInventory] = useState<(PlayerItem & { definition?: ItemDefinition })[]>([])
@@ -115,9 +116,43 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
             <span className="amiga-window__title">BATTLE ARENA</span>
           </div>
           <div className="amiga-window__body" style={{ textAlign: 'center', padding: '32px' }}>
-            <p style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px' }}>
-              SET YOUR PLAYER NAME TO BATTLE
+            <p style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', marginBottom: '16px' }}>
+              ENTER YOUR NAME TO BATTLE
             </p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                const val = nameInputRef.current?.value?.trim()
+                if (val) setName(val)
+              }}
+              style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}
+            >
+              <input
+                ref={nameInputRef}
+                autoFocus
+                type="text"
+                maxLength={20}
+                placeholder="YOUR NAME"
+                style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: '10px',
+                  textTransform: 'uppercase',
+                  background: 'var(--amiga-black)',
+                  color: 'var(--crt-amber)',
+                  border: '2px solid var(--crt-amber)',
+                  padding: '8px 12px',
+                  width: '200px',
+                  outline: 'none',
+                }}
+              />
+              <button
+                type="submit"
+                className="amiga-btn amiga-btn--primary"
+                style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px' }}
+              >
+                GO!
+              </button>
+            </form>
           </div>
         </div>
       </div>
