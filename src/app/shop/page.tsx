@@ -256,7 +256,7 @@ export default function ShopPage() {
                       ? 'PURCHASING...'
                       : !name
                         ? 'SET NAME TO BUY'
-                        : `BUY FOR ${item.price.toLocaleString()} {theme.strings.currencyCode}`}
+                        : `BUY FOR ${item.price.toLocaleString()} ${theme.strings.currencyCode}`}
                   </button>
                 ) : (
                   <button
