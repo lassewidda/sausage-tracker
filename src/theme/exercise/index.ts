@@ -23,22 +23,22 @@ export const exerciseTheme: ThemeConfig = {
 
   strings: exerciseStrings,
 
-  // Colors — Iron & Blood gym palette
+  // Colors — Ocean Blue & White
   colors: {
-    bg: '#111111',
-    accent: '#FF2200',
-    accentDark: '#AA1100',
-    windowBody: '#222222',
-    textMuted: '#666666',
-    textDark: '#CCCCCC',
+    bg: '#1A2744',
+    accent: '#4A90D9',
+    accentDark: '#3570B0',
+    windowBody: '#243352',
+    textMuted: '#7A8DA8',
+    textDark: '#D0D8E8',
     textLight: '#FFFFFF',
-    bevelLight: '#444444',
-    bevelMid: '#333333',
-    bevelShadow: '#111111',
-    bevelDeep: '#000000',
-    crtGlow: '#FF3300',
-    crtGlowDim: '#661100',
-    bodyBg: '#0D0D0D',
+    bevelLight: '#3A5070',
+    bevelMid: '#2A3D5C',
+    bevelShadow: '#142035',
+    bevelDeep: '#0D1520',
+    crtGlow: '#5AA0E8',
+    crtGlowDim: '#2A5080',
+    bodyBg: '#121D30',
   },
 
   fallbackCardTitle: 'Gym Newbie',
