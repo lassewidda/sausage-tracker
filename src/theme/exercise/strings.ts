@@ -155,6 +155,18 @@ export const exerciseStrings: ThemeStrings = {
   noItemsLog: 'NO ITEMS. LOG WORKOUTS TO FIND ITEMS!',
   noItemsLogLobby: 'NO ITEMS. LOG WORKOUTS FOR A CHANCE TO FIND ITEMS!',
 
+  // Loading messages
+  lobbyLoadingMessages: [
+    'BICEPS ARE GROWING...',
+    'LOADING THE SQUAT RACK...',
+    'MIXING THE PRE-WORKOUT...',
+    'CHALKING UP THE HANDS...',
+    'WARMING UP THE MUSCLES...',
+    'CONSULTING THE GAINS GODS...',
+    'REPPING OUT THE DATA...',
+    'STRETCHING THE HAMSTRINGS...',
+  ],
+
   // Misc UI
   photoAltText: 'Workout screenshot',
   deleteTooltip: 'Delete this workout',

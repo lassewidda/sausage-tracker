@@ -145,6 +145,18 @@ export const STRINGS: ThemeStrings = {
   noItemsLog: 'NO ITEMS. LOG MEALS TO FIND ITEMS!',
   noItemsLogLobby: 'NO ITEMS. LOG MEALS FOR A CHANCE TO FIND ITEMS!',
 
+  // Loading messages
+  lobbyLoadingMessages: [
+    'BOILING THE SAUSAGES...',
+    'APPLYING MUSTARD...',
+    'GRILLING THE BRATWURST...',
+    'WARMING UP THE BUNS...',
+    'CONSULTING THE WURST ORACLE...',
+    'COUNTING SAUSAGE LINKS...',
+    'SHARPENING THE TONGS...',
+    'LIGHTING THE GRILL...',
+  ],
+
   // Misc UI
   photoAltText: 'Meal photo',
   deleteTooltip: 'Delete this meal',

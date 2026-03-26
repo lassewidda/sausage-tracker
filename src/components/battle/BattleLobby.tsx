@@ -32,6 +32,8 @@ export function BattleLobby() {
   const [activeBattles, setActiveBattles] = useState<Battle[]>([])
   const [deck, setDeck] = useState<HeroCard[]>([])
   const [loading, setLoading] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [loadingMsgIndex, setLoadingMsgIndex] = useState(0)
   const [hasMeals, setHasMeals] = useState(false)
   const [selectedCard, setSelectedCard] = useState<HeroCard | null>(null)
   const [inventory, setInventory] = useState<(PlayerItem & { definition?: ItemDefinition })[]>([])
@@ -60,6 +62,7 @@ export function BattleLobby() {
         setInventory(Array.isArray(invData) ? invData : [])
       }
     } catch { /* ignore */ }
+    setInitialLoading(false)
   }, [name])
 
   // Load seen item IDs from localStorage
@@ -90,6 +93,15 @@ export function BattleLobby() {
     const interval = setInterval(fetchLobby, 3000)
     return () => clearInterval(interval)
   }, [fetchLobby])
+
+  // Rotate loading messages
+  useEffect(() => {
+    if (!initialLoading) return
+    const interval = setInterval(() => {
+      setLoadingMsgIndex(i => (i + 1) % theme.strings.lobbyLoadingMessages.length)
+    }, 1500)
+    return () => clearInterval(interval)
+  }, [initialLoading])
 
   const createChallenge = async () => {
     if (!name || loading) return
@@ -133,6 +145,38 @@ export function BattleLobby() {
           <p style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: 'var(--amiga-black)' }}>
             SET YOUR PLAYER NAME IN THE MENU BAR TO ENTER THE ARENA
           </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (initialLoading) {
+    return (
+      <div className="amiga-window" style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <div className="amiga-window__titlebar">
+          <span className="amiga-window__gadget">&#9632;</span>
+          <span className="amiga-window__title">BATTLE ARENA</span>
+        </div>
+        <div className="amiga-window__body" style={{
+          textAlign: 'center',
+          padding: '48px 32px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '20px',
+        }}>
+          <div style={{ fontSize: '32px' }}>
+            {theme.strings.itemEmoji}
+          </div>
+          <div className="amiga-blink" style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '10px',
+            color: 'var(--crt-amber)',
+            textTransform: 'uppercase',
+            minHeight: '24px',
+          }}>
+            {theme.strings.lobbyLoadingMessages[loadingMsgIndex]}
+          </div>
         </div>
       </div>
     )

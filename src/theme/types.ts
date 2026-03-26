@@ -125,6 +125,9 @@ export interface ThemeStrings {
   noItemsLog: string
   noItemsLogLobby: string
 
+  // Loading messages
+  lobbyLoadingMessages: string[]
+
   // Misc UI
   photoAltText: string
   deleteTooltip: string
