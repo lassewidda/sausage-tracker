@@ -56,9 +56,9 @@ function ChallengeRequirementLabel({ challenge }: { challenge: ChallengeView['ch
   const reqs = challenge.exerciseRequirements
   if (IS_EXERCISE && reqs && Object.keys(reqs).length > 0) {
     const parts = Object.entries(reqs).map(([type, n]) => `${n} ${TYPE_LABELS[type] ?? type.toUpperCase()}`)
-    return <>{`COMPLETE ALL BINGO ITEMS + LOG ${parts.join(' + ')}`}</>
+    return <>{`COMPLETE ALL PHOTO BINGO ITEMS + LOG ${parts.join(' + ')}`}</>
   }
-  return <>COMPLETE ALL BINGO ITEMS + LOG {challenge.exerciseMinimum}+ EXERCISES</>
+  return <>COMPLETE ALL PHOTO BINGO ITEMS + LOG {challenge.exerciseMinimum}+ EXERCISES</>
 }
 
 export default function ChallengePage() {
