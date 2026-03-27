@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Window } from '@/components/amiga/Window'
 import { Button } from '@/components/amiga/Button'
+import { useName } from '@/lib/useName'
 import type { WeeklyChallenge } from '@/types'
 
 const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
@@ -23,6 +24,7 @@ function getCurrentWeekKey(): string {
 }
 
 export default function ChallengeAdminPage() {
+  const { name, loaded } = useName()
   const [challenges, setChallenges] = useState<WeeklyChallenge[]>([])
   const [weekKey, setWeekKey] = useState(getCurrentWeekKey())
   const [bingoItems, setBingoItems] = useState<string[]>([''])
@@ -175,6 +177,26 @@ export default function ChallengeAdminPage() {
     padding: '6px 10px',
     outline: 'none',
     width: '100%',
+  }
+
+  if (!loaded) {
+    return (
+      <Window title="ADMIN">
+        <div style={{ textAlign: 'center', padding: '32px', fontFamily: 'var(--font-pixel)', fontSize: '10px', color: 'var(--crt-amber)' }}>
+          LOADING...
+        </div>
+      </Window>
+    )
+  }
+
+  if (name?.toLowerCase() !== 'lars') {
+    return (
+      <Window title="ADMIN">
+        <div style={{ textAlign: 'center', padding: '32px', fontFamily: 'var(--font-pixel)', fontSize: '10px', color: '#AA0000' }}>
+          ACCESS DENIED. ADMIN ONLY.
+        </div>
+      </Window>
+    )
   }
 
   return (
