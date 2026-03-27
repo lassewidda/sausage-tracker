@@ -1292,6 +1292,24 @@ export async function ensureStarterItem(playerName: string): Promise<void> {
   await sql.end()
 }
 
+function hashName(name: string): number {
+  let h = 0
+  for (let i = 0; i < name.length; i++) h = ((h << 5) - h + name.charCodeAt(i)) | 0
+  return Math.abs(h)
+}
+
+function pickStarterCards(playerName: string, allStarters: typeof import('@/theme').default.starterCards): typeof allStarters {
+  if (allStarters.length <= 5) return allStarters
+  // Deterministic shuffle seeded by player name, then pick first 5
+  const seed = hashName(playerName)
+  const indices = allStarters.map((_, i) => i)
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = ((seed * (i + 1) * 2654435761) >>> 0) % (i + 1)
+    ;[indices[i], indices[j]] = [indices[j], indices[i]]
+  }
+  return indices.slice(0, 5).map(i => allStarters[i])
+}
+
 export async function ensureStarterCards(playerName: string): Promise<void> {
   const sql = getDb()
   // Check if starter cards already exist
@@ -1305,11 +1323,15 @@ export async function ensureStarterCards(playerName: string): Promise<void> {
   }
 
   const themeModule = await import('@/theme')
-  const starters = themeModule.default.starterCards
-  for (const s of starters) {
+  const allStarters = themeModule.default.starterCards
+  const starters = pickStarterCards(playerName, allStarters)
+  // Assign STARTER-1 through STARTER-5 keys to the picked cards
+  for (let i = 0; i < starters.length; i++) {
+    const s = starters[i]
+    const weekKey = `STARTER-${i + 1}`
     await sql`
       INSERT INTO hero_cards (player_name, hero_title, hero_type, hp, attack, defense, speed, special_moves, weakness, catchphrase, flavor_text, week_key)
-      VALUES (${playerName}, ${s.heroTitle}, ${s.heroType}, ${s.hp}, ${s.attack}, ${s.defense}, ${s.speed}, ${s.specialMoves}, ${s.weakness}, ${s.catchphrase}, ${s.flavorText}, ${s.weekKey})
+      VALUES (${playerName}, ${s.heroTitle}, ${s.heroType}, ${s.hp}, ${s.attack}, ${s.defense}, ${s.speed}, ${s.specialMoves}, ${s.weakness}, ${s.catchphrase}, ${s.flavorText}, ${weekKey})
       ON CONFLICT (player_name, week_key) DO NOTHING
     `
   }
