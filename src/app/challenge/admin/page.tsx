@@ -32,6 +32,47 @@ export default function ChallengeAdminPage() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
+  // Progress timeline config state
+  const [progressStart, setProgressStart] = useState('')
+  const [progressEnd, setProgressEnd] = useState('')
+  const [progressSaving, setProgressSaving] = useState(false)
+  const [progressMessage, setProgressMessage] = useState<string | null>(null)
+
+  const fetchProgressConfig = useCallback(async () => {
+    try {
+      const res = await fetch('/api/progress/config')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.startDate) setProgressStart(data.startDate)
+        if (data.endDate) setProgressEnd(data.endDate)
+      }
+    } catch {
+      // silent
+    }
+  }, [])
+
+  const handleSaveProgress = async () => {
+    if (!progressStart || !progressEnd) {
+      setProgressMessage('BOTH DATES REQUIRED')
+      return
+    }
+    setProgressSaving(true)
+    setProgressMessage(null)
+    try {
+      const res = await fetch('/api/progress/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ startDate: progressStart, endDate: progressEnd }),
+      })
+      if (!res.ok) throw new Error('Save failed')
+      setProgressMessage('PROGRESS DATES SAVED!')
+    } catch {
+      setProgressMessage('SAVE FAILED')
+    } finally {
+      setProgressSaving(false)
+    }
+  }
+
   const fetchChallenges = useCallback(async () => {
     try {
       const res = await fetch('/api/challenge/admin')
@@ -43,7 +84,8 @@ export default function ChallengeAdminPage() {
 
   useEffect(() => {
     fetchChallenges()
-  }, [fetchChallenges])
+    fetchProgressConfig()
+  }, [fetchChallenges, fetchProgressConfig])
 
   const handleSave = async () => {
     const items = bingoItems.map(s => s.trim()).filter(Boolean)
@@ -137,6 +179,52 @@ export default function ChallengeAdminPage() {
 
   return (
     <div className="stack" style={{ gap: '12px' }}>
+      <Window title="PROGRESS TIMELINE CONFIG">
+        <div className="stack" style={{ gap: '12px' }}>
+          {progressMessage && (
+            <div className="amiga-badge" style={{
+              background: progressMessage.includes('FAILED') || progressMessage.includes('REQUIRED') ? '#AA0000' : '#006600',
+              color: '#FFFFFF',
+              textAlign: 'center',
+            }}>
+              {progressMessage}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <div>
+              <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: 'var(--crt-amber)', display: 'block', marginBottom: '4px' }}>
+                START DATE
+              </label>
+              <input
+                type="date"
+                value={progressStart}
+                onChange={e => setProgressStart(e.target.value)}
+                style={{ ...inputStyle, width: '160px' }}
+              />
+            </div>
+            <div>
+              <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: 'var(--crt-amber)', display: 'block', marginBottom: '4px' }}>
+                END DATE
+              </label>
+              <input
+                type="date"
+                value={progressEnd}
+                onChange={e => setProgressEnd(e.target.value)}
+                style={{ ...inputStyle, width: '160px' }}
+              />
+            </div>
+          </div>
+          {progressStart && progressEnd && (
+            <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: 'var(--amiga-dark-grey)' }}>
+              CURRENT RANGE: {progressStart} TO {progressEnd}
+            </div>
+          )}
+          <Button variant="primary" onClick={handleSaveProgress} disabled={progressSaving}>
+            {progressSaving ? 'SAVING...' : 'SAVE PROGRESS DATES'}
+          </Button>
+        </div>
+      </Window>
+
       <Window title="CHALLENGE ADMIN">
         <div className="stack" style={{ gap: '12px' }}>
           {message && (

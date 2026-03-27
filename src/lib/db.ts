@@ -1667,3 +1667,49 @@ export async function getChallengeLeaderboard(): Promise<ChallengeLeaderboardEnt
 
   return entries
 }
+
+// ── App Config ─────────────────────────────────────────────────
+
+export async function getAppConfig(key: string): Promise<string | null> {
+  const sql = getDb()
+  const rows = await sql`SELECT value FROM app_config WHERE key = ${key}`
+  await sql.end()
+  return rows.length > 0 ? (rows[0].value as string) : null
+}
+
+export async function setAppConfig(key: string, value: string): Promise<void> {
+  const sql = getDb()
+  await sql`
+    INSERT INTO app_config (key, value) VALUES (${key}, ${value})
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+  `
+  await sql.end()
+}
+
+export async function getExerciseDaysByPlayer(
+  startDate: string,
+  endDate: string
+): Promise<Record<string, string[]>> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT DISTINCT player_name, created_at::date AS exercise_date
+    FROM meals
+    WHERE created_at::date >= ${startDate}::date AND created_at::date <= ${endDate}::date
+  `
+  await sql.end()
+
+  const result: Record<string, Set<string>> = {}
+  for (const row of rows) {
+    const name = row.player_name as string
+    const dateStr = (row.exercise_date as Date).toISOString().split('T')[0]
+    if (!result[name]) result[name] = new Set()
+    result[name].add(dateStr)
+  }
+
+  // Convert sets to arrays
+  const out: Record<string, string[]> = {}
+  for (const [name, dates] of Object.entries(result)) {
+    out[name] = Array.from(dates).sort()
+  }
+  return out
+}

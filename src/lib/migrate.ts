@@ -281,6 +281,14 @@ async function migrate() {
   // Add exercise_requirements JSONB column for per-type challenge requirements
   await sql`ALTER TABLE weekly_challenges ADD COLUMN IF NOT EXISTS exercise_requirements JSONB`
 
+  // App config table for admin settings
+  await sql`
+    CREATE TABLE IF NOT EXISTS app_config (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  `
+
   await sql.end()
   console.log('Migration complete.')
 }
