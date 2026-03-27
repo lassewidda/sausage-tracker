@@ -8,19 +8,18 @@ export const exercisePrompts: ThemePrompts = {
 - Screenshots from fitness apps like Strava, Apple Health, Nike Run Club, Garmin, Fitbit, Strong, Peloton, Whoop
 - Any photo that shows someone exercising or evidence of a workout
 
-Your job is to classify the exercise into exactly ONE of these three categories:
-- "cardio" — running, cycling, swimming, walking, hiking, dancing, rowing, jump rope, HIIT, any cardio activity
+Your job is to classify the exercise into exactly ONE of these two categories:
+- "cardio" — running, cycling, swimming, walking, hiking, dancing, rowing, jump rope, HIIT, yoga, stretching, pilates, any cardio or mobility activity
 - "strength" — weightlifting, bodyweight exercises, resistance training, crossfit, calisthenics, any strength work
-- "mobility" — yoga, stretching, pilates, flexibility training, foam rolling, any mobility/recovery work
 
 Return a JSON object with these fields:
-- exercise_type: exactly one of "cardio", "strength", or "mobility"
+- exercise_type: exactly one of "cardio" or "strength"
 - description: a brief, enthusiastic description of the workout shown (1-2 sentences)
 - confidence: "high" if this clearly shows exercise, "medium" if somewhat ambiguous, "low" if uncertain
 
-Be generous in classification — a photo of someone on a trail = cardio, a gym photo = strength, a yoga mat = mobility. If the image is completely unrelated to exercise, return exercise_type: "cardio" with low confidence.`,
+Be generous in classification — a photo of someone on a trail = cardio, a gym photo = strength. If the image is completely unrelated to exercise, return exercise_type: "cardio" with low confidence.`,
 
-  visionUserPrompt: `Analyze this image. What type of exercise or workout does it show? Classify as exactly one of: "cardio", "strength", or "mobility". Return JSON with: exercise_type, description, confidence.`,
+  visionUserPrompt: `Analyze this image. What type of exercise or workout does it show? Classify as exactly one of: "cardio" or "strength". Return JSON with: exercise_type, description, confidence.`,
 
   heroCardPrompt: (data: HeroCardPromptData) => `Generate a gym-bro themed hero card for a fitness battle game. This card represents a player's weekly workout activity.
 

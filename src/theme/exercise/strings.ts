@@ -77,6 +77,7 @@ export const exerciseStrings: ThemeStrings = {
   chainTitle: 'WORKOUT STREAK',
   chainExplanation: 'Log 3+ workouts per week to maintain your streak. Consistency is king.',
   chainEmptyText: 'No active streak. Start logging workouts to build one!',
+  chainNoStreakText: '— NO STREAK YET —',
   chainThreshold: 3,
 
   // New card

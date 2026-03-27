@@ -22,14 +22,6 @@ const EXERCISE_TYPES = [
     color: '#4488FF',
     bg: '#000044',
   },
-  {
-    key: 'mobility',
-    emoji: '\u{1F9D8}',
-    label: 'MOBILITY',
-    sub: 'Yoga, stretching, pilates, flexibility',
-    color: '#44CC44',
-    bg: '#004400',
-  },
 ]
 
 export function ExerciseTypeSelector({ selected, onChange }: ExerciseTypeSelectorProps) {

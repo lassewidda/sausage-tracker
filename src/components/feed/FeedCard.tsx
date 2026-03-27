@@ -9,7 +9,6 @@ const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
 const EXERCISE_TYPE_BADGES: Record<string, { emoji: string; label: string; color: string }> = {
   cardio: { emoji: '\u{1F3C3}', label: 'CARDIO', color: '#FF4444' },
   strength: { emoji: '\u{1F4AA}', label: 'STRENGTH', color: '#4488FF' },
-  mobility: { emoji: '\u{1F9D8}', label: 'MOBILITY', color: '#44CC44' },
 }
 
 interface FeedCardProps {

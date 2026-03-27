@@ -67,6 +67,7 @@ export const STRINGS: ThemeStrings = {
   chainTitle: 'THE SAUSAGE CHAIN',
   chainExplanation: 'EACH LINK = 1 WEEK WITH 3+ SAUSAGES. MISS A WEEK AND YOUR CHAIN BREAKS!',
   chainEmptyText: 'NO CHAINS YET \u2014 LOG 3+ SAUSAGES IN A WEEK TO START YOURS!',
+  chainNoStreakText: '— NO CHAIN YET —',
   chainThreshold: 3,
 
   // New card

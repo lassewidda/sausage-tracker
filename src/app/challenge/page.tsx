@@ -9,8 +9,8 @@ import { processImage, isHeic, MAX_RAW_SIZE } from '@/lib/imageProcess'
 import type { ChallengeView, ChallengeLeaderboardEntry, ChallengeParticipant } from '@/types'
 
 const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
-const TYPE_LABELS: Record<string, string> = { cardio: '🏃 CARDIO', strength: '💪 STRENGTH', mobility: '🧘 MOBILITY' }
-const TYPE_COLORS: Record<string, string> = { cardio: '#FF4444', strength: '#4488FF', mobility: '#44CC44' }
+const TYPE_LABELS: Record<string, string> = { cardio: '🏃 CARDIO', strength: '💪 STRENGTH' }
+const TYPE_COLORS: Record<string, string> = { cardio: '#FF4444', strength: '#4488FF' }
 
 function ExerciseProgress({ participant, challenge }: {
   participant: ChallengeParticipant

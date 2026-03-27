@@ -112,7 +112,7 @@ function ChainViz({ weeks }: { weeks: number }) {
         padding: '6px 0',
         textTransform: 'uppercase',
       }}>
-        — NO CHAIN YET —
+        {theme.strings.chainNoStreakText}
       </div>
     )
   }

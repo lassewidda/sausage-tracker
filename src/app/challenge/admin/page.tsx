@@ -29,7 +29,6 @@ export default function ChallengeAdminPage() {
   const [exerciseMinimum, setExerciseMinimum] = useState(3)
   const [cardioReq, setCardioReq] = useState(0)
   const [strengthReq, setStrengthReq] = useState(0)
-  const [mobilityReq, setMobilityReq] = useState(0)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -57,11 +56,10 @@ export default function ChallengeAdminPage() {
     setMessage(null)
 
     // Build exercise requirements for exercise theme
-    const exerciseRequirements = IS_EXERCISE && (cardioReq > 0 || strengthReq > 0 || mobilityReq > 0)
+    const exerciseRequirements = IS_EXERCISE && (cardioReq > 0 || strengthReq > 0)
       ? {
           ...(cardioReq > 0 ? { cardio: cardioReq } : {}),
           ...(strengthReq > 0 ? { strength: strengthReq } : {}),
-          ...(mobilityReq > 0 ? { mobility: mobilityReq } : {}),
         }
       : null
 
@@ -112,11 +110,9 @@ export default function ChallengeAdminPage() {
     if (challenge.exerciseRequirements) {
       setCardioReq(challenge.exerciseRequirements.cardio ?? 0)
       setStrengthReq(challenge.exerciseRequirements.strength ?? 0)
-      setMobilityReq(challenge.exerciseRequirements.mobility ?? 0)
     } else {
       setCardioReq(0)
       setStrengthReq(0)
-      setMobilityReq(0)
     }
     setMessage(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -209,18 +205,6 @@ export default function ChallengeAdminPage() {
                     min={0}
                     value={strengthReq}
                     onChange={e => setStrengthReq(parseInt(e.target.value) || 0)}
-                    style={{ ...inputStyle, width: '60px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: '#44CC44', display: 'block', marginBottom: '4px' }}>
-                    {'\u{1F9D8}'} MOBILITY
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={mobilityReq}
-                    onChange={e => setMobilityReq(parseInt(e.target.value) || 0)}
                     style={{ ...inputStyle, width: '60px' }}
                   />
                 </div>

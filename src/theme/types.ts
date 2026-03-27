@@ -87,6 +87,7 @@ export interface ThemeStrings {
   chainTitle: string
   chainExplanation: string
   chainEmptyText: string
+  chainNoStreakText: string
   chainThreshold: number
 
   // New card
