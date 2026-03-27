@@ -677,246 +677,340 @@ function Particles({ theme, name }: { theme: TypeTheme; name: string }) {
   )
 }
 
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
+
+function parseMove(move: string): { name: string; damage: string; pp: string } {
+  const match = move.match(/^(.+?)\s*\((\d+)\/(\d+)\)$/)
+  if (match) return { name: match[1], damage: match[2], pp: match[3] }
+  return { name: move, damage: '?', pp: '?' }
+}
+
 export function HeroCardDisplay({ card, stats }: Props) {
   const [type1, type2] = card.heroType.split('/')
-  const theme = getTypeTheme(card.heroType)
+  const t = getTypeTheme(card.heroType)
+  const t2 = type2 ? getTypeTheme(type2.trim()) : null
 
-  // Type badge colors — second type gets its own theme color
-  const type2Theme = type2 ? getTypeTheme(type2.trim()) : null
+  const frameColor = '#D4B96B' // Gold card frame
+  const frameDark = '#8B7435'
+  const cardBg = '#1a1a2e'
+  const panelBg = '#111122'
 
   return (
     <div style={{
-      background: theme.gradient,
-      border: `4px solid ${theme.border}`,
-      borderRadius: '12px',
-      padding: '0',
-      maxWidth: '400px',
+      background: `linear-gradient(135deg, ${frameColor}, #F0E68C, ${frameColor}, ${frameDark})`,
+      borderRadius: '14px',
+      padding: '6px',
+      maxWidth: '380px',
       margin: '0 auto',
-      overflow: 'hidden',
-      boxShadow: `0 0 24px ${theme.glow}, inset 0 0 30px rgba(0, 0, 0, 0.6)`,
-      position: 'relative',
+      boxShadow: `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${t.glow}`,
     }}>
-      {/* Background particles */}
-      <Particles theme={theme} name={card.playerName} />
-
-      {/* Card header */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '12px 16px 8px',
-        borderBottom: `2px solid ${theme.border}`,
-        position: 'relative',
-        zIndex: 1,
+        background: cardBg,
+        borderRadius: '10px',
+        overflow: 'hidden',
       }}>
-        <div>
-          <div style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: '12px',
-            color: theme.accent,
-            textTransform: 'uppercase',
-            textShadow: `0 0 10px ${theme.glow}`,
-          }}>
-            {card.heroTitle}
+        {/* Header: Title + HP */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '10px 14px 8px',
+          background: `linear-gradient(90deg, ${panelBg}, ${cardBg})`,
+        }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '11px',
+              color: '#FFFFFF',
+              textTransform: 'uppercase',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}>
+              {card.heroTitle}
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '7px',
+              color: '#888',
+              marginTop: '2px',
+            }}>
+              {card.playerName.toUpperCase()}
+            </div>
           </div>
           <div style={{
             fontFamily: 'var(--font-pixel)',
-            fontSize: '8px',
-            color: 'var(--amiga-grey)',
-            marginTop: '2px',
+            fontSize: '13px',
+            color: '#FF4444',
+            background: '#000',
+            padding: '4px 10px',
+            border: '2px solid #FF4444',
+            borderRadius: '4px',
+            flexShrink: 0,
+            marginLeft: '8px',
           }}>
-            {card.playerName.toUpperCase()}
+            HP {card.hp}
           </div>
         </div>
-        <div style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '14px',
-          color: '#FF4444',
-          textShadow: '0 0 8px rgba(255, 68, 68, 0.6)',
-          background: 'rgba(0, 0, 0, 0.4)',
-          padding: '4px 8px',
-          borderRadius: '4px',
-        }}>
-          HP {card.hp}
-        </div>
-      </div>
 
-      {/* Avatar area */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        padding: '16px',
-        background: 'rgba(0, 0, 0, 0.2)',
-        position: 'relative',
-        zIndex: 1,
-      }}>
+        {/* Picture frame with avatar */}
         <div style={{
-          border: `3px solid ${theme.border}66`,
-          borderRadius: '4px',
-          overflow: 'hidden',
-          boxShadow: `0 0 16px ${theme.glow}`,
-          background: theme.bg,
+          margin: '0 12px',
+          padding: '4px',
+          background: `linear-gradient(135deg, ${frameDark}, ${frameColor}, ${frameDark})`,
+          borderRadius: '6px',
         }}>
-          <PixelAvatar card={card} stats={stats} theme={theme} />
+          <div style={{
+            background: t.gradient,
+            borderRadius: '4px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '12px',
+            position: 'relative',
+            overflow: 'hidden',
+            minHeight: '170px',
+          }}>
+            <Particles theme={t} name={card.playerName} />
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <PixelAvatar card={card} stats={stats} theme={t} />
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Type badges */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', padding: '0 16px 8px', position: 'relative', zIndex: 1 }}>
-        <span style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '8px',
-          background: theme.border,
-          color: '#000',
-          padding: '3px 10px',
-          borderRadius: '2px',
-          textTransform: 'uppercase',
-          fontWeight: 'bold',
+        {/* Type badges */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '8px',
+          padding: '8px 14px 4px',
         }}>
-          {type1?.trim()}
-        </span>
-        {type2 && (
           <span style={{
             fontFamily: 'var(--font-pixel)',
             fontSize: '8px',
-            background: type2Theme?.border ?? '#666',
+            background: t.border,
             color: '#000',
-            padding: '3px 10px',
-            borderRadius: '2px',
+            padding: '3px 12px',
+            borderRadius: '10px',
             textTransform: 'uppercase',
             fontWeight: 'bold',
           }}>
-            {type2.trim()}
+            {type1?.trim()}
           </span>
-        )}
-      </div>
-
-      {/* Stats */}
-      <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: '5px', position: 'relative', zIndex: 1 }}>
-        <StatBar label="ATK" value={card.attack} max={99} color="#FF4444" theme={theme} />
-        <StatBar label="DEF" value={card.defense} max={99} color="#4488FF" theme={theme} />
-        <StatBar label="SPD" value={card.speed} max={99} color="#44CC44" theme={theme} />
-      </div>
-
-      {/* Special moves */}
-      <div style={{ padding: '8px 16px', position: 'relative', zIndex: 1 }}>
-        <div style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '8px',
-          color: theme.accent,
-          marginBottom: '6px',
-          textTransform: 'uppercase',
-        }}>
-          SPECIAL MOVES
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {card.specialMoves.map((move, i) => (
-            <div key={i} style={{
+          {type2 && (
+            <span style={{
               fontFamily: 'var(--font-pixel)',
               fontSize: '8px',
-              color: 'var(--amiga-white)',
-              background: `${theme.border}11`,
-              padding: '5px 8px',
-              borderLeft: `3px solid ${theme.border}`,
+              background: t2?.border ?? '#666',
+              color: '#000',
+              padding: '3px 12px',
+              borderRadius: '10px',
+              textTransform: 'uppercase',
+              fontWeight: 'bold',
             }}>
-              ⚡ {move}
+              {type2.trim()}
+            </span>
+          )}
+        </div>
+
+        {/* Stats panel */}
+        <div style={{
+          margin: '8px 12px',
+          padding: '10px 12px',
+          background: panelBg,
+          borderRadius: '6px',
+          border: '1px solid #333',
+        }}>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            {[
+              { label: 'ATK', value: card.attack, color: '#FF4444' },
+              { label: 'DEF', value: card.defense, color: '#4488FF' },
+              { label: 'SPD', value: card.speed, color: '#44CC44' },
+            ].map(stat => (
+              <div key={stat.label} style={{ flex: 1, textAlign: 'center' }}>
+                <div style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: '7px',
+                  color: stat.color,
+                  marginBottom: '4px',
+                  letterSpacing: '1px',
+                }}>
+                  {stat.label}
+                </div>
+                <div style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: '16px',
+                  color: '#FFFFFF',
+                  textShadow: `0 0 6px ${stat.color}44`,
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{
+                  height: '4px',
+                  background: '#0a0a0a',
+                  borderRadius: '2px',
+                  marginTop: '4px',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${Math.min(100, Math.round((stat.value / 150) * 100))}%`,
+                    background: stat.color,
+                    borderRadius: '2px',
+                  }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Special moves */}
+        <div style={{
+          margin: '0 12px 8px',
+          padding: '10px 12px',
+          background: panelBg,
+          borderRadius: '6px',
+          border: '1px solid #333',
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '7px',
+            color: frameColor,
+            marginBottom: '8px',
+            letterSpacing: '2px',
+          }}>
+            MOVES
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {card.specialMoves.map((move, i) => {
+              const parsed = parseMove(move)
+              return (
+                <div key={i} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '4px 8px',
+                  background: '#0a0a15',
+                  borderRadius: '3px',
+                  borderLeft: `3px solid ${t.border}`,
+                }}>
+                  <span style={{
+                    fontFamily: 'var(--font-pixel)',
+                    fontSize: '8px',
+                    color: '#FFFFFF',
+                  }}>
+                    {parsed.name}
+                  </span>
+                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                    <span style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: '7px',
+                      color: '#FF6666',
+                    }}>
+                      {parsed.damage} DMG
+                    </span>
+                    <span style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: '7px',
+                      color: '#6688CC',
+                    }}>
+                      {parsed.pp} PP
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Weakness */}
+        <div style={{
+          padding: '0 14px 6px',
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '7px',
+            color: '#CC6666',
+            textTransform: 'uppercase',
+          }}>
+            ⚠ WEAKNESS: {card.weakness}
+          </div>
+        </div>
+
+        {/* Catchphrase */}
+        <div style={{
+          padding: '8px 14px',
+          borderTop: '1px solid #222',
+        }}>
+          <div style={{
+            fontFamily: "'Courier New', Courier, monospace",
+            fontSize: '11px',
+            color: frameColor,
+            fontStyle: 'italic',
+            textAlign: 'center',
+            lineHeight: 1.4,
+          }}>
+            &ldquo;{card.catchphrase}&rdquo;
+          </div>
+        </div>
+
+        {/* Flavor text */}
+        <div style={{
+          padding: '4px 14px 10px',
+        }}>
+          <div style={{
+            fontFamily: "'Courier New', Courier, monospace",
+            fontSize: '10px',
+            color: '#777',
+            fontStyle: 'italic',
+            lineHeight: 1.5,
+            textAlign: 'center',
+          }}>
+            {card.flavorText}
+          </div>
+        </div>
+
+        {/* Footer stats */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-around',
+          padding: '8px 14px 10px',
+          borderTop: `2px solid ${frameDark}`,
+          background: '#0a0a0a',
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: '#FFFFFF' }}>
+              {stats.totalItems}
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Weakness */}
-      <div style={{ padding: '4px 16px', position: 'relative', zIndex: 1 }}>
-        <div style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '7px',
-          color: '#AA6666',
-          textTransform: 'uppercase',
-        }}>
-          WEAKNESS: {card.weakness}
-        </div>
-      </div>
-
-      {/* Catchphrase */}
-      <div style={{
-        padding: '10px 16px',
-        borderTop: `1px solid ${theme.border}44`,
-        marginTop: '8px',
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        <div style={{
-          fontFamily: "'Courier New', Courier, monospace",
-          fontSize: '12px',
-          color: theme.accent,
-          fontStyle: 'italic',
-          textAlign: 'center',
-          lineHeight: 1.4,
-          textShadow: `0 0 6px ${theme.glow}`,
-        }}>
-          &ldquo;{card.catchphrase}&rdquo;
-        </div>
-      </div>
-
-      {/* Flavor text */}
-      <div style={{
-        padding: '8px 16px 12px',
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        <div style={{
-          fontFamily: "'Courier New', Courier, monospace",
-          fontSize: '10px',
-          color: 'var(--amiga-grey)',
-          fontStyle: 'italic',
-          lineHeight: 1.5,
-          textAlign: 'center',
-        }}>
-          {card.flavorText}
-        </div>
-      </div>
-
-      {/* Lifetime stats footer */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-around',
-        padding: '8px 16px 12px',
-        borderTop: `2px solid ${theme.border}`,
-        background: 'rgba(0, 0, 0, 0.4)',
-        position: 'relative',
-        zIndex: 1,
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: theme.accent }}>
-            {stats.totalItems}
+            <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: '#666' }}>
+              {IS_EXERCISE ? 'WORKOUTS' : 'SAUSAGES'}
+            </div>
           </div>
-          <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: 'var(--amiga-grey)' }}>
-            SAUSAGES
+          {!IS_EXERCISE && (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: '#FFFFFF' }}>
+                {stats.totalGrams}g
+              </div>
+              <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: '#666' }}>
+                CONSUMED
+              </div>
+            </div>
+          )}
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: '#FFFFFF' }}>
+              {stats.mealCount}
+            </div>
+            <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: '#666' }}>
+              {IS_EXERCISE ? 'SESSIONS' : 'MEALS'}
+            </div>
           </div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: theme.accent }}>
-            {stats.totalGrams}g
-          </div>
-          <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: 'var(--amiga-grey)' }}>
-            CONSUMED
-          </div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: theme.accent }}>
-            {stats.mealCount}
-          </div>
-          <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: 'var(--amiga-grey)' }}>
-            MEALS
-          </div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: theme.accent }}>
-            {stats.chainLength}W
-          </div>
-          <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: 'var(--amiga-grey)' }}>
-            CHAIN
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: '#FFFFFF' }}>
+              {stats.chainLength}W
+            </div>
+            <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: '#666' }}>
+              {IS_EXERCISE ? 'STREAK' : 'CHAIN'}
+            </div>
           </div>
         </div>
       </div>
