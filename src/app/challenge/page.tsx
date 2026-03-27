@@ -6,18 +6,72 @@ import { Window } from '@/components/amiga/Window'
 import { Button } from '@/components/amiga/Button'
 import { useName } from '@/lib/useName'
 import { processImage, isHeic, MAX_RAW_SIZE } from '@/lib/imageProcess'
-import type { ChallengeView, ChallengeLeaderboardEntry } from '@/types'
-import theme from '@/theme'
+import type { ChallengeView, ChallengeLeaderboardEntry, ChallengeParticipant } from '@/types'
+
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
+const TYPE_LABELS: Record<string, string> = { cardio: '🏃 CARDIO', strength: '💪 STRENGTH', mobility: '🧘 MOBILITY' }
+const TYPE_COLORS: Record<string, string> = { cardio: '#FF4444', strength: '#4488FF', mobility: '#44CC44' }
+
+function ExerciseProgress({ participant, challenge }: {
+  participant: ChallengeParticipant
+  challenge: ChallengeView['challenge']
+}) {
+  if (!challenge) return null
+  const reqs = challenge.exerciseRequirements
+  const typeCounts = participant.exerciseTypeCounts ?? {}
+
+  if (IS_EXERCISE && reqs && Object.keys(reqs).length > 0) {
+    return (
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontFamily: 'var(--font-pixel)', fontSize: '7px' }}>
+        {Object.entries(reqs).map(([type, required]) => {
+          const count = typeCounts[type] ?? 0
+          const met = count >= (required as number)
+          return (
+            <span key={type} style={{ color: met ? '#00CC00' : TYPE_COLORS[type] ?? 'var(--crt-amber)' }}>
+              {TYPE_LABELS[type] ?? type.toUpperCase()}: {count}/{required as number} {met && '✓'}
+            </span>
+          )
+        })}
+        <span style={{ color: 'var(--amiga-dark-grey)' }}>
+          (TOTAL: {participant.exerciseCount})
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      fontFamily: 'var(--font-pixel)',
+      fontSize: '7px',
+      color: participant.exerciseCount >= challenge.exerciseMinimum ? '#00CC00' : 'var(--crt-amber)',
+    }}>
+      EXERCISES: {participant.exerciseCount}/{challenge.exerciseMinimum}
+      {participant.exerciseCount >= challenge.exerciseMinimum && ' ✓'}
+    </div>
+  )
+}
+
+function ChallengeRequirementLabel({ challenge }: { challenge: ChallengeView['challenge'] }) {
+  if (!challenge) return null
+  const reqs = challenge.exerciseRequirements
+  if (IS_EXERCISE && reqs && Object.keys(reqs).length > 0) {
+    const parts = Object.entries(reqs).map(([type, n]) => `${n} ${TYPE_LABELS[type] ?? type.toUpperCase()}`)
+    return <>{`COMPLETE ALL BINGO ITEMS + LOG ${parts.join(' + ')}`}</>
+  }
+  return <>COMPLETE ALL BINGO ITEMS + LOG {challenge.exerciseMinimum}+ EXERCISES</>
+}
 
 export default function ChallengePage() {
   const { name } = useName()
   const [view, setView] = useState<ChallengeView | null>(null)
   const [leaderboard, setLeaderboard] = useState<ChallengeLeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
-  const [uploading, setUploading] = useState<string | null>(null) // which bingo item is uploading
+  const [uploading, setUploading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedBingoItem, setSelectedBingoItem] = useState<string | null>(null)
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
+  const [lightboxLabel, setLightboxLabel] = useState<string>('')
 
   const fetchData = useCallback(async () => {
     try {
@@ -52,14 +106,8 @@ export default function ChallengePage() {
     if (!file || !selectedBingoItem || !name) return
 
     const isImage = file.type.startsWith('image/') || isHeic(file)
-    if (!isImage) {
-      setError('UNSUPPORTED FILE TYPE. USE JPEG, PNG, HEIC OR WEBP.')
-      return
-    }
-    if (file.size > MAX_RAW_SIZE) {
-      setError('FILE TOO LARGE. MAX 25MB.')
-      return
-    }
+    if (!isImage) { setError('UNSUPPORTED FILE TYPE.'); return }
+    if (file.size > MAX_RAW_SIZE) { setError('FILE TOO LARGE. MAX 25MB.'); return }
 
     setUploading(selectedBingoItem)
     setError(null)
@@ -105,9 +153,12 @@ export default function ChallengePage() {
         body: JSON.stringify({ id: photoId, playerName: name }),
       })
       await fetchData()
-    } catch {
-      // silent
-    }
+    } catch { /* silent */ }
+  }
+
+  const openLightbox = (url: string, label: string) => {
+    setLightboxUrl(url)
+    setLightboxLabel(label)
   }
 
   if (loading) {
@@ -134,6 +185,54 @@ export default function ChallengePage() {
         onChange={handleFileChange}
       />
 
+      {/* Photo lightbox */}
+      {lightboxUrl && (
+        <div
+          onClick={() => setLightboxUrl(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.85)',
+            zIndex: 9999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            padding: '16px',
+          }}
+        >
+          <div style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '9px',
+            color: 'var(--crt-amber)',
+            marginBottom: '12px',
+            textTransform: 'uppercase',
+          }}>
+            {lightboxLabel}
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightboxUrl}
+            alt={lightboxLabel}
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '80vh',
+              objectFit: 'contain',
+              border: '3px solid var(--crt-amber)',
+            }}
+          />
+          <div style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '7px',
+            color: 'var(--amiga-dark-grey)',
+            marginTop: '12px',
+          }}>
+            TAP ANYWHERE TO CLOSE
+          </div>
+        </div>
+      )}
+
       <Window title="WEEKLY CHALLENGE">
         {!challenge ? (
           <div style={{ textAlign: 'center', padding: '24px', fontFamily: 'var(--font-pixel)', fontSize: '9px', color: 'var(--amiga-dark-grey)' }}>
@@ -149,7 +248,7 @@ export default function ChallengePage() {
                 {challenge.weekKey}
               </div>
               <div style={{ fontSize: '7px', color: 'var(--amiga-dark-grey)' }}>
-                COMPLETE ALL BINGO ITEMS + LOG {challenge.exerciseMinimum}+ EXERCISES
+                <ChallengeRequirementLabel challenge={challenge} />
               </div>
             </div>
 
@@ -185,7 +284,6 @@ export default function ChallengePage() {
                         border: myPhoto ? '2px solid #00AA00' : '2px solid var(--bevel-shadow)',
                         padding: '6px',
                         textAlign: 'center',
-                        position: 'relative',
                         minHeight: '80px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -207,10 +305,12 @@ export default function ChallengePage() {
                             <img
                               src={myPhoto.imageUrl}
                               alt={item}
+                              onClick={() => openLightbox(myPhoto.imageUrl, `${myParticipant?.playerName?.toUpperCase()} — ${item}`)}
                               style={{
                                 width: '50px',
                                 height: '50px',
                                 objectFit: 'cover',
+                                cursor: 'pointer',
                                 borderTop: '1px solid var(--bevel-shadow)',
                                 borderLeft: '1px solid var(--bevel-shadow)',
                                 borderRight: '1px solid var(--bevel-light)',
@@ -247,15 +347,14 @@ export default function ChallengePage() {
                   })}
                 </div>
                 {/* Exercise progress */}
-                <div style={{
-                  marginTop: '8px',
-                  fontFamily: 'var(--font-pixel)',
-                  fontSize: '8px',
-                  color: (myParticipant?.exerciseCount ?? 0) >= challenge.exerciseMinimum ? '#00CC00' : 'var(--crt-amber)',
-                  textAlign: 'center',
-                }}>
-                  EXERCISES: {myParticipant?.exerciseCount ?? 0} / {challenge.exerciseMinimum}
-                  {(myParticipant?.exerciseCount ?? 0) >= challenge.exerciseMinimum && ' [OK]'}
+                <div style={{ marginTop: '8px', textAlign: 'center' }}>
+                  {myParticipant ? (
+                    <ExerciseProgress participant={myParticipant} challenge={challenge} />
+                  ) : (
+                    <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: 'var(--crt-amber)' }}>
+                      EXERCISES: 0/{challenge.exerciseMinimum}
+                    </div>
+                  )}
                 </div>
                 {myParticipant?.isComplete && (
                   <div style={{
@@ -302,6 +401,8 @@ export default function ChallengePage() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   marginBottom: '6px',
+                  flexWrap: 'wrap',
+                  gap: '4px',
                 }}>
                   <div style={{
                     fontFamily: 'var(--font-pixel)',
@@ -309,15 +410,9 @@ export default function ChallengePage() {
                     color: p.isComplete ? '#FFD700' : 'var(--crt-amber)',
                     textTransform: 'uppercase',
                   }}>
-                    {p.isComplete && '\u2605 '}{p.playerName}
+                    {p.isComplete && '★ '}{p.playerName}
                   </div>
-                  <div style={{
-                    fontFamily: 'var(--font-pixel)',
-                    fontSize: '7px',
-                    color: p.exerciseCount >= challenge.exerciseMinimum ? '#00CC00' : 'var(--amiga-dark-grey)',
-                  }}>
-                    {p.exerciseCount}/{challenge.exerciseMinimum} exercises
-                  </div>
+                  <ExerciseProgress participant={p} challenge={challenge} />
                 </div>
                 <div style={{
                   display: 'flex',
@@ -331,16 +426,20 @@ export default function ChallengePage() {
                         width: '48px',
                         textAlign: 'center',
                       }}>
-                        <div style={{
-                          width: '48px',
-                          height: '48px',
-                          background: photo ? 'transparent' : 'var(--amiga-black)',
-                          border: photo ? '2px solid #00AA00' : '2px solid var(--bevel-shadow)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          overflow: 'hidden',
-                        }}>
+                        <div
+                          onClick={photo ? () => openLightbox(photo.imageUrl, `${p.playerName.toUpperCase()} — ${item}`) : undefined}
+                          style={{
+                            width: '48px',
+                            height: '48px',
+                            background: photo ? 'transparent' : 'var(--amiga-black)',
+                            border: photo ? '2px solid #00AA00' : '2px solid var(--bevel-shadow)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            cursor: photo ? 'pointer' : 'default',
+                          }}
+                        >
                           {photo ? (
                             /* eslint-disable-next-line @next/next/no-img-element */
                             <img

@@ -215,6 +215,7 @@ export interface ChallengeParticipant {
   playerName: string
   photos: ChallengePhoto[]
   exerciseCount: number
+  exerciseTypeCounts?: Record<string, number>
   completedBingoItems: string[]
   isComplete: boolean
 }

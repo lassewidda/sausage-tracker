@@ -1568,6 +1568,7 @@ export async function getChallengeView(weekKey: string): Promise<ChallengeView> 
       playerName,
       photos: playerPhotos,
       exerciseCount,
+      exerciseTypeCounts: typeMap.get(playerName) ?? {},
       completedBingoItems,
       isComplete: allBingoDone && exerciseMet,
     }
