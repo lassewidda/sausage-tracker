@@ -6,7 +6,7 @@ import { Window } from '@/components/amiga/Window'
 import { Button } from '@/components/amiga/Button'
 import { useName } from '@/lib/useName'
 import { processImage, isHeic, MAX_RAW_SIZE } from '@/lib/imageProcess'
-import type { ChallengeView, ChallengeLeaderboardEntry, ChallengeParticipant } from '@/types'
+import type { ChallengeView, ChallengeLeaderboardEntry, ChallengeParticipant, WeeklyChallenge } from '@/types'
 
 const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
 const TYPE_LABELS: Record<string, string> = { cardio: '🏃 CARDIO', strength: '💪 STRENGTH' }
@@ -65,6 +65,8 @@ export default function ChallengePage() {
   const { name } = useName()
   const [view, setView] = useState<ChallengeView | null>(null)
   const [leaderboard, setLeaderboard] = useState<ChallengeLeaderboardEntry[]>([])
+  const [allChallenges, setAllChallenges] = useState<WeeklyChallenge[]>([])
+  const [selectedWeek, setSelectedWeek] = useState<string | null>(null) // null = current week
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -73,10 +75,18 @@ export default function ChallengePage() {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   const [lightboxLabel, setLightboxLabel] = useState<string>('')
 
+  const fetchChallengeList = useCallback(async () => {
+    try {
+      const res = await fetch('/api/challenge/admin')
+      if (res.ok) setAllChallenges(await res.json())
+    } catch { /* silent */ }
+  }, [])
+
   const fetchData = useCallback(async () => {
     try {
+      const weekParam = selectedWeek ? `?weekKey=${encodeURIComponent(selectedWeek)}` : ''
       const [viewRes, lbRes] = await Promise.all([
-        fetch('/api/challenge'),
+        fetch(`/api/challenge${weekParam}`),
         fetch('/api/challenge/leaderboard'),
       ])
       if (viewRes.ok) setView(await viewRes.json())
@@ -86,9 +96,14 @@ export default function ChallengePage() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [selectedWeek])
 
   useEffect(() => {
+    fetchChallengeList()
+  }, [fetchChallengeList])
+
+  useEffect(() => {
+    setLoading(true)
     fetchData()
     const interval = setInterval(fetchData, 5000)
     return () => clearInterval(interval)
@@ -174,6 +189,7 @@ export default function ChallengePage() {
   const challenge = view?.challenge
   const participants = view?.participants ?? []
   const myParticipant = name ? participants.find(p => p.playerName === name.toLowerCase()) : null
+  const isCurrentWeek = selectedWeek === null
 
   return (
     <div className="stack" style={{ gap: '12px' }}>
@@ -184,6 +200,50 @@ export default function ChallengePage() {
         style={{ display: 'none' }}
         onChange={handleFileChange}
       />
+
+      {/* Week selector */}
+      {allChallenges.length > 1 && (
+        <div style={{
+          display: 'flex',
+          gap: '4px',
+          flexWrap: 'wrap',
+          padding: '4px 0',
+        }}>
+          <button
+            onClick={() => setSelectedWeek(null)}
+            style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '7px',
+              padding: '4px 8px',
+              cursor: 'pointer',
+              border: isCurrentWeek ? '2px solid var(--crt-amber)' : '1px solid var(--bevel-shadow)',
+              background: isCurrentWeek ? 'var(--amiga-black)' : 'transparent',
+              color: isCurrentWeek ? 'var(--crt-amber)' : 'var(--amiga-dark-grey)',
+              textTransform: 'uppercase',
+            }}
+          >
+            CURRENT WEEK
+          </button>
+          {allChallenges.map(ch => (
+            <button
+              key={ch.weekKey}
+              onClick={() => setSelectedWeek(ch.weekKey)}
+              style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '7px',
+                padding: '4px 8px',
+                cursor: 'pointer',
+                border: selectedWeek === ch.weekKey ? '2px solid var(--crt-amber)' : '1px solid var(--bevel-shadow)',
+                background: selectedWeek === ch.weekKey ? 'var(--amiga-black)' : 'transparent',
+                color: selectedWeek === ch.weekKey ? 'var(--crt-amber)' : 'var(--amiga-dark-grey)',
+                textTransform: 'uppercase',
+              }}
+            >
+              {ch.weekKey}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Photo lightbox */}
       {lightboxUrl && (
@@ -233,12 +293,10 @@ export default function ChallengePage() {
         </div>
       )}
 
-      <Window title="WEEKLY CHALLENGE">
+      <Window title={isCurrentWeek ? 'WEEKLY CHALLENGE' : `CHALLENGE — ${selectedWeek}`}>
         {!challenge ? (
           <div style={{ textAlign: 'center', padding: '24px', fontFamily: 'var(--font-pixel)', fontSize: '9px', color: 'var(--amiga-dark-grey)' }}>
-            NO CHALLENGE SET FOR THIS WEEK.
-            <br /><br />
-            <span style={{ fontSize: '7px' }}>AN ADMIN CAN CREATE ONE AT /challenge/admin</span>
+            {isCurrentWeek ? 'NO CHALLENGE SET FOR THIS WEEK.' : 'NO CHALLENGE WAS SET FOR THIS WEEK.'}
           </div>
         ) : (
           <div className="stack" style={{ gap: '12px' }}>
@@ -317,23 +375,25 @@ export default function ChallengePage() {
                                 borderBottom: '1px solid var(--bevel-light)',
                               }}
                             />
-                            <button
-                              onClick={() => handleDeletePhoto(myPhoto.id)}
-                              style={{
-                                fontFamily: 'var(--font-pixel)',
-                                fontSize: '6px',
-                                color: '#AA0000',
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                padding: '2px',
-                              }}
-                              title="Remove photo"
-                            >
-                              [X]
-                            </button>
+                            {isCurrentWeek && (
+                              <button
+                                onClick={() => handleDeletePhoto(myPhoto.id)}
+                                style={{
+                                  fontFamily: 'var(--font-pixel)',
+                                  fontSize: '6px',
+                                  color: '#AA0000',
+                                  background: 'none',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  padding: '2px',
+                                }}
+                                title="Remove photo"
+                              >
+                                [X]
+                              </button>
+                            )}
                           </>
-                        ) : (
+                        ) : isCurrentWeek ? (
                           <Button
                             onClick={() => handleUploadClick(item)}
                             disabled={isUploading}
@@ -341,6 +401,8 @@ export default function ChallengePage() {
                           >
                             {isUploading ? 'UPLOADING...' : 'UPLOAD'}
                           </Button>
+                        ) : (
+                          <span style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: 'var(--bevel-shadow)' }}>—</span>
                         )}
                       </div>
                     )
