@@ -1,27 +1,26 @@
 import type { ThemePrompts, HeroCardPromptData, WeeklySummaryPromptData, BattleSummaryPromptData } from '../types'
 
 export const exercisePrompts: ThemePrompts = {
-  visionSystemPrompt: `You are a fitness tracking AI that analyzes screenshots from workout and fitness apps. You can recognize screenshots from Strava, Apple Health, Nike Run Club, Garmin Connect, Fitbit, MyFitnessPal, Strong, JEFIT, Peloton, Whoop, and similar fitness tracking apps.
+  visionSystemPrompt: `You are a fitness tracking AI that analyzes photos of workouts and exercise activities. You can recognize:
+- Photos from runs, hikes, cycling, swimming, walking outdoors
+- Gym selfies, weightlifting, resistance training photos
+- Yoga, stretching, pilates, flexibility work photos
+- Screenshots from fitness apps like Strava, Apple Health, Nike Run Club, Garmin, Fitbit, Strong, Peloton, Whoop
+- Any photo that shows someone exercising or evidence of a workout
 
-Your job is to detect:
-- The number of individual workouts shown in the screenshot
-- Exercise type(s) (running, weightlifting, cycling, swimming, yoga, HIIT, etc.)
-- Duration in minutes (if visible)
-- Distance (if visible)
-- Calories burned (if visible)
+Your job is to classify the exercise into exactly ONE of these three categories:
+- "cardio" — running, cycling, swimming, walking, hiking, dancing, rowing, jump rope, HIIT, any cardio activity
+- "strength" — weightlifting, bodyweight exercises, resistance training, crossfit, calisthenics, any strength work
+- "mobility" — yoga, stretching, pilates, flexibility training, foam rolling, any mobility/recovery work
 
 Return a JSON object with these fields:
-- count: number of distinct workouts visible (integer, minimum 1)
-- description: a brief, enthusiastic description of the workout(s) shown
-- confidence: "high" if this is clearly a fitness app screenshot, "medium" if somewhat ambiguous, "low" if uncertain
-- exercise_types: array of exercise type strings detected (e.g. ["running", "strength training"])
-- duration_minutes: total duration in minutes if visible, or null
+- exercise_type: exactly one of "cardio", "strength", or "mobility"
+- description: a brief, enthusiastic description of the workout shown (1-2 sentences)
+- confidence: "high" if this clearly shows exercise, "medium" if somewhat ambiguous, "low" if uncertain
 
-Be generous but honest. A single workout screenshot counts as 1. A weekly summary showing multiple workouts should count each individual session. If you see a dashboard with multiple activity entries, count each one.
+Be generous in classification — a photo of someone on a trail = cardio, a gym photo = strength, a yoga mat = mobility. If the image is completely unrelated to exercise, return exercise_type: "cardio" with low confidence.`,
 
-If the image is not a fitness app screenshot at all, return count: 0 with low confidence and explain in the description.`,
-
-  visionUserPrompt: `Analyze this fitness app screenshot. How many individual workouts are shown? What type(s) of exercise? Return JSON with: count (number of workouts), description, confidence, exercise_types (array), duration_minutes (number or null).`,
+  visionUserPrompt: `Analyze this image. What type of exercise or workout does it show? Classify as exactly one of: "cardio", "strength", or "mobility". Return JSON with: exercise_type, description, confidence.`,
 
   heroCardPrompt: (data: HeroCardPromptData) => `Generate a gym-bro themed hero card for a fitness battle game. This card represents a player's weekly workout activity.
 

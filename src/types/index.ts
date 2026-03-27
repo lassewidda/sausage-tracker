@@ -6,6 +6,7 @@ export interface Meal {
   aiSuggestedCount: number | null
   aiDescription: string | null
   estimatedGrams: number | null
+  exerciseType?: string | null
   createdAt: string
   weekKey: string
   playerName: string
@@ -30,6 +31,7 @@ export interface AnalysisResult {
   confidence: 'high' | 'medium' | 'low'
   detectedTypes: string[]
   weightPerItem: number
+  exerciseType?: string
 }
 
 export interface WeekGroup {
@@ -195,6 +197,7 @@ export interface WeeklyChallenge {
   weekKey: string
   bingoItems: string[]
   exerciseMinimum: number
+  exerciseRequirements?: Record<string, number> | null
   createdAt: string
 }
 

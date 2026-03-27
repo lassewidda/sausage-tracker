@@ -11,12 +11,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { weekKey, bingoItems, exerciseMinimum } = body
+  const { weekKey, bingoItems, exerciseMinimum, exerciseRequirements } = body
 
   if (!weekKey || !Array.isArray(bingoItems) || bingoItems.length === 0) {
     return NextResponse.json({ error: 'weekKey and bingoItems are required' }, { status: 400 })
   }
 
-  const challenge = await upsertChallenge(weekKey, bingoItems, exerciseMinimum ?? 3)
+  const challenge = await upsertChallenge(weekKey, bingoItems, exerciseMinimum ?? 3, exerciseRequirements ?? null)
   return NextResponse.json(challenge)
 }

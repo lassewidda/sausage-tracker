@@ -24,6 +24,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     aiDescription?: string
     weightPerItem?: number
     playerName?: string
+    exerciseType?: string
   }
 
   try {
@@ -32,7 +33,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { imageUrl, blobPath, itemCount, aiSuggestedCount, aiDescription, weightPerItem, playerName } = body
+  const { imageUrl, blobPath, itemCount, aiSuggestedCount, aiDescription, weightPerItem, playerName, exerciseType } = body
 
   if (!imageUrl || !blobPath || itemCount === undefined) {
     return NextResponse.json(
@@ -75,6 +76,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       aiDescription: finalDescription,
       estimatedGrams,
       playerName: normalizedName,
+      exerciseType: exerciseType ?? null,
     })
 
     // Roll for item drop

@@ -5,6 +5,8 @@ import { Window } from '@/components/amiga/Window'
 import { Button } from '@/components/amiga/Button'
 import type { WeeklyChallenge } from '@/types'
 
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
+
 function getCurrentWeekKey(): string {
   const d = new Date()
   d.setHours(0, 0, 0, 0)
@@ -25,6 +27,9 @@ export default function ChallengeAdminPage() {
   const [weekKey, setWeekKey] = useState(getCurrentWeekKey())
   const [bingoItems, setBingoItems] = useState<string[]>([''])
   const [exerciseMinimum, setExerciseMinimum] = useState(3)
+  const [cardioReq, setCardioReq] = useState(0)
+  const [strengthReq, setStrengthReq] = useState(0)
+  const [mobilityReq, setMobilityReq] = useState(0)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -51,11 +56,20 @@ export default function ChallengeAdminPage() {
     setSaving(true)
     setMessage(null)
 
+    // Build exercise requirements for exercise theme
+    const exerciseRequirements = IS_EXERCISE && (cardioReq > 0 || strengthReq > 0 || mobilityReq > 0)
+      ? {
+          ...(cardioReq > 0 ? { cardio: cardioReq } : {}),
+          ...(strengthReq > 0 ? { strength: strengthReq } : {}),
+          ...(mobilityReq > 0 ? { mobility: mobilityReq } : {}),
+        }
+      : null
+
     try {
       const res = await fetch('/api/challenge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ weekKey, bingoItems: items, exerciseMinimum }),
+        body: JSON.stringify({ weekKey, bingoItems: items, exerciseMinimum, exerciseRequirements }),
       })
 
       if (!res.ok) {
@@ -95,6 +109,15 @@ export default function ChallengeAdminPage() {
     setWeekKey(challenge.weekKey)
     setBingoItems(challenge.bingoItems.length > 0 ? challenge.bingoItems : [''])
     setExerciseMinimum(challenge.exerciseMinimum)
+    if (challenge.exerciseRequirements) {
+      setCardioReq(challenge.exerciseRequirements.cardio ?? 0)
+      setStrengthReq(challenge.exerciseRequirements.strength ?? 0)
+      setMobilityReq(challenge.exerciseRequirements.mobility ?? 0)
+    } else {
+      setCardioReq(0)
+      setStrengthReq(0)
+      setMobilityReq(0)
+    }
     setMessage(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -147,7 +170,7 @@ export default function ChallengeAdminPage() {
           {/* Exercise minimum */}
           <div>
             <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: 'var(--crt-amber)', display: 'block', marginBottom: '4px' }}>
-              EXERCISE MINIMUM
+              {IS_EXERCISE ? 'TOTAL EXERCISE MINIMUM (FALLBACK)' : 'EXERCISE MINIMUM'}
             </label>
             <input
               type="number"
@@ -157,6 +180,53 @@ export default function ChallengeAdminPage() {
               style={{ ...inputStyle, width: '80px' }}
             />
           </div>
+
+          {/* Per-type exercise requirements (exercise theme only) */}
+          {IS_EXERCISE && (
+            <div>
+              <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: 'var(--crt-amber)', display: 'block', marginBottom: '8px' }}>
+                EXERCISE TYPE REQUIREMENTS (0 = NO REQUIREMENT)
+              </label>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <div>
+                  <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: '#FF4444', display: 'block', marginBottom: '4px' }}>
+                    {'\u{1F3C3}'} CARDIO
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={cardioReq}
+                    onChange={e => setCardioReq(parseInt(e.target.value) || 0)}
+                    style={{ ...inputStyle, width: '60px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: '#4488FF', display: 'block', marginBottom: '4px' }}>
+                    {'\u{1F4AA}'} STRENGTH
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={strengthReq}
+                    onChange={e => setStrengthReq(parseInt(e.target.value) || 0)}
+                    style={{ ...inputStyle, width: '60px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: '#44CC44', display: 'block', marginBottom: '4px' }}>
+                    {'\u{1F9D8}'} MOBILITY
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={mobilityReq}
+                    onChange={e => setMobilityReq(parseInt(e.target.value) || 0)}
+                    style={{ ...inputStyle, width: '60px' }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Bingo items */}
           <div>
@@ -254,6 +324,11 @@ export default function ChallengeAdminPage() {
                   marginBottom: '4px',
                 }}>
                   MIN EXERCISES: {ch.exerciseMinimum}
+                  {ch.exerciseRequirements && (
+                    <span style={{ marginLeft: '8px' }}>
+                      ({Object.entries(ch.exerciseRequirements).map(([t, n]) => `${t}: ${n}`).join(', ')})
+                    </span>
+                  )}
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {ch.bingoItems.map(item => (

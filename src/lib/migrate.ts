@@ -275,6 +275,12 @@ async function migrate() {
   await sql`CREATE INDEX IF NOT EXISTS idx_challenge_photos_challenge ON challenge_photos(challenge_id)`
   await sql`CREATE INDEX IF NOT EXISTS idx_challenge_photos_player ON challenge_photos(player_name)`
 
+  // Add exercise_type column for exercise theme
+  await sql`ALTER TABLE meals ADD COLUMN IF NOT EXISTS exercise_type TEXT`
+
+  // Add exercise_requirements JSONB column for per-type challenge requirements
+  await sql`ALTER TABLE weekly_challenges ADD COLUMN IF NOT EXISTS exercise_requirements JSONB`
+
   await sql.end()
   console.log('Migration complete.')
 }

@@ -235,20 +235,32 @@ export async function analyzeImage(imageUrl: string): Promise<AnalysisResult> {
     .replace(/\n?```$/, '')
     .trim()
 
-  const parsed = JSON.parse(cleaned) as {
-    count: number
-    description: string
-    confidence: string
-    sausage_types: string[]
-    grams_per_sausage: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const parsed = JSON.parse(cleaned) as any
+
+  const confidence = (['high', 'medium', 'low'].includes(parsed.confidence)
+    ? parsed.confidence
+    : 'low') as AnalysisResult['confidence']
+
+  // Exercise theme returns exercise_type instead of count/sausage_types
+  if (parsed.exercise_type) {
+    const validTypes = ['cardio', 'strength', 'mobility']
+    const exerciseType = validTypes.includes(parsed.exercise_type) ? parsed.exercise_type : 'cardio'
+    return {
+      count: 1,
+      description: parsed.description || '',
+      confidence,
+      detectedTypes: [exerciseType],
+      weightPerItem: 0,
+      exerciseType,
+    }
   }
 
+  // Sausage theme: original parsing
   return {
     count: Math.max(0, Math.round(Number(parsed.count) || 0)),
     description: parsed.description || '',
-    confidence: (['high', 'medium', 'low'].includes(parsed.confidence)
-      ? parsed.confidence
-      : 'low') as AnalysisResult['confidence'],
+    confidence,
     detectedTypes: Array.isArray(parsed.sausage_types) ? parsed.sausage_types : [],
     weightPerItem: Math.max(0, Math.round(Number(parsed.grams_per_sausage) || 0)),
   }

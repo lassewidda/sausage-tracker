@@ -2,6 +2,14 @@ import Image from 'next/image'
 import type { Meal } from '@/types'
 import theme from '@/theme'
 
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
+
+const EXERCISE_TYPE_BADGES: Record<string, { emoji: string; label: string; color: string }> = {
+  cardio: { emoji: '\u{1F3C3}', label: 'CARDIO', color: '#FF4444' },
+  strength: { emoji: '\u{1F4AA}', label: 'STRENGTH', color: '#4488FF' },
+  mobility: { emoji: '\u{1F9D8}', label: 'MOBILITY', color: '#44CC44' },
+}
+
 interface MealCardProps {
   meal: Meal
 }
@@ -27,9 +35,32 @@ export function MealCard({ meal }: MealCardProps) {
           sizes="(max-width: 600px) 100vw, 200px"
         />
         <div className="meal-card__score">
-          <div className="amiga-gauge amiga-gauge--small">
-            {String(meal.itemCount).padStart(2, '0')}
-          </div>
+          {IS_EXERCISE && meal.exerciseType ? (() => {
+            const badge = EXERCISE_TYPE_BADGES[meal.exerciseType] ?? EXERCISE_TYPE_BADGES.cardio
+            return (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                background: 'var(--amiga-black)',
+                padding: '2px 6px',
+                border: `2px solid ${badge.color}`,
+              }}>
+                <span style={{ fontSize: '12px' }}>{badge.emoji}</span>
+                <span style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: '7px',
+                  color: badge.color,
+                }}>
+                  {badge.label}
+                </span>
+              </div>
+            )
+          })() : (
+            <div className="amiga-gauge amiga-gauge--small">
+              {String(meal.itemCount).padStart(2, '0')}
+            </div>
+          )}
         </div>
       </div>
       <div className="meal-card__body">
@@ -59,7 +90,7 @@ export function MealCard({ meal }: MealCardProps) {
             >
               +{meal.itemCount}PTS
             </span>
-            {meal.estimatedGrams != null && meal.estimatedGrams > 0 && (
+            {!IS_EXERCISE && meal.estimatedGrams != null && meal.estimatedGrams > 0 && (
               <span
                 style={{
                   fontFamily: 'var(--font-pixel)',

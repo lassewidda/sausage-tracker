@@ -4,6 +4,14 @@ import type { Meal } from '@/types'
 import { DeleteButton } from './DeleteButton'
 import theme from '@/theme'
 
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
+
+const EXERCISE_TYPE_BADGES: Record<string, { emoji: string; label: string; color: string }> = {
+  cardio: { emoji: '\u{1F3C3}', label: 'CARDIO', color: '#FF4444' },
+  strength: { emoji: '\u{1F4AA}', label: 'STRENGTH', color: '#4488FF' },
+  mobility: { emoji: '\u{1F9D8}', label: 'MOBILITY', color: '#44CC44' },
+}
+
 interface FeedCardProps {
   meal: Meal
 }
@@ -53,26 +61,52 @@ export function FeedCard({ meal }: FeedCardProps) {
         }}>
           {/* Score */}
           <div className="row" style={{ gap: '10px', alignItems: 'center' }}>
-            <div className="amiga-gauge amiga-gauge--small">{String(meal.itemCount).padStart(2, '0')}</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <span style={{
-                fontFamily: 'var(--font-pixel)',
-                fontSize: '9px',
-                textTransform: 'uppercase',
-                color: 'var(--amiga-black)',
-              }}>
-                SAUSAGE{meal.itemCount !== 1 ? 'S' : ''}
-              </span>
-              {meal.estimatedGrams != null && meal.estimatedGrams > 0 && (
-                <span style={{
-                  fontFamily: 'var(--font-pixel)',
-                  fontSize: '8px',
-                  color: 'var(--amiga-dark-grey)',
+            {IS_EXERCISE && meal.exerciseType ? (() => {
+              const badge = EXERCISE_TYPE_BADGES[meal.exerciseType] ?? EXERCISE_TYPE_BADGES.cardio
+              return (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'var(--amiga-black)',
+                  padding: '4px 10px',
+                  border: `2px solid ${badge.color}`,
                 }}>
-                  ~{meal.estimatedGrams}G
-                </span>
-              )}
-            </div>
+                  <span style={{ fontSize: '16px' }}>{badge.emoji}</span>
+                  <span style={{
+                    fontFamily: 'var(--font-pixel)',
+                    fontSize: '9px',
+                    color: badge.color,
+                    textTransform: 'uppercase',
+                  }}>
+                    {badge.label}
+                  </span>
+                </div>
+              )
+            })() : (
+              <>
+                <div className="amiga-gauge amiga-gauge--small">{String(meal.itemCount).padStart(2, '0')}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span style={{
+                    fontFamily: 'var(--font-pixel)',
+                    fontSize: '9px',
+                    textTransform: 'uppercase',
+                    color: 'var(--amiga-black)',
+                  }}>
+                    SAUSAGE{meal.itemCount !== 1 ? 'S' : ''}
+                  </span>
+                  {meal.estimatedGrams != null && meal.estimatedGrams > 0 && (
+                    <span style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: '8px',
+                      color: 'var(--amiga-dark-grey)',
+                    }}>
+                      ~{meal.estimatedGrams}G
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Description */}

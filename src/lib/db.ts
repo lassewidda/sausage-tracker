@@ -46,14 +46,15 @@ export async function insertMeal(data: {
   aiDescription: string | null
   estimatedGrams: number | null
   playerName: string
+  exerciseType?: string | null
 }): Promise<Meal> {
   const sql = getDb()
   const weekKey = getWeekKey()
 
   const rows = await sql`
-    INSERT INTO meals (image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, week_key, player_name)
-    VALUES (${data.imageUrl}, ${data.blobPath}, ${data.itemCount}, ${data.aiSuggestedCount}, ${data.aiDescription}, ${data.estimatedGrams}, ${weekKey}, ${data.playerName})
-    RETURNING id, image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name
+    INSERT INTO meals (image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, week_key, player_name, exercise_type)
+    VALUES (${data.imageUrl}, ${data.blobPath}, ${data.itemCount}, ${data.aiSuggestedCount}, ${data.aiDescription}, ${data.estimatedGrams}, ${weekKey}, ${data.playerName}, ${data.exerciseType ?? null})
+    RETURNING id, image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name, exercise_type
   `
 
   await sql.end()
@@ -63,7 +64,7 @@ export async function insertMeal(data: {
 export async function getAllMeals(): Promise<Meal[]> {
   const sql = getDb()
   const rows = await sql`
-    SELECT id, image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name
+    SELECT id, image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name, exercise_type
     FROM meals
     ORDER BY created_at DESC
   `
@@ -78,7 +79,7 @@ export async function deleteMeal(id: string, playerName: string): Promise<Meal |
     DELETE FROM meals
     WHERE id = ${id}
       AND (player_name = ${playerName} OR player_name = 'Anonymous')
-    RETURNING id, image_url, blob_path, item_count, ai_suggested_count, ai_description, created_at, week_key, player_name
+    RETURNING id, image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name, exercise_type
   `
   await sql.end()
   return rows.length > 0 ? rowToMeal(rows[0]) : null
@@ -1348,6 +1349,7 @@ function rowToMeal(row: any): Meal {
     aiSuggestedCount: row.ai_suggested_count,
     aiDescription: row.ai_description,
     estimatedGrams: row.estimated_grams ?? null,
+    exerciseType: row.exercise_type ?? null,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
     weekKey: row.week_key,
     playerName: row.player_name ?? 'Anonymous',
@@ -1404,6 +1406,7 @@ function rowToChallenge(row: any): WeeklyChallenge {
     weekKey: row.week_key,
     bingoItems: row.bingo_items ?? [],
     exerciseMinimum: row.exercise_minimum ?? 3,
+    exerciseRequirements: row.exercise_requirements ?? null,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
   }
 }
@@ -1420,12 +1423,13 @@ function rowToChallengePhoto(row: any): ChallengePhoto {
   }
 }
 
-export async function upsertChallenge(weekKey: string, bingoItems: string[], exerciseMinimum: number): Promise<WeeklyChallenge> {
+export async function upsertChallenge(weekKey: string, bingoItems: string[], exerciseMinimum: number, exerciseRequirements?: Record<string, number> | null): Promise<WeeklyChallenge> {
   const sql = getDb()
+  const reqJson = exerciseRequirements ? JSON.stringify(exerciseRequirements) : null
   const rows = await sql`
-    INSERT INTO weekly_challenges (week_key, bingo_items, exercise_minimum)
-    VALUES (${weekKey}, ${bingoItems}, ${exerciseMinimum})
-    ON CONFLICT (week_key) DO UPDATE SET bingo_items = ${bingoItems}, exercise_minimum = ${exerciseMinimum}
+    INSERT INTO weekly_challenges (week_key, bingo_items, exercise_minimum, exercise_requirements)
+    VALUES (${weekKey}, ${bingoItems}, ${exerciseMinimum}, ${reqJson}::jsonb)
+    ON CONFLICT (week_key) DO UPDATE SET bingo_items = ${bingoItems}, exercise_minimum = ${exerciseMinimum}, exercise_requirements = ${reqJson}::jsonb
     RETURNING *
   `
   await sql.end()
@@ -1508,11 +1512,18 @@ export async function getChallengeView(weekKey: string): Promise<ChallengeView> 
   `
   const photos = photoRows.map(rowToChallengePhoto)
 
-  // Get exercise counts from meals for this week
+  // Get exercise counts from meals for this week (total + per-type)
   const exerciseRows = await sql`
-    SELECT player_name, SUM(item_count)::int AS exercise_count
+    SELECT player_name, COUNT(*)::int AS exercise_count
     FROM meals WHERE week_key = ${weekKey}
     GROUP BY player_name
+  `
+
+  // Get per-type counts for exercise theme
+  const typeRows = await sql`
+    SELECT player_name, exercise_type, COUNT(*)::int AS type_count
+    FROM meals WHERE week_key = ${weekKey} AND exercise_type IS NOT NULL
+    GROUP BY player_name, exercise_type
   `
 
   await sql.end()
@@ -1521,6 +1532,15 @@ export async function getChallengeView(weekKey: string): Promise<ChallengeView> 
   const exerciseMap = new Map<string, number>()
   for (const row of exerciseRows) {
     exerciseMap.set(row.player_name as string, row.exercise_count as number)
+  }
+
+  // Build per-type map: player -> { cardio: N, strength: N, mobility: N }
+  const typeMap = new Map<string, Record<string, number>>()
+  for (const row of typeRows) {
+    const player = row.player_name as string
+    if (!typeMap.has(player)) typeMap.set(player, {})
+    const types = typeMap.get(player)!
+    types[row.exercise_type as string] = row.type_count as number
   }
 
   // Collect all unique players
@@ -1534,7 +1554,16 @@ export async function getChallengeView(weekKey: string): Promise<ChallengeView> 
     const completedBingoItems = playerPhotos.map(p => p.bingoItem)
     const exerciseCount = exerciseMap.get(playerName) ?? 0
     const allBingoDone = challenge.bingoItems.every(item => completedBingoItems.includes(item))
-    const exerciseMet = exerciseCount >= challenge.exerciseMinimum
+
+    // Check exercise requirements: per-type if available, otherwise total minimum
+    let exerciseMet = exerciseCount >= challenge.exerciseMinimum
+    if (challenge.exerciseRequirements) {
+      const playerTypes = typeMap.get(playerName) ?? {}
+      exerciseMet = Object.entries(challenge.exerciseRequirements).every(
+        ([type, required]) => (playerTypes[type] ?? 0) >= (required as number)
+      )
+    }
+
     return {
       playerName,
       photos: playerPhotos,

@@ -3,6 +3,8 @@ import Link from 'next/link'
 import type { WeeklySummary } from '@/types'
 import theme from '@/theme'
 
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
+
 interface Props {
   summary: WeeklySummary
 }
@@ -55,23 +57,31 @@ export function WeeklySummaryCard({ summary }: Props) {
 
         {/* Stats row */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <div className="amiga-badge">
-            🌭 {summary.totalItems} SAUSAGE{summary.totalItems !== 1 ? 'S' : ''}
-          </div>
-          {summary.totalGrams > 0 && (
-            <div className="amiga-badge" style={{ background: 'var(--amiga-dark-grey)' }}>
-              ⚖️ ~{summary.totalGrams}G
+          {IS_EXERCISE ? (
+            <div className="amiga-badge">
+              {theme.strings.itemEmoji} {summary.totalItems} {summary.totalItems !== 1 ? theme.strings.itemNamePlural.toUpperCase() : theme.strings.itemName.toUpperCase()}
             </div>
+          ) : (
+            <>
+              <div className="amiga-badge">
+                {'\u{1F32D}'} {summary.totalItems} SAUSAGE{summary.totalItems !== 1 ? 'S' : ''}
+              </div>
+              {summary.totalGrams > 0 && (
+                <div className="amiga-badge" style={{ background: 'var(--amiga-dark-grey)' }}>
+                  {'\u{2696}\uFE0F'} ~{summary.totalGrams}G
+                </div>
+              )}
+            </>
           )}
           <div className="amiga-badge" style={{ background: 'var(--amiga-dark-grey)' }}>
-            📋 {summary.mealCount} MEAL{summary.mealCount !== 1 ? 'S' : ''}
+            {'\u{1F4CB}'} {summary.mealCount} {IS_EXERCISE ? 'SESSION' : 'MEAL'}{summary.mealCount !== 1 ? 'S' : ''}
           </div>
           <div className="amiga-badge" style={{
             background: summary.chainLength > 0 ? '#1E6B2A' : '#AA0000',
             color: 'var(--amiga-white)',
             textShadow: 'none',
           }}>
-            🔗 {summary.chainLength > 0 ? `${summary.chainLength}W CHAIN` : 'CHAIN BROKEN'}
+            {'\u{1F517}'} {summary.chainLength > 0 ? `${summary.chainLength}W CHAIN` : 'CHAIN BROKEN'}
           </div>
         </div>
 

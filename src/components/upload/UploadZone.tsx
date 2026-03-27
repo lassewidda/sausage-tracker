@@ -104,7 +104,7 @@ export function UploadZone() {
   )
 
   const handleConfirm = useCallback(
-    async (confirmedCount: number) => {
+    async (confirmedCount: number, exerciseType?: string) => {
       if (!state.blobUrl || !state.blobPath || !state.analysis) return
 
       setState((s) => ({ ...s, phase: 'saving' }))
@@ -121,6 +121,7 @@ export function UploadZone() {
             aiDescription: state.analysis.description,
             weightPerItem: state.analysis.weightPerItem,
             playerName: name || 'Anonymous',
+            exerciseType: exerciseType ?? undefined,
           }),
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
