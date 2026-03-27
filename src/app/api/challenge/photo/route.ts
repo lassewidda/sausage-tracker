@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getChallengeByWeek, upsertChallengePhoto, deleteChallengePhoto, getWeekKey } from '@/lib/db'
+import { getChallengeByWeek, upsertChallengePhoto, deleteChallengePhoto, getWeekKey, insertMeal, deleteMealByBlobPath } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +30,20 @@ export async function POST(req: NextRequest) {
     blobPath
   )
 
+  // Also insert into meals so it appears in the feed
+  try {
+    await insertMeal({
+      imageUrl,
+      blobPath,
+      itemCount: 0,
+      aiSuggestedCount: null,
+      aiDescription: `📸 Photo bingo: ${bingoItem}`,
+      estimatedGrams: null,
+      playerName: playerName.toLowerCase(),
+      exerciseType: 'photo',
+    })
+  } catch { /* ignore if duplicate */ }
+
   return NextResponse.json(photo)
 }
 
@@ -41,11 +55,16 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'id and playerName are required' }, { status: 400 })
   }
 
-  const deleted = await deleteChallengePhoto(id, playerName.toLowerCase())
+  const deletedBlobPath = await deleteChallengePhoto(id, playerName.toLowerCase())
 
-  if (!deleted) {
+  if (!deletedBlobPath) {
     return NextResponse.json({ error: 'Photo not found or not owned by you' }, { status: 404 })
   }
+
+  // Also remove the corresponding meal feed entry
+  try {
+    await deleteMealByBlobPath(deletedBlobPath)
+  } catch { /* ignore */ }
 
   return NextResponse.json({ success: true })
 }

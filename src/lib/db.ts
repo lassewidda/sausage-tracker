@@ -121,6 +121,12 @@ export async function deleteMeal(id: string, playerName: string): Promise<Meal |
   return rows.length > 0 ? rowToMeal(rows[0]) : null
 }
 
+export async function deleteMealByBlobPath(blobPath: string): Promise<void> {
+  const sql = getDb()
+  await sql`DELETE FROM meals WHERE blob_path = ${blobPath}`
+  await sql.end()
+}
+
 export async function getLeaderboard(): Promise<Leaderboard> {
   const sql = getDb()
   const weekKey = getWeekKey()
@@ -1588,13 +1594,13 @@ export async function upsertChallengePhoto(
   return rowToChallengePhoto(rows[0])
 }
 
-export async function deleteChallengePhoto(id: string, playerName: string): Promise<boolean> {
+export async function deleteChallengePhoto(id: string, playerName: string): Promise<string | null> {
   const sql = getDb()
   const rows = await sql`
-    DELETE FROM challenge_photos WHERE id = ${id} AND player_name = ${playerName} RETURNING id
+    DELETE FROM challenge_photos WHERE id = ${id} AND player_name = ${playerName} RETURNING id, blob_path
   `
   await sql.end()
-  return rows.length > 0
+  return rows.length > 0 ? (rows[0].blob_path as string) : null
 }
 
 export async function getChallengeView(weekKey: string): Promise<ChallengeView> {
