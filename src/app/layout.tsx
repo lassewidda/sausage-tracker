@@ -40,8 +40,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* Always visible */}
             <Link href="/" className="amiga-menubar__item">LOG</Link>
             <Link href="/feed" className="amiga-menubar__item">FEED</Link>
-            {/* Desktop only */}
-            <span className="desktop-nav"><ChallengeNavLink /></span>
+            {/* Always visible */}
+            <ChallengeNavLink />
             <Link href="/highscore" className="amiga-menubar__item desktop-nav">HIGHSCORE</Link>
             <Link href="/progress" className="amiga-menubar__item desktop-nav">PROGRESS</Link>
             <Link href="/battle" className="amiga-menubar__item desktop-nav">BATTLE</Link>

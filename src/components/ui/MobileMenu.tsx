@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const MENU_ITEMS = [
-  { href: '/challenge', label: 'CHALLENGE' },
   { href: '/highscore', label: 'HIGHSCORE' },
   { href: '/progress', label: 'PROGRESS' },
   { href: '/battle', label: 'BATTLE' },
