@@ -1,9 +1,10 @@
-import { getMealsPaginated, getAvailableWeeks, formatWeekLabel } from '@/lib/db'
+import { getMealsPaginated, getAvailableWeeks, getWeeklySummaries, getAllWeeklySummaries, formatWeekLabel } from '@/lib/db'
 import { Window } from '@/components/amiga/Window'
 import { FeedCard } from '@/components/feed/FeedCard'
+import { WeeklySummaryCard } from '@/components/feed/WeeklySummaryCard'
 import Link from 'next/link'
 import { Button } from '@/components/amiga/Button'
-import type { Meal } from '@/types'
+import type { Meal, WeeklySummary } from '@/types'
 import theme from '@/theme'
 
 export const dynamic = 'force-dynamic'
@@ -16,15 +17,18 @@ export default async function FeedPage({ searchParams }: { searchParams: { page?
   let meals: Meal[] = []
   let total = 0
   let availableWeeks: string[] = []
+  let summaries: WeeklySummary[] = []
 
   try {
-    const [paginatedResult, weeks] = await Promise.all([
+    const [paginatedResult, weeks, sums] = await Promise.all([
       getMealsPaginated({ page, perPage, weekKey: weekFilter }),
       getAvailableWeeks(),
+      weekFilter ? getWeeklySummaries(weekFilter) : (page === 1 ? getAllWeeklySummaries() : Promise.resolve([])),
     ])
     meals = paginatedResult.meals
     total = paginatedResult.total
     availableWeeks = weeks
+    summaries = sums
   } catch (err) {
     console.error('Feed fetch error:', err)
   }
@@ -74,6 +78,15 @@ export default async function FeedPage({ searchParams }: { searchParams: { page?
           <div style={{ textAlign: 'center', fontSize: '10px', opacity: 0.8 }}>
             {total} {total === 1 ? 'SESSION' : 'SESSIONS'}{weekFilter ? ` IN ${formatWeekLabel(weekFilter).toUpperCase()}` : ' TOTAL'}
           </div>
+
+          {/* Weekly summaries */}
+          {summaries.length > 0 && (
+            <div className="stack" style={{ gap: '12px' }}>
+              {summaries.map((summary) => (
+                <WeeklySummaryCard key={summary.id} summary={summary} />
+              ))}
+            </div>
+          )}
 
           {meals.length === 0 ? (
             <div className="amiga-info" style={{ textAlign: 'center' }}>
