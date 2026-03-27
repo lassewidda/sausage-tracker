@@ -110,6 +110,16 @@ body {
   padding: 0 4px;
 }
 
+.amiga-menubar__item + .amiga-menubar__item::before,
+.amiga-menubar__item + .desktop-nav::before,
+.desktop-nav + .amiga-menubar__item::before,
+.desktop-nav + .desktop-nav::before {
+  content: '·';
+  margin-right: 4px;
+  color: var(--amiga-dark-grey);
+  pointer-events: none;
+}
+
 .amiga-menubar__spacer {
   flex: 1;
   min-width: 0;
