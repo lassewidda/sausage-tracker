@@ -69,7 +69,23 @@ export const exerciseStrings: ThemeStrings = {
 
   // Highscore
   highscoreTitle: 'LEADERBOARD OF GAINS',
-  highscoreBanner: 'WHO LIFTS THE MOST?',
+  highscoreBanner: [
+    'WHO LIFTS THE MOST?',
+    'WHO\'S BEEN GRINDING?',
+    'GAINS CHECK!',
+    'WHO SKIPPED LEG DAY?',
+    'SWEAT LEADERBOARD',
+    'FLEX OFF RANKINGS',
+    'WHO\'S ACTUALLY GOING TO THE GYM?',
+    'THE GRIND NEVER STOPS',
+    'NO PAIN NO GAIN BOARD',
+    'WHO\'S EARNING THEIR PROTEIN?',
+    'BEASTMODE RANKINGS',
+    'REP COUNTER HALL OF FAME',
+    'WHO SHOWED UP THIS WEEK?',
+    'THE SWOLE PATROL RANKINGS',
+    'ARE YOU EVEN LIFTING?',
+  ],
   noMealsThisWeek: 'No workouts logged this week. Rest day for everyone?',
   noScoresYet: 'No gains tracked yet. Be the first to log a workout!',
 

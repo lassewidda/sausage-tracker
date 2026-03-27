@@ -21,13 +21,17 @@ export default async function HighscorePage() {
 
   const weekLabel = data.weekKey ? formatWeekLabel(data.weekKey) : 'THIS WEEK'
 
+  const banner = Array.isArray(theme.strings.highscoreBanner)
+    ? theme.strings.highscoreBanner[Math.floor(Math.random() * theme.strings.highscoreBanner.length)]
+    : theme.strings.highscoreBanner
+
   return (
     <main className="page-content">
       <Window title={theme.strings.highscoreTitle}>
         <div className="stack">
           {/* Trophy banner */}
           <div className="grand-total" style={{ fontSize: '11px', letterSpacing: '3px' }}>
-            {theme.strings.highscoreBanner}
+            {banner}
           </div>
 
           <div className="row" style={{ gap: '8px', flexWrap: 'wrap' }}>

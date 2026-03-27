@@ -79,7 +79,7 @@ export interface ThemeStrings {
 
   // Highscore
   highscoreTitle: string
-  highscoreBanner: string
+  highscoreBanner: string | string[]
   noMealsThisWeek: string
   noScoresYet: string
 

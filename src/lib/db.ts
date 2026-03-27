@@ -72,6 +72,42 @@ export async function getAllMeals(): Promise<Meal[]> {
   return rows.map(rowToMeal)
 }
 
+export async function getMealsPaginated(options: {
+  page?: number
+  perPage?: number
+  weekKey?: string
+}): Promise<{ meals: Meal[]; total: number }> {
+  const sql = getDb()
+  const page = options.page ?? 1
+  const perPage = options.perPage ?? 20
+  const offset = (page - 1) * perPage
+
+  let meals, countResult
+  if (options.weekKey) {
+    [meals, countResult] = await Promise.all([
+      sql`SELECT id, image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name, exercise_type
+        FROM meals WHERE week_key = ${options.weekKey}
+        ORDER BY created_at DESC LIMIT ${perPage} OFFSET ${offset}`,
+      sql`SELECT COUNT(*)::int AS count FROM meals WHERE week_key = ${options.weekKey}`,
+    ])
+  } else {
+    [meals, countResult] = await Promise.all([
+      sql`SELECT id, image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name, exercise_type
+        FROM meals ORDER BY created_at DESC LIMIT ${perPage} OFFSET ${offset}`,
+      sql`SELECT COUNT(*)::int AS count FROM meals`,
+    ])
+  }
+  await sql.end()
+  return { meals: meals.map(rowToMeal), total: countResult[0].count as number }
+}
+
+export async function getAvailableWeeks(): Promise<string[]> {
+  const sql = getDb()
+  const rows = await sql`SELECT DISTINCT week_key FROM meals ORDER BY week_key DESC`
+  await sql.end()
+  return rows.map(r => r.week_key as string)
+}
+
 export async function deleteMeal(id: string, playerName: string): Promise<Meal | null> {
   const sql = getDb()
   // Allow deletion if playerName matches OR if the meal is 'Anonymous' (legacy test posts)
