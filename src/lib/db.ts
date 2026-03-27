@@ -91,19 +91,36 @@ export async function getLeaderboard(): Promise<Leaderboard> {
 
   const [allTimeRows, weekRows] = await Promise.all([
     sql`
-      SELECT player_name, SUM(item_count)::int AS total, COALESCE(SUM(estimated_grams), 0)::int AS total_grams
+      SELECT player_name,
+        SUM(item_count)::int AS total,
+        COALESCE(SUM(estimated_grams), 0)::int AS total_grams,
+        COUNT(*) FILTER (WHERE exercise_type = 'cardio')::int AS cardio_count,
+        COUNT(*) FILTER (WHERE exercise_type = 'strength')::int AS strength_count
       FROM meals
       GROUP BY player_name
       ORDER BY total DESC
     `,
     sql`
-      SELECT player_name, SUM(item_count)::int AS total, COALESCE(SUM(estimated_grams), 0)::int AS total_grams
+      SELECT player_name,
+        SUM(item_count)::int AS total,
+        COALESCE(SUM(estimated_grams), 0)::int AS total_grams,
+        COUNT(*) FILTER (WHERE exercise_type = 'cardio')::int AS cardio_count,
+        COUNT(*) FILTER (WHERE exercise_type = 'strength')::int AS strength_count
       FROM meals
       WHERE week_key = ${weekKey}
       GROUP BY player_name
       ORDER BY total DESC
     `,
   ])
+
+  // Get challenge completion counts
+  let challengeMap = new Map<string, number>()
+  try {
+    const challengeEntries = await getChallengeLeaderboard()
+    for (const e of challengeEntries) {
+      challengeMap.set(e.playerName, e.completedChallenges)
+    }
+  } catch { /* challenges table may not exist yet */ }
 
   await sql.end()
 
@@ -112,6 +129,9 @@ export async function getLeaderboard(): Promise<Leaderboard> {
       playerName: r.player_name as string,
       totalItems: r.total as number,
       totalGrams: r.total_grams as number,
+      cardioCount: r.cardio_count as number,
+      strengthCount: r.strength_count as number,
+      challengesCompleted: challengeMap.get(r.player_name as string) ?? 0,
       rank: i + 1,
     }))
 

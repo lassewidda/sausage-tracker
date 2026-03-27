@@ -17,6 +17,9 @@ export interface LeaderboardEntry {
   totalItems: number
   totalGrams: number
   rank: number
+  cardioCount?: number
+  strengthCount?: number
+  challengesCompleted?: number
 }
 
 export interface Leaderboard {

@@ -1,5 +1,10 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
 import type { LeaderboardEntry } from '@/types'
+
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
 
 interface LeaderboardProps {
   entries: LeaderboardEntry[]
@@ -7,11 +12,35 @@ interface LeaderboardProps {
   emptyMessage?: string
 }
 
+type SortKey = 'total' | 'cardio' | 'strength' | 'challenges'
+
+const SORT_OPTIONS: { key: SortKey; label: string; color: string }[] = [
+  { key: 'total', label: 'TOTAL', color: 'var(--crt-amber)' },
+  { key: 'cardio', label: '🏃 CARDIO', color: '#FF4444' },
+  { key: 'strength', label: '💪 STRENGTH', color: '#4488FF' },
+  { key: 'challenges', label: '🏆 CHALLENGES', color: '#FFD700' },
+]
+
 const MEDALS = ['🥇', '🥈', '🥉']
 const BAR_COLORS = ['#FF8800', '#AAAAAA', '#CC7700']
 
+function getSortValue(entry: LeaderboardEntry, key: SortKey): number {
+  switch (key) {
+    case 'total': return entry.totalItems
+    case 'cardio': return entry.cardioCount ?? 0
+    case 'strength': return entry.strengthCount ?? 0
+    case 'challenges': return entry.challengesCompleted ?? 0
+  }
+}
+
 export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: LeaderboardProps) {
-  const max = entries[0]?.totalItems ?? 1
+  const [sortKey, setSortKey] = useState<SortKey>('total')
+
+  const sorted = IS_EXERCISE
+    ? [...entries].sort((a, b) => getSortValue(b, sortKey) - getSortValue(a, sortKey))
+    : entries
+
+  const max = sorted.length > 0 ? Math.max(getSortValue(sorted[0], sortKey), 1) : 1
 
   return (
     <div className="amiga-window">
@@ -21,14 +50,45 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
         <div className="amiga-window__gadget" />
       </div>
       <div className="amiga-window__body">
+        {/* Sort tabs (exercise theme only) */}
+        {IS_EXERCISE && entries.length > 0 && (
+          <div style={{
+            display: 'flex',
+            gap: '4px',
+            marginBottom: '10px',
+            flexWrap: 'wrap',
+          }}>
+            {SORT_OPTIONS.map(opt => (
+              <button
+                key={opt.key}
+                onClick={() => setSortKey(opt.key)}
+                style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: '7px',
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                  border: sortKey === opt.key ? `2px solid ${opt.color}` : '1px solid var(--bevel-shadow)',
+                  background: sortKey === opt.key ? 'var(--amiga-black)' : 'transparent',
+                  color: sortKey === opt.key ? opt.color : 'var(--amiga-dark-grey)',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {entries.length === 0 ? (
           <div className="amiga-info" style={{ textAlign: 'center' }}>{emptyMessage}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {entries.map((entry) => {
-              const barWidth = Math.round((entry.totalItems / max) * 100)
-              const color = BAR_COLORS[entry.rank - 1] ?? 'var(--amiga-dark-grey)'
-              const medal = MEDALS[entry.rank - 1] ?? `#${entry.rank}`
+            {sorted.map((entry, i) => {
+              const val = getSortValue(entry, sortKey)
+              const barWidth = Math.round((val / max) * 100)
+              const rank = i + 1
+              const color = BAR_COLORS[rank - 1] ?? 'var(--amiga-dark-grey)'
+              const medal = MEDALS[rank - 1] ?? `#${rank}`
 
               return (
                 <div key={entry.playerName} style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
@@ -53,20 +113,62 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
                       </Link>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      {entry.totalGrams > 0 && (
-                        <span style={{
-                          fontFamily: 'var(--font-pixel)',
-                          fontSize: '8px',
-                          color: 'var(--amiga-dark-grey)',
-                          background: 'var(--amiga-light-grey)',
-                          padding: '2px 4px',
-                        }}>
-                          ~{entry.totalGrams}G
-                        </span>
+                      {IS_EXERCISE ? (
+                        <>
+                          <span style={{
+                            fontFamily: 'var(--font-pixel)',
+                            fontSize: '7px',
+                            color: '#FF4444',
+                            background: 'rgba(255, 68, 68, 0.1)',
+                            padding: '2px 4px',
+                            border: '1px solid rgba(255, 68, 68, 0.3)',
+                          }}>
+                            🏃{entry.cardioCount ?? 0}
+                          </span>
+                          <span style={{
+                            fontFamily: 'var(--font-pixel)',
+                            fontSize: '7px',
+                            color: '#4488FF',
+                            background: 'rgba(68, 136, 255, 0.1)',
+                            padding: '2px 4px',
+                            border: '1px solid rgba(68, 136, 255, 0.3)',
+                          }}>
+                            💪{entry.strengthCount ?? 0}
+                          </span>
+                          {(entry.challengesCompleted ?? 0) > 0 && (
+                            <span style={{
+                              fontFamily: 'var(--font-pixel)',
+                              fontSize: '7px',
+                              color: '#FFD700',
+                              background: 'rgba(255, 215, 0, 0.1)',
+                              padding: '2px 4px',
+                              border: '1px solid rgba(255, 215, 0, 0.3)',
+                            }}>
+                              🏆{entry.challengesCompleted}
+                            </span>
+                          )}
+                          <div className="amiga-gauge amiga-gauge--small">
+                            {entry.totalItems}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {entry.totalGrams > 0 && (
+                            <span style={{
+                              fontFamily: 'var(--font-pixel)',
+                              fontSize: '8px',
+                              color: 'var(--amiga-dark-grey)',
+                              background: 'var(--amiga-light-grey)',
+                              padding: '2px 4px',
+                            }}>
+                              ~{entry.totalGrams}G
+                            </span>
+                          )}
+                          <div className="amiga-gauge amiga-gauge--small">
+                            {entry.totalItems}
+                          </div>
+                        </>
                       )}
-                      <div className="amiga-gauge amiga-gauge--small">
-                        {entry.totalItems}
-                      </div>
                     </div>
                   </div>
 
