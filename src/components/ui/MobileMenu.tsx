@@ -58,7 +58,7 @@ export function MobileMenu() {
         style={{
           fontFamily: 'var(--font-pixel)',
           fontSize: '12px',
-          background: 'var(--amiga-black, #000)',
+          background: '#0a0a0a',
           border: '1px solid var(--crt-amber, #ffaa00)',
           color: 'var(--crt-amber, #ffaa00)',
           cursor: 'pointer',
@@ -74,7 +74,7 @@ export function MobileMenu() {
           position: 'absolute',
           top: '100%',
           right: 0,
-          background: 'var(--amiga-black, #111)',
+          background: '#0a0a0a',
           border: '2px solid var(--crt-amber, #ffaa00)',
           zIndex: 1000,
           minWidth: '160px',
