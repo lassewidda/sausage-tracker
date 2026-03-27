@@ -7,8 +7,8 @@ import { usePathname } from 'next/navigation'
 const MENU_ITEMS = [
   { href: '/feed', label: 'FEED' },
   { href: '/highscore', label: 'HIGHSCORE' },
-  { href: '/battle', label: 'BATTLE' },
   { href: '/progress', label: 'PROGRESS' },
+  { href: '/battle', label: 'BATTLE' },
   { href: '/shop', label: 'SHOP' },
 ]
 

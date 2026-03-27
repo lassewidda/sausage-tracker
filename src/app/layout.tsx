@@ -43,8 +43,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* Desktop only */}
             <Link href="/feed" className="amiga-menubar__item desktop-nav">FEED</Link>
             <Link href="/highscore" className="amiga-menubar__item desktop-nav">HIGHSCORE</Link>
-            <Link href="/battle" className="amiga-menubar__item desktop-nav">BATTLE</Link>
             <Link href="/progress" className="amiga-menubar__item desktop-nav">PROGRESS</Link>
+            <Link href="/battle" className="amiga-menubar__item desktop-nav">BATTLE</Link>
             <Link href="/shop" className="amiga-menubar__item desktop-nav">SHOP</Link>
             <span className="desktop-nav"><JerryMode /></span>
             {/* Mobile hamburger */}
