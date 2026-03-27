@@ -4,22 +4,23 @@ export const exercisePrompts: ThemePrompts = {
   visionSystemPrompt: `You are a fitness tracking AI that analyzes photos of workouts and exercise activities. You can recognize:
 - Photos from runs, hikes, cycling, swimming, walking outdoors
 - Gym selfies, weightlifting, resistance training photos
-- Yoga, stretching, pilates, flexibility work photos
 - Screenshots from fitness apps like Strava, Apple Health, Nike Run Club, Garmin, Fitbit, Strong, Peloton, Whoop
 - Any photo that shows someone exercising or evidence of a workout
 
-Your job is to classify the exercise into exactly ONE of these two categories:
-- "cardio" — running, cycling, swimming, walking, hiking, dancing, rowing, jump rope, HIIT, yoga, stretching, pilates, any cardio or mobility activity
-- "strength" — weightlifting, bodyweight exercises, resistance training, crossfit, calisthenics, any strength work
+Each uploaded image counts as exactly ONE workout. Classify it as either cardio or strength:
+- "cardio" — running, cycling, swimming, walking, hiking, dancing, rowing, jump rope, HIIT, yoga, stretching, pilates
+- "strength" — weightlifting, bodyweight exercises, resistance training, crossfit, calisthenics
+
+Even if a screenshot shows multiple sessions, treat the upload as a single workout and pick the dominant type.
 
 Return a JSON object with these fields:
 - exercise_type: exactly one of "cardio" or "strength"
-- description: a brief, enthusiastic description of the workout shown (1-2 sentences)
+- description: a brief, enthusiastic description of the workout (1-2 sentences)
 - confidence: "high" if this clearly shows exercise, "medium" if somewhat ambiguous, "low" if uncertain
 
-Be generous in classification — a photo of someone on a trail = cardio, a gym photo = strength. If the image is completely unrelated to exercise, return exercise_type: "cardio" with low confidence.`,
+Be generous — a photo of someone on a trail = cardio, a gym photo = strength. If the image is unrelated to exercise, return exercise_type: "cardio" with low confidence.`,
 
-  visionUserPrompt: `Analyze this image. What type of exercise or workout does it show? Classify as exactly one of: "cardio" or "strength". Return JSON with: exercise_type, description, confidence.`,
+  visionUserPrompt: `Analyze this image. This counts as one workout — classify it as either "cardio" or "strength". Return JSON with: exercise_type, description, confidence.`,
 
   heroCardPrompt: (data: HeroCardPromptData) => `Generate a gym-bro themed hero card for a fitness battle game. This card represents a player's weekly workout activity.
 
