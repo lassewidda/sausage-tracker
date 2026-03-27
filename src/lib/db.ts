@@ -354,6 +354,51 @@ export async function getPlayerWeekData(weekKey: string): Promise<PlayerWeekData
   return Array.from(byPlayer.values())
 }
 
+async function attachImageUrls(sql: ReturnType<typeof getDb>, summaries: WeeklySummary[]): Promise<WeeklySummary[]> {
+  if (summaries.length === 0) return summaries
+
+  const weekKeys = Array.from(new Set(summaries.map(s => s.weekKey)))
+  const playerNames = Array.from(new Set(summaries.map(s => s.playerName)))
+
+  // Get meal images
+  const mealImages = await sql`
+    SELECT player_name, week_key, image_url FROM meals
+    WHERE week_key = ANY(${weekKeys}) AND player_name = ANY(${playerNames})
+    ORDER BY created_at
+  `
+
+  // Get challenge bingo photos
+  let bingoPhotos: { player_name: string; week_key: string; image_url: string }[] = []
+  try {
+    const bRows = await sql`
+      SELECT cp.player_name, wc.week_key, cp.image_url
+      FROM challenge_photos cp
+      JOIN weekly_challenges wc ON wc.id = cp.challenge_id
+      WHERE wc.week_key = ANY(${weekKeys}) AND cp.player_name = ANY(${playerNames})
+      ORDER BY cp.created_at
+    `
+    bingoPhotos = bRows as unknown as typeof bingoPhotos
+  } catch { /* challenge tables may not exist */ }
+
+  // Build image map: player+week -> urls
+  const imageMap = new Map<string, string[]>()
+  for (const r of mealImages) {
+    const key = `${r.player_name}|${r.week_key}`
+    if (!imageMap.has(key)) imageMap.set(key, [])
+    imageMap.get(key)!.push(r.image_url as string)
+  }
+  for (const r of bingoPhotos) {
+    const key = `${r.player_name}|${r.week_key}`
+    if (!imageMap.has(key)) imageMap.set(key, [])
+    imageMap.get(key)!.push(r.image_url as string)
+  }
+
+  return summaries.map(s => ({
+    ...s,
+    imageUrls: imageMap.get(`${s.playerName}|${s.weekKey}`) ?? [],
+  }))
+}
+
 export async function getWeeklySummaries(weekKey: string): Promise<WeeklySummary[]> {
   const sql = getDb()
   const rows = await sql`
@@ -362,8 +407,10 @@ export async function getWeeklySummaries(weekKey: string): Promise<WeeklySummary
     WHERE week_key = ${weekKey}
     ORDER BY total_items DESC
   `
+  const summaries = rows.map(rowToSummary)
+  const result = await attachImageUrls(sql, summaries)
   await sql.end()
-  return rows.map(rowToSummary)
+  return result
 }
 
 export async function getAllWeeklySummaries(): Promise<WeeklySummary[]> {
@@ -373,8 +420,10 @@ export async function getAllWeeklySummaries(): Promise<WeeklySummary[]> {
     FROM weekly_summaries
     ORDER BY week_key DESC, total_items DESC
   `
+  const summaries = rows.map(rowToSummary)
+  const result = await attachImageUrls(sql, summaries)
   await sql.end()
-  return rows.map(rowToSummary)
+  return result
 }
 
 export async function insertWeeklySummary(data: {

@@ -81,7 +81,7 @@ export function WeeklySummaryCard({ summary }: Props) {
             color: 'var(--amiga-white)',
             textShadow: 'none',
           }}>
-            {'\u{1F517}'} {summary.chainLength > 0 ? `${summary.chainLength}W CHAIN` : 'CHAIN BROKEN'}
+            {'\u{1F517}'} {summary.chainLength > 0 ? `${summary.chainLength}W ${IS_EXERCISE ? 'STREAK' : 'CHAIN'}` : IS_EXERCISE ? 'STREAK BROKEN' : 'CHAIN BROKEN'}
           </div>
         </div>
 

@@ -262,7 +262,7 @@ export async function analyzeImage(imageUrl: string): Promise<AnalysisResult> {
 
   // Exercise theme returns exercise_type instead of count/sausage_types
   if (parsed.exercise_type) {
-    const validTypes = ['cardio', 'strength', 'mobility']
+    const validTypes = ['cardio', 'strength']
     const exerciseType = validTypes.includes(parsed.exercise_type) ? parsed.exercise_type : 'cardio'
     return {
       count: 1,
