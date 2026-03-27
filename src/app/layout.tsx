@@ -39,9 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="amiga-menubar__spacer" />
             {/* Always visible */}
             <Link href="/" className="amiga-menubar__item">LOG</Link>
-            <ChallengeNavLink />
+            <Link href="/feed" className="amiga-menubar__item">FEED</Link>
             {/* Desktop only */}
-            <Link href="/feed" className="amiga-menubar__item desktop-nav">FEED</Link>
+            <span className="desktop-nav"><ChallengeNavLink /></span>
             <Link href="/highscore" className="amiga-menubar__item desktop-nav">HIGHSCORE</Link>
             <Link href="/progress" className="amiga-menubar__item desktop-nav">PROGRESS</Link>
             <Link href="/battle" className="amiga-menubar__item desktop-nav">BATTLE</Link>
