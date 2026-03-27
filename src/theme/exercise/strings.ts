@@ -3,47 +3,47 @@ import type { ThemeStrings } from '../types'
 export const exerciseStrings: ThemeStrings = {
   // Layout / nav
   menubarTitle: 'GAINS TRACKER',
-  metaTitle: 'Gains Tracker - Log Your Workouts, Battle Your Bros',
-  metaDescription: 'Track your gym sessions with AI, earn hero cards, and battle other fitness warriors in turn-based combat.',
+  metaTitle: 'Gains Tracker - Log Your Workouts, Earn Cards, Battle Friends',
+  metaDescription: 'Track your runs, lifts, rides and workouts with AI. Earn hero cards and battle other fitness warriors in turn-based combat.',
 
   // About
   aboutVersion: 'v1.0 — BEAST MODE EDITION',
   aboutParagraphs: [
-    'Gains Tracker uses AI to analyze your workout screenshots from apps like Strava, Apple Health, Nike Run Club, Garmin, and Fitbit.',
+    'Gains Tracker uses AI to analyze your workout screenshots from apps like Strava, Apple Health, Nike Run Club, Garmin, and Fitbit — or just a photo from your run.',
     'Every workout you log earns you points and generates unique hero cards for the battle arena. The more you train, the stronger your cards.',
-    'Challenge other gym warriors to turn-based battles using your collection of fitness-themed hero cards. May the swolest win.',
+    'Challenge other fitness warriors to turn-based battles using your collection of exercise-themed hero cards. Runners, lifters, cyclists — all welcome.',
   ],
-  aboutTagline: 'Track gains. Collect cards. Battle bros. No rest days.',
+  aboutTagline: 'Track gains. Collect cards. Battle friends. No rest days.',
 
   // Home page
   windowTitle: 'LOG YOUR WORKOUT',
-  uploadInstruction: 'Upload a screenshot from your fitness app',
-  uploadSubInstruction: 'Supports Strava, Apple Health, Nike Run Club, Garmin, Fitbit, and more',
+  uploadInstruction: 'Upload a screenshot or photo from your workout',
+  uploadSubInstruction: 'Supports Strava, Apple Health, Garmin, and photos from runs, gym sessions, rides & more',
   uploadDropzoneEmoji: '💪',
-  uploadDropzoneLabel: 'Drop your workout screenshot here',
-  namePrompt: 'Enter your gym name, warrior:',
+  uploadDropzoneLabel: 'Drop your workout photo here',
+  namePrompt: 'Enter your athlete name:',
   steps: [
-    '1. Screenshot your workout from any fitness app',
-    '2. Upload it here — our AI counts your workouts',
-    '3. Confirm & log to earn points and hero cards',
-    '4. Battle other gym warriors with your card collection',
+    '1. Screenshot your workout app or snap a photo during your session',
+    '2. Upload it here — our AI detects the exercise type',
+    '3. Confirm cardio or strength to log your workout',
+    '4. Earn hero cards and battle your friends',
   ],
 
   // Tips & rules
-  tipsTitle: 'GYM TIPS',
+  tipsTitle: 'WORKOUT TIPS',
   tipsLines: [
     'Supported apps: Strava, Apple Health, Nike Run Club, Garmin Connect, Fitbit, Peloton, Strong, JEFIT, Whoop',
-    'Screenshots with multiple workouts visible will count each session',
-    'Weekly summaries and dashboard views work great too',
-    'The clearer the screenshot, the better the AI detection',
+    'You can also upload photos taken during your run, ride, hike, or gym session',
+    'Each upload counts as one workout — pick cardio or strength',
+    'The clearer the photo, the better the AI detection',
     'Each workout = 1 point toward your weekly hero card',
   ],
-  rulesTitle: 'GYM RULES',
+  rulesTitle: 'HOUSE RULES',
   rulesLines: [
     'Workouts must be logged the same day they are completed',
-    'Screenshot must show an actual completed workout (not a planned one)',
+    'Photo must show an actual completed workout (not a planned one)',
     'One upload per workout session — no double-dipping',
-    'Rest days are important but they don\'t count as workouts, bro',
+    'Rest days are important but they don\'t count as workouts',
     'Be honest — fake gains are worse than no gains',
   ],
 
@@ -55,7 +55,7 @@ export const exerciseStrings: ThemeStrings = {
     `~${caloriesPerWorkout * count} cal (${caloriesPerWorkout} cal/workout x ${count})`,
   adjustCountLabel: 'Adjust workout count:',
   successLabel: (count: number) =>
-    `${count} workout${count !== 1 ? 's' : ''} logged! Keep grinding! 💪`,
+    `${count} workout${count !== 1 ? 's' : ''} logged! Keep moving! 🔥`,
   pointsLabel: (count: number) =>
     `+${count} point${count !== 1 ? 's' : ''}`,
 
@@ -63,9 +63,9 @@ export const exerciseStrings: ThemeStrings = {
   healthWarningThreshold: 4,
   healthWarningTitle: 'OVERTRAINING WARNING',
   healthWarningText: (count: number) =>
-    `${count} workouts in one session? That's some serious volume. Are you sure you're not overtraining? Rest and recovery are part of the process, bro.`,
+    `${count} workouts in one session? That's some serious volume. Are you sure you're not overtraining? Rest and recovery are part of the process.`,
   healthConfirmText: (count: number) =>
-    `Yes, I really did ${count} workouts. Beast mode.`,
+    `Yes, I really did ${count} workouts. I'm built different.`,
 
   // Highscore
   highscoreTitle: 'LEADERBOARD OF GAINS',
@@ -76,15 +76,20 @@ export const exerciseStrings: ThemeStrings = {
     'WHO SKIPPED LEG DAY?',
     'SWEAT LEADERBOARD',
     'FLEX OFF RANKINGS',
-    'WHO\'S ACTUALLY GOING TO THE GYM?',
+    'WHO\'S ACTUALLY WORKING OUT?',
     'THE GRIND NEVER STOPS',
     'NO PAIN NO GAIN BOARD',
     'WHO\'S EARNING THEIR PROTEIN?',
     'BEASTMODE RANKINGS',
-    'REP COUNTER HALL OF FAME',
     'WHO SHOWED UP THIS WEEK?',
-    'THE SWOLE PATROL RANKINGS',
-    'ARE YOU EVEN LIFTING?',
+    'ARE YOU EVEN TRYING?',
+    'WHO RAN THE MOST KM?',
+    'CARDIO KINGS & QUEENS',
+    'MILE AFTER MILE AFTER MILE',
+    'DID YOU EVEN BREAK A SWEAT?',
+    'THE STRAVA STALKER BOARD',
+    'WHO NEEDS A REST DAY?',
+    'STEPS, REPS & GLORY',
   ],
   noMealsThisWeek: 'No workouts logged this week. Rest day for everyone?',
   noScoresYet: 'No gains tracked yet. Be the first to log a workout!',
@@ -97,18 +102,18 @@ export const exerciseStrings: ThemeStrings = {
   chainThreshold: 3,
 
   // New card
-  crateAppearText: 'A gym locker has appeared from your weekly training!',
-  openCrateButton: 'OPEN THE LOCKER',
+  crateAppearText: 'A reward has appeared from your weekly training!',
+  openCrateButton: 'OPEN THE REWARD',
 
   // Shop
-  shopTitle: 'THE GYM PRO SHOP',
+  shopTitle: 'THE PRO SHOP',
   currencyName: 'Protein Coin',
   currencyCode: 'PC',
   currencyTagline: 'Earned through sweat. Spent on gains.',
 
   // Gallery
   galleryTitle: 'WEEKLY WORKOUT LOG',
-  galleryLifetimeScore: (total: number) => `LIFETIME GAINS SCORE: ${String(total).padStart(4, '0')} POINTS`,
+  galleryLifetimeScore: (total: number) => `LIFETIME SCORE: ${String(total).padStart(4, '0')} POINTS`,
   galleryAddButton: '+ LOG NEW WORKOUT',
   galleryEmpty: 'NO WORKOUTS RECORDED YET.',
   galleryEmptySub: 'UPLOAD YOUR FIRST WORKOUT TO GET STARTED!',
@@ -116,40 +121,43 @@ export const exerciseStrings: ThemeStrings = {
 
   // Feed
   feedTitle: 'WORKOUT FEED — ALL SESSIONS',
-  feedCommunityCount: (total: number) => `COMMUNITY WORKOUT COUNT: ${String(total).padStart(4, '0')} 💪`,
+  feedCommunityCount: (total: number) => `COMMUNITY WORKOUT COUNT: ${String(total).padStart(4, '0')} 🔥`,
   feedAddButton: '+ LOG WORKOUT',
   feedEmpty: 'NO WORKOUTS YET. BE THE FIRST TO LOG A SESSION!',
 
   // Battle messages
   victoryMessages: [
-    'ABSOLUTE GAINS! YOU CRUSHED IT!',
-    'THEY SKIPPED LEG DAY... YOU DIDN\'T!',
+    'ABSOLUTE DOMINANCE! YOU CRUSHED IT!',
+    'THEY COULDN\'T KEEP UP WITH YOUR PACE!',
     'PR ACHIEVED! FLAWLESS VICTORY!',
-    'THEY COULDN\'T EVEN LIFT YOUR WARM-UP!',
+    'YOU LEFT THEM IN YOUR DUST!',
     'BEAST MODE ACTIVATED!',
-    'REP AFTER REP OF PURE DOMINANCE!',
-    'THEY NEED A SPOTTER... AND A THERAPIST!',
-    'PUMPED UP AND POWERED THROUGH!',
-    'NO REST DAYS FOR CHAMPIONS!',
-    'SWOLE PATROL REPORTING FOR DUTY!',
+    'OUTRAN, OUTLIFTED, OUTCLASSED!',
+    'THEY NEED A RECOVERY DAY AFTER THAT!',
+    'POWERED THROUGH LIKE A CHAMPION!',
+    'NO REST DAYS FOR WINNERS!',
+    'CROSSED THE FINISH LINE FIRST!',
+    'THAT WAS A SPRINT FINISH FOR THE AGES!',
+    'PEDAL TO THE METAL! UNSTOPPABLE!',
   ],
   defeatMessages: [
-    'YOU GOT OUTLIFTED!',
-    'BACK TO THE BENCH, ROOKIE.',
-    'THEY HAD BETTER FORM...',
+    'YOU GOT OUTPACED!',
+    'BACK TO TRAINING, ROOKIE.',
+    'THEY HAD BETTER ENDURANCE...',
     'OVERWORKED AND OUTMATCHED!',
-    'TIME TO RECONSIDER YOUR ROUTINE!',
-    'YOUR MUSCLES FAILED THE REP CHECK!',
-    'SOMEONE SKIPPED THEIR PRE-WORKOUT...',
-    'THAT WAS HEAVY... FOR YOU.',
-    'DROPPED THE WEIGHT ON THAT ONE!',
-    'SPOTTERLESS AND SORRY!',
+    'TIME TO CHANGE UP YOUR ROUTINE!',
+    'THEY BLEW PAST YOU ON THE LAST LAP!',
+    'SOMEONE FORGOT THEIR PRE-WORKOUT...',
+    'YOU HIT THE WALL ON THAT ONE!',
+    'DROPPED OFF THE PACE!',
+    'BONKED HARD! NEED MORE FUEL!',
+    'THEY HAD MORE IN THE TANK!',
   ],
   drawMessages: [
     'MUTUAL EXHAUSTION... RESPECT.',
-    'BOTH SIDES HIT FAILURE!',
-    'A TIE? NO ONE GOES HOME SWOLE!',
-    'NOBODY GETS THE LAST REP!',
+    'BOTH SIDES HIT THE WALL!',
+    'A TIE? NOBODY GETS THE PODIUM!',
+    'PHOTO FINISH — TOO CLOSE TO CALL!',
   ],
   victoryEmojis: ['💪', '🎉', '🟡', '🔥', '⭐', '🏆', '💥'],
   tauntPresets: [
@@ -158,13 +166,13 @@ export const exerciseStrings: ThemeStrings = {
     { label: '💀', text: '💀' },
     { label: '😂', text: '😂' },
     { label: '🏋️', text: '🏋️' },
-    { label: '💩', text: '💩' },
+    { label: '🏃', text: '🏃💨' },
     { label: 'GG', text: 'GG!' },
-    { label: 'RIP', text: 'R.I.P. your gains' },
+    { label: 'RIP', text: 'R.I.P. your PR' },
     { label: 'WOW', text: 'WOW what a move!' },
     { label: 'OOF', text: 'OOF that hurt...' },
-    { label: '???', text: 'What are you doing?!' },
-    { label: 'BRO', text: 'Do you even lift, bro?' },
+    { label: 'BYE', text: 'See you at the finish line!' },
+    { label: 'LOL', text: 'Did you even warm up?!' },
   ],
 
   // Battle empty states
@@ -174,14 +182,16 @@ export const exerciseStrings: ThemeStrings = {
 
   // Loading messages
   lobbyLoadingMessages: [
-    'BICEPS ARE GROWING...',
+    'LACING UP THE SHOES...',
     'LOADING THE SQUAT RACK...',
     'MIXING THE PRE-WORKOUT...',
-    'CHALKING UP THE HANDS...',
+    'INFLATING THE TIRES...',
     'WARMING UP THE MUSCLES...',
     'CONSULTING THE GAINS GODS...',
-    'REPPING OUT THE DATA...',
     'STRETCHING THE HAMSTRINGS...',
+    'CHECKING THE STRAVA...',
+    'CALIBRATING THE GARMIN...',
+    'FINDING THE CADENCE...',
   ],
 
   // Misc UI
