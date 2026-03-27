@@ -115,7 +115,13 @@ body {
   min-width: 0;
 }
 
-@media (max-width: 540px) {
+/* Mobile menu - hidden on desktop */
+.mobile-menu-wrapper {
+  display: none;
+  position: relative;
+}
+
+@media (max-width: 640px) {
   .amiga-menubar__title {
     display: none;
   }
@@ -124,6 +130,12 @@ body {
   }
   .amiga-menubar__item {
     font-size: 8px;
+  }
+  .desktop-nav {
+    display: none !important;
+  }
+  .mobile-menu-wrapper {
+    display: block;
   }
 }
 

@@ -4,6 +4,7 @@ import { JerryMode } from '@/components/ui/JerryMode'
 import { NameSetter } from '@/components/ui/NameSetter'
 import { AboutModal } from '@/components/ui/AboutModal'
 import { ChallengeNavLink } from '@/components/ui/ChallengeNavLink'
+import { MobileMenu } from '@/components/ui/MobileMenu'
 import theme from '@/theme'
 import './globals.css'
 
@@ -36,14 +37,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <nav className="amiga-menubar">
             <span className="amiga-menubar__title">{theme.strings.menubarTitle}<AboutModal /></span>
             <div className="amiga-menubar__spacer" />
+            {/* Always visible */}
             <Link href="/" className="amiga-menubar__item">LOG</Link>
-            <Link href="/feed" className="amiga-menubar__item">FEED</Link>
-            <Link href="/highscore" className="amiga-menubar__item">HIGHSCORE</Link>
-            <Link href="/battle" className="amiga-menubar__item">BATTLE</Link>
             <ChallengeNavLink />
-            <Link href="/progress" className="amiga-menubar__item">PROGRESS</Link>
-            <Link href="/shop" className="amiga-menubar__item">SHOP</Link>
+            {/* Desktop only */}
+            <Link href="/feed" className="amiga-menubar__item desktop-nav">FEED</Link>
+            <Link href="/highscore" className="amiga-menubar__item desktop-nav">HIGHSCORE</Link>
+            <Link href="/battle" className="amiga-menubar__item desktop-nav">BATTLE</Link>
+            <Link href="/progress" className="amiga-menubar__item desktop-nav">PROGRESS</Link>
+            <Link href="/shop" className="amiga-menubar__item desktop-nav">SHOP</Link>
             <JerryMode />
+            {/* Mobile hamburger */}
+            <MobileMenu />
           </nav>
           <div className="amiga-menubar" style={{ borderTop: 'none', justifyContent: 'flex-end', padding: '2px 8px' }}>
             <NameSetter />
