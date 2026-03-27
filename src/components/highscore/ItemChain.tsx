@@ -9,7 +9,11 @@ interface Props {
 const MEDALS = ['\u{1F947}', '\u{1F948}', '\u{1F949}'] // gold, silver, bronze
 const MAX_DISPLAY = 52 // cap at 1 year visually
 
+const isExercise = process.env.NEXT_PUBLIC_THEME === 'exercise'
+
 function SausageLink({ index }: { index: number }) {
+  if (isExercise) return <DumbbellLink index={index} />
+
   // Alternate slight shade for visual rhythm
   const body = index % 2 === 0 ? '#C03A18' : '#B83010'
   const cap = index % 2 === 0 ? '#8C2508' : '#7A1E04'
@@ -34,6 +38,34 @@ function SausageLink({ index }: { index: number }) {
       {/* skin crinkle lines */}
       <line x1="14" y1="2" x2="14" y2="16" stroke={cap} strokeWidth="1" opacity="0.4" />
       <line x1="22" y1="2" x2="22" y2="16" stroke={cap} strokeWidth="1" opacity="0.4" />
+    </svg>
+  )
+}
+
+function DumbbellLink({ index }: { index: number }) {
+  const bar = index % 2 === 0 ? '#999999' : '#888888'
+  const plate = index % 2 === 0 ? '#4A90D9' : '#3D7DC0'
+  const plateDark = index % 2 === 0 ? '#3570B0' : '#2A5F98'
+  const highlight = '#B0C8E8'
+
+  return (
+    <svg
+      width="36"
+      height="18"
+      viewBox="0 0 36 18"
+      style={{ display: 'block', imageRendering: 'pixelated' }}
+    >
+      {/* left weight plate */}
+      <rect x="1" y="2" width="8" height="14" rx="2" fill={plate} />
+      <rect x="1" y="2" width="8" height="4" rx="2" fill={highlight} opacity="0.2" />
+      <rect x="2" y="3" width="2" height="12" fill={plateDark} opacity="0.4" />
+      {/* bar */}
+      <rect x="9" y="7" width="18" height="4" rx="1" fill={bar} />
+      <rect x="9" y="7" width="18" height="1.5" rx="1" fill={highlight} opacity="0.3" />
+      {/* right weight plate */}
+      <rect x="27" y="2" width="8" height="14" rx="2" fill={plate} />
+      <rect x="27" y="2" width="8" height="4" rx="2" fill={highlight} opacity="0.2" />
+      <rect x="32" y="3" width="2" height="12" fill={plateDark} opacity="0.4" />
     </svg>
   )
 }
