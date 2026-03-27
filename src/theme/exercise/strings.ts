@@ -18,7 +18,7 @@ export const exerciseStrings: ThemeStrings = {
   // Home page
   windowTitle: 'LOG YOUR WORKOUT',
   uploadInstruction: 'Upload a screenshot or photo from your workout',
-  uploadSubInstruction: 'Supports Strava, Apple Health, Garmin, and photos from runs, gym sessions, rides & more',
+  uploadSubInstruction: '',
   uploadDropzoneEmoji: '💪',
   uploadDropzoneLabel: 'Drop your workout photo here',
   namePrompt: 'Enter your athlete name:',
