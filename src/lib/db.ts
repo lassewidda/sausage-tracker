@@ -266,7 +266,7 @@ export function groupByWeek(meals: Meal[]): WeekGroup[] {
 export interface PlayerWeekData {
   playerName: string
   weekKey: string
-  meals: { description: string | null; itemCount: number; estimatedGrams: number | null }[]
+  meals: { description: string | null; itemCount: number; estimatedGrams: number | null; exerciseType: string | null }[]
   totalItems: number
   totalGrams: number
   chainLength: number
@@ -278,7 +278,7 @@ export async function getPlayerWeekData(weekKey: string): Promise<PlayerWeekData
 
   const [mealRows, chainRows, prevRows] = await Promise.all([
     sql`
-      SELECT player_name, ai_description, item_count, estimated_grams
+      SELECT player_name, ai_description, item_count, estimated_grams, exercise_type
       FROM meals WHERE week_key = ${weekKey}
       ORDER BY player_name, created_at
     `,
@@ -345,6 +345,7 @@ export async function getPlayerWeekData(weekKey: string): Promise<PlayerWeekData
       description: r.ai_description as string | null,
       itemCount: count,
       estimatedGrams: r.estimated_grams as number | null,
+      exerciseType: (r.exercise_type as string | null) ?? null,
     })
     pd.totalItems += count
     pd.totalGrams += grams

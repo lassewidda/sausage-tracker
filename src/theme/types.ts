@@ -161,6 +161,8 @@ export interface WeeklySummaryPromptData {
   mealCount: number
   chainStatus: string
   trend: string
+  exerciseBreakdown?: string
+  challengeStatus?: string
 }
 
 export interface BattleSummaryPromptData {

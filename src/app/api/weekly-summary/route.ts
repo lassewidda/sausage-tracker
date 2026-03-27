@@ -7,6 +7,7 @@ import {
   getSummarizedWeeks,
   getWeekKey,
   formatWeekLabel,
+  getChallengeView,
 } from '@/lib/db'
 import { generateWeeklySummary } from '@/lib/claude'
 
@@ -61,8 +62,20 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const weekLabel = formatWeekLabel(weekKey)
+
+    // Get challenge data for this week
+    let challengeView: Awaited<ReturnType<typeof getChallengeView>> | null = null
+    try {
+      challengeView = await getChallengeView(weekKey)
+    } catch { /* no challenge table yet */ }
+
+    const challengeDesc = challengeView?.challenge
+      ? `${challengeView.challenge.bingoItems.join(', ')} + exercise requirements`
+      : undefined
+
     const summaries = await Promise.all(
       playerData.map(async (pd) => {
+        const participant = challengeView?.participants?.find(p => p.playerName === pd.playerName)
         const summaryText = await generateWeeklySummary({
           playerName: pd.playerName,
           weekLabel,
@@ -71,6 +84,8 @@ export async function POST(request: Request): Promise<NextResponse> {
           totalGrams: pd.totalGrams,
           chainLength: pd.chainLength,
           prevWeekItems: pd.prevWeekItems,
+          challengeCompleted: participant?.isComplete ?? false,
+          challengeDescription: challengeDesc,
         })
 
         return insertWeeklySummary({

@@ -53,7 +53,10 @@ Create a JSON card with these fields:
 
 Make it entertaining with fitness culture references. Scale stats to reward consistent training.`,
 
-  weeklySummaryPrompt: (data: WeeklySummaryPromptData) => `Write a weekly workout summary in a fun, fitness-enthusiast tone. Adapt to what the player actually did — if they ran, use running jargon (splits, pace, PRs, negative splits, bonking, hitting the wall). If they lifted, use gym jargon (gains, PRs, progressive overload, swole). If they did a mix, blend both.
+  weeklySummaryPrompt: (data: WeeklySummaryPromptData) => `Write a weekly workout summary in a fun, fitness-enthusiast tone. Adapt the tone to what the player actually did:
+- If mostly cardio (running, cycling, swimming): use running/cardio jargon (splits, pace, PRs, negative splits, bonking, hitting the wall, KMs, cadence)
+- If mostly strength (lifting, gym): use gym jargon (gains, PRs, progressive overload, volume, sets)
+- If a mix: blend both styles
 
 Player: ${data.playerName}
 Week: ${data.weekLabel}
@@ -64,10 +67,10 @@ Stats:
 - Total workouts: ${data.totalItems}
 - Total estimated calories burned: ${data.totalWeight}
 - Number of sessions: ${data.mealCount}
-- Streak status: ${data.chainStatus}
-- Trend vs last week: ${data.trend}
+- ${data.chainStatus}
+- Trend vs last week: ${data.trend}${data.exerciseBreakdown ? `\n- ${data.exerciseBreakdown}` : ''}${data.challengeStatus ? `\n- ${data.challengeStatus}` : ''}
 
-Write 2-3 sentences max. Reference specific workouts they did. If they trained a lot, hype them up. If they slacked, roast them (lovingly). End with a motivational one-liner that fits their exercise style.`,
+Write 2-3 sentences max. Reference specific workouts they did and their exercise type breakdown. Mention the streak if active (${'>'} 1 week). If they completed the weekly challenge, celebrate it. If they trained a lot, hype them up. If they slacked, roast them (lovingly). End with a motivational one-liner that fits their exercise style.`,
 
   battleSummaryPrompt: (data: BattleSummaryPromptData) => `Write a battle summary in the style of an over-the-top sports commentator calling a fitness competition. Mix running commentary, cycling race, and gym competition language depending on the moves used.
 

@@ -111,25 +111,41 @@ export async function rewriteDescriptionForCount(
 export async function generateWeeklySummary(data: {
   playerName: string
   weekLabel: string
-  meals: { description: string | null; itemCount: number; estimatedGrams: number | null }[]
+  meals: { description: string | null; itemCount: number; estimatedGrams: number | null; exerciseType?: string | null }[]
   totalItems: number
   totalGrams: number
   chainLength: number
   prevWeekItems: number
+  challengeCompleted?: boolean
+  challengeDescription?: string
 }): Promise<string> {
   const client = getClient()
 
   const mealList = data.meals
-    .map((m, i) => `  Meal ${i + 1}: ${m.itemCount} item(s), ~${m.estimatedGrams ?? '?'}g — "${m.description ?? 'no description'}"`)
+    .map((m, i) => {
+      const typeLabel = m.exerciseType ? ` [${m.exerciseType.toUpperCase()}]` : ''
+      return `  Workout ${i + 1}${typeLabel}: ${m.itemCount} session(s) — "${m.description ?? 'no description'}"`
+    })
     .join('\n')
 
+  // Count exercise types
+  const cardioCount = data.meals.filter(m => m.exerciseType === 'cardio').length
+  const strengthCount = data.meals.filter(m => m.exerciseType === 'strength').length
+  const exerciseBreakdown = cardioCount > 0 || strengthCount > 0
+    ? `Exercise breakdown: ${cardioCount} cardio, ${strengthCount} strength.${cardioCount > 0 && strengthCount === 0 ? ' All cardio this week!' : strengthCount > 0 && cardioCount === 0 ? ' Pure strength week!' : ' Nice mix of cardio and strength!'}`
+    : undefined
+
   const chainStatus = data.chainLength > 0
-    ? `Active chain: ${data.chainLength} consecutive week(s) with 3+ items.`
-    : 'Chain: BROKEN (failed to reach 3 items this week).'
+    ? `Active streak: ${data.chainLength} consecutive week(s) with 3+ workouts.`
+    : 'Streak: BROKEN (failed to reach 3 workouts this week).'
 
   const trend = data.prevWeekItems > 0
-    ? `Previous week: ${data.prevWeekItems} items. Change: ${data.totalItems > data.prevWeekItems ? '+' : ''}${data.totalItems - data.prevWeekItems}.`
+    ? `Previous week: ${data.prevWeekItems} workouts. Change: ${data.totalItems > data.prevWeekItems ? '+' : ''}${data.totalItems - data.prevWeekItems}.`
     : 'No data from previous week for comparison.'
+
+  const challengeStatus = data.challengeDescription
+    ? `Weekly challenge: ${data.challengeDescription}. ${data.challengeCompleted ? 'COMPLETED!' : 'Not yet completed.'}`
+    : undefined
 
   const prompt = theme.prompts.weeklySummaryPrompt({
     playerName: data.playerName,
@@ -140,6 +156,8 @@ export async function generateWeeklySummary(data: {
     mealCount: data.meals.length,
     chainStatus,
     trend,
+    exerciseBreakdown,
+    challengeStatus,
   })
 
   const message = await client.messages.create({
