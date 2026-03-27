@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { JerryMode } from '@/components/ui/JerryMode'
 import { NameSetter } from '@/components/ui/NameSetter'
 import { AboutModal } from '@/components/ui/AboutModal'
+import { ChallengeNavLink } from '@/components/ui/ChallengeNavLink'
 import theme from '@/theme'
 import './globals.css'
 
@@ -39,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/feed" className="amiga-menubar__item">FEED</Link>
             <Link href="/highscore" className="amiga-menubar__item">HIGHSCORE</Link>
             <Link href="/battle" className="amiga-menubar__item">BATTLE</Link>
-            <Link href="/challenge" className="amiga-menubar__item">CHALLENGE</Link>
+            <ChallengeNavLink />
             <Link href="/progress" className="amiga-menubar__item">PROGRESS</Link>
             <Link href="/shop" className="amiga-menubar__item">SHOP</Link>
             <JerryMode />
