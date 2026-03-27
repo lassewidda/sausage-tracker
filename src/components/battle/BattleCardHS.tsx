@@ -12,6 +12,9 @@ interface Props {
   effects?: BattleEffect[]
 }
 
+const frameColor = '#D4B96B'
+const frameDark = '#8B7435'
+
 export function BattleCardHS({ deckCard, side, isAttacking, isHit, isKo, effects = [] }: Props) {
   const card = deckCard.card
   if (!card) return null
@@ -28,144 +31,153 @@ export function BattleCardHS({ deckCard, side, isAttacking, isHit, isKo, effects
 
   return (
     <div style={{
-      background: theme.gradient,
-      border: `3px solid ${deckCard.isKnockedOut ? '#333' : theme.border}`,
-      borderRadius: '8px',
-      padding: '8px 12px',
+      background: `linear-gradient(135deg, ${frameColor}, #F0E68C, ${frameColor}, ${frameDark})`,
+      borderRadius: '10px',
+      padding: '4px',
       width: '100%',
-      maxWidth: '320px',
+      maxWidth: '340px',
       margin: '0 auto',
       opacity: deckCard.isKnockedOut ? 0.4 : 1,
       animation,
       transition: 'opacity 0.3s',
-      boxShadow: deckCard.isKnockedOut ? 'none' : `0 0 16px ${theme.glow}`,
-      position: 'relative' as const,
+      boxShadow: deckCard.isKnockedOut ? 'none' : `0 2px 12px rgba(0,0,0,0.5), 0 0 8px ${theme.glow}`,
     }}>
-      {/* Header: name + HP */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '6px',
+        background: '#1a1a2e',
+        borderRadius: '7px',
+        overflow: 'hidden',
+        padding: '8px 10px',
       }}>
+        {/* Header: name + HP */}
         <div style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '8px',
-          color: theme.accent,
-          textShadow: `0 0 6px ${theme.glow}`,
-          flex: 1,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '6px',
         }}>
-          {card.weekKey.startsWith('STARTER') && (
-            <span style={{ color: '#ffd700', marginRight: '4px' }}>★</span>
-          )}
-          {card.heroTitle}
-        </div>
-        <div style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '9px',
-          color: hpBarColor,
-          marginLeft: '8px',
-          whiteSpace: 'nowrap',
-          textShadow: isLowHp ? `0 0 8px ${hpBarColor}` : 'none',
-        }}>
-          {deckCard.currentHp}/{card.hp}
-        </div>
-      </div>
-
-      {/* Avatar + stats side by side */}
-      <div style={{
-        display: 'flex',
-        gap: '10px',
-        alignItems: 'center',
-      }}>
-        {/* Avatar */}
-        <div style={{
-          background: 'rgba(0,0,0,0.3)',
-          borderRadius: '4px',
-          overflow: 'hidden',
-          border: `2px solid ${theme.border}44`,
-          flexShrink: 0,
-        }}>
-          <PixelAvatar card={card} theme={theme} size={80} />
-        </div>
-
-        {/* Right side: type, stats, HP bar */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {/* Type */}
           <div style={{
             fontFamily: 'var(--font-pixel)',
-            fontSize: '6px',
-            color: theme.accent,
-            textTransform: 'uppercase',
-            opacity: 0.7,
-            marginBottom: '4px',
+            fontSize: '8px',
+            color: '#FFFFFF',
+            flex: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
           }}>
-            {card.heroType}
+            {card.weekKey.startsWith('STARTER') && (
+              <span style={{ color: '#ffd700', marginRight: '4px' }}>★</span>
+            )}
+            {card.heroTitle}
           </div>
+          <div style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '9px',
+            color: hpBarColor,
+            marginLeft: '8px',
+            whiteSpace: 'nowrap',
+            textShadow: isLowHp ? `0 0 8px ${hpBarColor}` : 'none',
+          }}>
+            {deckCard.currentHp}/{card.hp}
+          </div>
+        </div>
 
-          {/* HP bar */}
-          <div style={{ marginBottom: '6px' }}>
+        {/* Avatar + stats side by side */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          {/* Avatar in picture frame */}
+          <div style={{
+            padding: '3px',
+            background: `linear-gradient(135deg, ${frameDark}, ${frameColor}, ${frameDark})`,
+            borderRadius: '4px',
+            flexShrink: 0,
+          }}>
             <div style={{
-              height: '10px',
-              background: '#0a0a0a',
-              border: `1px solid ${theme.border}44`,
+              background: theme.gradient,
+              borderRadius: '3px',
               overflow: 'hidden',
-              borderRadius: '2px',
-              animation: isLowHp ? 'hp-pulse 1.5s infinite' : 'none',
+              display: 'flex',
+              justifyContent: 'center',
             }}>
-              <div style={{
-                height: '100%',
-                width: `${hpPct}%`,
-                background: hpBarColor,
-                transition: 'width 0.3s steps(10)',
-                boxShadow: `0 0 6px ${hpBarColor}66`,
-              }} />
+              <PixelAvatar card={card} theme={theme} size={80} />
             </div>
           </div>
 
-          {/* Stats */}
-          <div style={{
-            display: 'flex',
-            gap: '8px',
-            fontFamily: 'var(--font-pixel)',
-            fontSize: '6px',
-            color: '#aaa',
-          }}>
-            <span style={{ color: '#FF8800' }}>ATK {card.attack}</span>
-            <span style={{ color: '#4488FF' }}>DEF {card.defense}</span>
-            <span style={{ color: '#FFDD00' }}>SPD {card.speed}</span>
-          </div>
+          {/* Right side: type, HP bar, stats */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {/* Type */}
+            <div style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '6px',
+              color: frameColor,
+              textTransform: 'uppercase',
+              marginBottom: '4px',
+            }}>
+              {card.heroType}
+            </div>
 
-          {/* Effects */}
-          {effects.length > 0 && (
+            {/* HP bar */}
+            <div style={{ marginBottom: '6px' }}>
+              <div style={{
+                height: '10px',
+                background: '#0a0a0a',
+                border: '1px solid #333',
+                overflow: 'hidden',
+                borderRadius: '2px',
+                animation: isLowHp ? 'hp-pulse 1.5s infinite' : 'none',
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${hpPct}%`,
+                  background: hpBarColor,
+                  transition: 'width 0.3s steps(10)',
+                  boxShadow: `0 0 6px ${hpBarColor}66`,
+                }} />
+              </div>
+            </div>
+
+            {/* Stats */}
             <div style={{
               display: 'flex',
-              gap: '4px',
-              flexWrap: 'wrap',
-              marginTop: '4px',
+              gap: '10px',
+              background: '#111122',
+              borderRadius: '3px',
+              padding: '4px 8px',
+              border: '1px solid #333',
             }}>
-              {effects.map(e => {
-                const label = e.effectType.replace('buff_', '+').replace('debuff_', '-').toUpperCase()
-                const isDebuff = e.effectType.startsWith('debuff')
-                return (
-                  <span key={e.id} style={{
-                    fontFamily: 'var(--font-pixel)',
-                    fontSize: '5px',
-                    background: isDebuff ? '#442222' : '#224422',
-                    color: isDebuff ? '#FF6666' : '#66FF66',
-                    padding: '1px 3px',
-                    border: `1px solid ${isDebuff ? '#663333' : '#336633'}`,
-                    borderRadius: '2px',
-                  }}>
-                    {label} {e.effectValue} ({e.remainingTurns}t)
-                  </span>
-                )
-              })}
+              {[
+                { label: 'ATK', value: card.attack, color: '#FF4444' },
+                { label: 'DEF', value: card.defense, color: '#4488FF' },
+                { label: 'SPD', value: card.speed, color: '#44CC44' },
+              ].map(s => (
+                <div key={s.label} style={{ textAlign: 'center', flex: 1 }}>
+                  <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '5px', color: s.color }}>{s.label}</div>
+                  <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: '#FFFFFF' }}>{s.value}</div>
+                </div>
+              ))}
             </div>
-          )}
+
+            {/* Effects */}
+            {effects.length > 0 && (
+              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+                {effects.map(e => {
+                  const label = e.effectType.replace('buff_', '+').replace('debuff_', '-').toUpperCase()
+                  const isDebuff = e.effectType.startsWith('debuff')
+                  return (
+                    <span key={e.id} style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: '5px',
+                      background: isDebuff ? '#442222' : '#224422',
+                      color: isDebuff ? '#FF6666' : '#66FF66',
+                      padding: '1px 3px',
+                      border: `1px solid ${isDebuff ? '#663333' : '#336633'}`,
+                      borderRadius: '2px',
+                    }}>
+                      {label} {e.effectValue} ({e.remainingTurns}t)
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

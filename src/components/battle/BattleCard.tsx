@@ -11,6 +11,9 @@ interface Props {
   side: 'left' | 'right'
 }
 
+const frameColor = '#D4B96B'
+const frameDark = '#8B7435'
+
 export function BattleCard({ deckCard, isAttacking, isHit, isKo, side }: Props) {
   const card = deckCard.card
   if (!card) return null
@@ -26,119 +29,118 @@ export function BattleCard({ deckCard, isAttacking, isHit, isKo, side }: Props) 
 
   return (
     <div style={{
-      background: theme.gradient,
-      border: `3px solid ${deckCard.isKnockedOut ? '#333' : theme.border}`,
-      borderRadius: '8px',
-      padding: '8px',
-      width: '160px',
-      position: 'relative' as const,
+      background: `linear-gradient(135deg, ${frameColor}, #F0E68C, ${frameColor}, ${frameDark})`,
+      borderRadius: '10px',
+      padding: '4px',
+      width: '170px',
       opacity: deckCard.isKnockedOut ? 0.4 : 1,
       animation,
       transition: 'opacity 0.3s',
-      boxShadow: deckCard.isKnockedOut ? 'none' : `0 0 12px ${theme.glow}`,
+      boxShadow: deckCard.isKnockedOut ? 'none' : `0 2px 12px rgba(0,0,0,0.5), 0 0 8px ${theme.glow}`,
     }}>
-      {/* Starter badge */}
-      {card.weekKey.startsWith('STARTER') && (
-        <div style={{
-          position: 'absolute',
-          top: '4px',
-          left: '4px',
-          background: '#555',
-          color: '#ffd700',
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '6px',
-          padding: '2px 4px',
-          borderRadius: '2px',
-          zIndex: 2,
-          lineHeight: 1,
-        }}>
-          ★
-        </div>
-      )}
-      {/* Name */}
       <div style={{
-        fontFamily: 'var(--font-pixel)',
-        fontSize: '7px',
-        color: theme.accent,
-        textTransform: 'uppercase',
-        textAlign: 'center',
-        marginBottom: '4px',
-        textShadow: `0 0 6px ${theme.glow}`,
-        whiteSpace: 'nowrap',
+        background: '#1a1a2e',
+        borderRadius: '7px',
         overflow: 'hidden',
-        textOverflow: 'ellipsis',
-      }}
-      title={card.heroTitle}>
-        {card.heroTitle}
-      </div>
-
-      {/* Avatar */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        marginBottom: '4px',
-        background: 'rgba(0,0,0,0.3)',
-        borderRadius: '4px',
-        overflow: 'hidden',
-        border: `1px solid ${theme.border}44`,
+        padding: '6px',
       }}>
-        <PixelAvatar card={card} theme={theme} size={80} />
-      </div>
-
-      {/* Type */}
-      <div style={{
-        fontFamily: 'var(--font-pixel)',
-        fontSize: '6px',
-        color: theme.accent,
-        textAlign: 'center',
-        marginBottom: '4px',
-        textTransform: 'uppercase',
-        opacity: 0.7,
-      }}>
-        {card.heroType}
-      </div>
-
-      {/* HP bar */}
-      <div style={{ marginBottom: '4px' }}>
+        {/* Name */}
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
           fontFamily: 'var(--font-pixel)',
           fontSize: '7px',
-          color: '#aaa',
-          marginBottom: '2px',
-        }}>
-          <span>HP</span>
-          <span>{deckCard.currentHp}/{card.hp}</span>
-        </div>
-        <div style={{
-          height: '8px',
-          background: '#0a0a0a',
-          border: `1px solid ${theme.border}44`,
+          color: '#FFFFFF',
+          textAlign: 'center',
+          marginBottom: '4px',
+          whiteSpace: 'nowrap',
           overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          position: 'relative',
+        }} title={card.heroTitle}>
+          {card.weekKey.startsWith('STARTER') && (
+            <span style={{ color: '#ffd700', marginRight: '3px' }}>★</span>
+          )}
+          {card.heroTitle}
+        </div>
+
+        {/* Avatar in picture frame */}
+        <div style={{
+          padding: '3px',
+          background: `linear-gradient(135deg, ${frameDark}, ${frameColor}, ${frameDark})`,
+          borderRadius: '4px',
+          marginBottom: '6px',
         }}>
           <div style={{
-            height: '100%',
-            width: `${hpPct}%`,
-            background: hpBarColor,
-            transition: 'width 0.3s steps(10)',
-            boxShadow: `0 0 4px ${hpBarColor}66`,
-          }} />
+            background: theme.gradient,
+            borderRadius: '3px',
+            display: 'flex',
+            justifyContent: 'center',
+            overflow: 'hidden',
+          }}>
+            <PixelAvatar card={card} theme={theme} size={80} />
+          </div>
         </div>
-      </div>
 
-      {/* Stats row */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-around',
-        fontFamily: 'var(--font-pixel)',
-        fontSize: '6px',
-        color: '#888',
-        marginTop: '4px',
-      }}>
-        <span>ATK {card.attack}</span>
-        <span>DEF {card.defense}</span>
-        <span>SPD {card.speed}</span>
+        {/* Type */}
+        <div style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '6px',
+          color: frameColor,
+          textAlign: 'center',
+          marginBottom: '4px',
+          textTransform: 'uppercase',
+        }}>
+          {card.heroType}
+        </div>
+
+        {/* HP bar */}
+        <div style={{ marginBottom: '6px' }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '7px',
+            marginBottom: '2px',
+          }}>
+            <span style={{ color: '#FFFFFF' }}>HP</span>
+            <span style={{ color: hpBarColor }}>{deckCard.currentHp}/{card.hp}</span>
+          </div>
+          <div style={{
+            height: '8px',
+            background: '#0a0a0a',
+            border: '1px solid #333',
+            borderRadius: '2px',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${hpPct}%`,
+              background: hpBarColor,
+              transition: 'width 0.3s steps(10)',
+              boxShadow: `0 0 4px ${hpBarColor}66`,
+            }} />
+          </div>
+        </div>
+
+        {/* Stats row */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-around',
+          background: '#111122',
+          borderRadius: '3px',
+          padding: '4px 2px',
+          border: '1px solid #333',
+        }}>
+          {[
+            { label: 'ATK', value: card.attack, color: '#FF4444' },
+            { label: 'DEF', value: card.defense, color: '#4488FF' },
+            { label: 'SPD', value: card.speed, color: '#44CC44' },
+          ].map(s => (
+            <div key={s.label} style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '5px', color: s.color }}>{s.label}</div>
+              <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '9px', color: '#FFFFFF' }}>{s.value}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
