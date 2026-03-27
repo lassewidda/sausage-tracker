@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* Mobile hamburger */}
             <MobileMenu />
           </nav>
-          <div className="amiga-menubar" style={{ borderTop: 'none', justifyContent: 'flex-end', padding: '2px 8px' }}>
+          <div className="amiga-menubar" style={{ borderTop: 'none', justifyContent: 'flex-start', padding: '2px 8px' }}>
             <NameSetter />
           </div>
           {children}
