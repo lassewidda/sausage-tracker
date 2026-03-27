@@ -58,12 +58,13 @@ export function MobileMenu() {
         style={{
           fontFamily: 'var(--font-pixel)',
           fontSize: '12px',
-          background: 'none',
-          border: 'none',
-          color: 'inherit',
+          background: 'var(--amiga-black, #000)',
+          border: '1px solid var(--crt-amber, #ffaa00)',
+          color: 'var(--crt-amber, #ffaa00)',
           cursor: 'pointer',
           padding: '4px 8px',
           lineHeight: 1,
+          borderRadius: '3px',
         }}
       >
         {open ? '✕' : '☰'}
