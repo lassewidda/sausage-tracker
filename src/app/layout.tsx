@@ -39,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/feed" className="amiga-menubar__item">FEED</Link>
             <Link href="/highscore" className="amiga-menubar__item">HIGHSCORE</Link>
             <Link href="/battle" className="amiga-menubar__item">BATTLE</Link>
+            <Link href="/challenge" className="amiga-menubar__item">CHALLENGE</Link>
             <Link href="/shop" className="amiga-menubar__item">SHOP</Link>
             <JerryMode />
           </nav>

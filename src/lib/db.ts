@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, ChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleTaunt, BattleStats, BattleState, PlayerItem, BattleEffect, ItemEffectType } from '@/types'
+import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, ChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleTaunt, BattleStats, BattleState, PlayerItem, BattleEffect, ItemEffectType, WeeklyChallenge, ChallengePhoto, ChallengeParticipant, ChallengeView, ChallengeLeaderboardEntry } from '@/types'
 
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
@@ -1394,4 +1394,226 @@ export async function recordShopPurchase(playerName: string, itemSlug: string, p
     VALUES (${playerName}, ${itemSlug}, ${price})
   `
   await sql.end()
+}
+
+// ── Weekly Challenges ──────────────────────────────────────────
+
+function rowToChallenge(row: any): WeeklyChallenge {
+  return {
+    id: row.id,
+    weekKey: row.week_key,
+    bingoItems: row.bingo_items ?? [],
+    exerciseMinimum: row.exercise_minimum ?? 3,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  }
+}
+
+function rowToChallengePhoto(row: any): ChallengePhoto {
+  return {
+    id: row.id,
+    challengeId: row.challenge_id,
+    playerName: row.player_name,
+    bingoItem: row.bingo_item,
+    imageUrl: row.image_url,
+    blobPath: row.blob_path,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  }
+}
+
+export async function upsertChallenge(weekKey: string, bingoItems: string[], exerciseMinimum: number): Promise<WeeklyChallenge> {
+  const sql = getDb()
+  const rows = await sql`
+    INSERT INTO weekly_challenges (week_key, bingo_items, exercise_minimum)
+    VALUES (${weekKey}, ${bingoItems}, ${exerciseMinimum})
+    ON CONFLICT (week_key) DO UPDATE SET bingo_items = ${bingoItems}, exercise_minimum = ${exerciseMinimum}
+    RETURNING *
+  `
+  await sql.end()
+  return rowToChallenge(rows[0])
+}
+
+export async function getChallengeByWeek(weekKey: string): Promise<WeeklyChallenge | null> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT * FROM weekly_challenges WHERE week_key = ${weekKey}
+  `
+  await sql.end()
+  return rows.length > 0 ? rowToChallenge(rows[0]) : null
+}
+
+export async function getAllChallenges(): Promise<WeeklyChallenge[]> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT * FROM weekly_challenges ORDER BY week_key DESC
+  `
+  await sql.end()
+  return rows.map(rowToChallenge)
+}
+
+export async function deleteChallenge(weekKey: string): Promise<boolean> {
+  const sql = getDb()
+  const rows = await sql`
+    DELETE FROM weekly_challenges WHERE week_key = ${weekKey} RETURNING id
+  `
+  await sql.end()
+  return rows.length > 0
+}
+
+export async function upsertChallengePhoto(
+  challengeId: string,
+  playerName: string,
+  bingoItem: string,
+  imageUrl: string,
+  blobPath: string
+): Promise<ChallengePhoto> {
+  const sql = getDb()
+  const rows = await sql`
+    INSERT INTO challenge_photos (challenge_id, player_name, bingo_item, image_url, blob_path)
+    VALUES (${challengeId}, ${playerName}, ${bingoItem}, ${imageUrl}, ${blobPath})
+    ON CONFLICT (challenge_id, player_name, bingo_item) DO UPDATE
+      SET image_url = ${imageUrl}, blob_path = ${blobPath}
+    RETURNING *
+  `
+  await sql.end()
+  return rowToChallengePhoto(rows[0])
+}
+
+export async function deleteChallengePhoto(id: string, playerName: string): Promise<boolean> {
+  const sql = getDb()
+  const rows = await sql`
+    DELETE FROM challenge_photos WHERE id = ${id} AND player_name = ${playerName} RETURNING id
+  `
+  await sql.end()
+  return rows.length > 0
+}
+
+export async function getChallengeView(weekKey: string): Promise<ChallengeView> {
+  const sql = getDb()
+
+  // Get the challenge
+  const challengeRows = await sql`
+    SELECT * FROM weekly_challenges WHERE week_key = ${weekKey}
+  `
+
+  if (challengeRows.length === 0) {
+    await sql.end()
+    return { challenge: null, participants: [] }
+  }
+
+  const challenge = rowToChallenge(challengeRows[0])
+
+  // Get all photos for this challenge
+  const photoRows = await sql`
+    SELECT * FROM challenge_photos WHERE challenge_id = ${challenge.id}
+  `
+  const photos = photoRows.map(rowToChallengePhoto)
+
+  // Get exercise counts from meals for this week
+  const exerciseRows = await sql`
+    SELECT player_name, SUM(item_count)::int AS exercise_count
+    FROM meals WHERE week_key = ${weekKey}
+    GROUP BY player_name
+  `
+
+  await sql.end()
+
+  // Build exercise map
+  const exerciseMap = new Map<string, number>()
+  for (const row of exerciseRows) {
+    exerciseMap.set(row.player_name as string, row.exercise_count as number)
+  }
+
+  // Collect all unique players
+  const playerSet = new Set<string>()
+  for (const photo of photos) playerSet.add(photo.playerName)
+  Array.from(exerciseMap.keys()).forEach(name => playerSet.add(name))
+
+  // Build participants
+  const participants: ChallengeParticipant[] = Array.from(playerSet).map(playerName => {
+    const playerPhotos = photos.filter(p => p.playerName === playerName)
+    const completedBingoItems = playerPhotos.map(p => p.bingoItem)
+    const exerciseCount = exerciseMap.get(playerName) ?? 0
+    const allBingoDone = challenge.bingoItems.every(item => completedBingoItems.includes(item))
+    const exerciseMet = exerciseCount >= challenge.exerciseMinimum
+    return {
+      playerName,
+      photos: playerPhotos,
+      exerciseCount,
+      completedBingoItems,
+      isComplete: allBingoDone && exerciseMet,
+    }
+  })
+
+  // Sort: completed first, then by exercise count desc, then alphabetically
+  participants.sort((a, b) => {
+    if (a.isComplete !== b.isComplete) return a.isComplete ? -1 : 1
+    if (a.exerciseCount !== b.exerciseCount) return b.exerciseCount - a.exerciseCount
+    return a.playerName.localeCompare(b.playerName)
+  })
+
+  return { challenge, participants }
+}
+
+export async function getChallengeLeaderboard(): Promise<ChallengeLeaderboardEntry[]> {
+  const sql = getDb()
+
+  // Get all challenges
+  const challenges = await sql`SELECT * FROM weekly_challenges`
+
+  if (challenges.length === 0) {
+    await sql.end()
+    return []
+  }
+
+  // Get all photos grouped by challenge
+  const allPhotos = await sql`SELECT * FROM challenge_photos`
+
+  // Get exercise counts per player per week
+  const exerciseRows = await sql`
+    SELECT player_name, week_key, SUM(item_count)::int AS exercise_count
+    FROM meals
+    GROUP BY player_name, week_key
+  `
+
+  await sql.end()
+
+  // Build exercise map: weekKey -> playerName -> count
+  const exerciseMap = new Map<string, Map<string, number>>()
+  for (const row of exerciseRows) {
+    const wk = row.week_key as string
+    const pn = row.player_name as string
+    if (!exerciseMap.has(wk)) exerciseMap.set(wk, new Map())
+    exerciseMap.get(wk)!.set(pn, row.exercise_count as number)
+  }
+
+  // For each challenge, determine which players completed it
+  const completionCount = new Map<string, number>()
+
+  for (const ch of challenges) {
+    const challenge = rowToChallenge(ch)
+    const challengePhotos = allPhotos.filter((p: any) => p.challenge_id === challenge.id).map(rowToChallengePhoto)
+    const weekExercise = exerciseMap.get(challenge.weekKey) ?? new Map()
+
+    // Find all players who have any involvement
+    const playerSet = new Set<string>()
+    for (const p of challengePhotos) playerSet.add(p.playerName)
+    Array.from(weekExercise.keys()).forEach(name => playerSet.add(name))
+
+    Array.from(playerSet).forEach(playerName => {
+      const playerPhotos = challengePhotos.filter(p => p.playerName === playerName)
+      const completedItems = playerPhotos.map(p => p.bingoItem)
+      const allBingoDone = challenge.bingoItems.every(item => completedItems.includes(item))
+      const exerciseMet = (weekExercise.get(playerName) ?? 0) >= challenge.exerciseMinimum
+
+      if (allBingoDone && exerciseMet) {
+        completionCount.set(playerName, (completionCount.get(playerName) ?? 0) + 1)
+      }
+    })
+  }
+
+  const entries: ChallengeLeaderboardEntry[] = Array.from(completionCount.entries())
+    .map(([playerName, completedChallenges]) => ({ playerName, completedChallenges }))
+    .sort((a, b) => b.completedChallenges - a.completedChallenges || a.playerName.localeCompare(b.playerName))
+
+  return entries
 }

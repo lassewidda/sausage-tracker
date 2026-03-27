@@ -188,6 +188,44 @@ export interface BattleEffect {
   sourcePlayer: string
 }
 
+// ── Weekly Challenges ──────────────────────────────────────
+
+export interface WeeklyChallenge {
+  id: string
+  weekKey: string
+  bingoItems: string[]
+  exerciseMinimum: number
+  createdAt: string
+}
+
+export interface ChallengePhoto {
+  id: string
+  challengeId: string
+  playerName: string
+  bingoItem: string
+  imageUrl: string
+  blobPath: string
+  createdAt: string
+}
+
+export interface ChallengeParticipant {
+  playerName: string
+  photos: ChallengePhoto[]
+  exerciseCount: number
+  completedBingoItems: string[]
+  isComplete: boolean
+}
+
+export interface ChallengeView {
+  challenge: WeeklyChallenge | null
+  participants: ChallengeParticipant[]
+}
+
+export interface ChallengeLeaderboardEntry {
+  playerName: string
+  completedChallenges: number
+}
+
 export type UploadPhase =
   | 'idle'
   | 'uploading'

@@ -247,6 +247,34 @@ async function migrate() {
     END $$
   `
 
+  // Weekly challenges table
+  await sql`
+    CREATE TABLE IF NOT EXISTS weekly_challenges (
+      id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      week_key         TEXT NOT NULL UNIQUE,
+      bingo_items      TEXT[] NOT NULL DEFAULT '{}',
+      exercise_minimum INTEGER NOT NULL DEFAULT 3,
+      created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+
+  // Challenge photos table
+  await sql`
+    CREATE TABLE IF NOT EXISTS challenge_photos (
+      id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      challenge_id     UUID NOT NULL REFERENCES weekly_challenges(id) ON DELETE CASCADE,
+      player_name      TEXT NOT NULL,
+      bingo_item       TEXT NOT NULL,
+      image_url        TEXT NOT NULL,
+      blob_path        TEXT NOT NULL,
+      created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE(challenge_id, player_name, bingo_item)
+    )
+  `
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_challenge_photos_challenge ON challenge_photos(challenge_id)`
+  await sql`CREATE INDEX IF NOT EXISTS idx_challenge_photos_player ON challenge_photos(player_name)`
+
   await sql.end()
   console.log('Migration complete.')
 }
