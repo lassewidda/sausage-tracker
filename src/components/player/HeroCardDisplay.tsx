@@ -1,5 +1,8 @@
 import type { HeroCard } from '@/types'
 import theme from '@/theme'
+import { ExerciseCreature } from './ExerciseAvatars'
+
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
 
 interface Props {
   card: HeroCard
@@ -79,7 +82,6 @@ function StatBar({ label, value, max, color, theme }: { label: string; value: nu
 
 export function PixelAvatar({ card, theme, size }: { card: HeroCard; stats?: Props['stats']; theme: TypeTheme; size?: number }) {
   const h = hash(card.heroTitle + card.playerName)
-  const creature = h % 12 // 12 different creature archetypes
   // Use secondary type for detail color variety
   const type2 = card.heroType.split('/')[1]?.trim()
   const detailTheme = type2 ? getTypeTheme(type2) : theme
@@ -87,6 +89,18 @@ export function PixelAvatar({ card, theme, size }: { card: HeroCard; stats?: Pro
   const d = detailTheme.bodyColor // detail/third color
   const bg = theme.bg
   const SIZE = size ?? 160
+
+  if (IS_EXERCISE) {
+    const creature = h % 36 // 36 exercise creature archetypes
+    return (
+      <svg width={SIZE} height={SIZE} viewBox="0 0 32 32" style={{ imageRendering: 'pixelated' }}>
+        <rect width="32" height="32" fill={bg} />
+        <ExerciseCreature creature={creature} b={b} a={a} d={d} bg={bg} />
+      </svg>
+    )
+  }
+
+  const creature = h % 12 // 12 different creature archetypes
 
   // Each creature is a totally different shape drawn on a 32x32 grid
   return (
@@ -676,8 +690,6 @@ function Particles({ theme, name }: { theme: TypeTheme; name: string }) {
     </>
   )
 }
-
-const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
 
 function parseMove(move: string): { name: string; damage: string; pp: string } {
   const match = move.match(/^(.+?)\s*\((\d+)\/(\d+)\)$/)

@@ -123,10 +123,15 @@ body {
 
 @media (max-width: 640px) {
   .amiga-menubar__title {
-    display: none;
+    font-size: 8px;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .amiga-menubar {
-    gap: 8px;
+    gap: 6px;
   }
   .amiga-menubar__item {
     font-size: 8px;

@@ -49,7 +49,7 @@ export function JerryMode() {
       }}
       title="Toggle large text mode for better readability"
     >
-      {enabled ? '👓 JERRY' : '👓'}
+      {enabled ? '👓 BOOMER' : '👓'}
     </button>
   )
 }

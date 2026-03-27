@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -14,8 +14,23 @@ const MENU_ITEMS = [
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false)
+  const [boomerMode, setBoomerMode] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
+
+  useEffect(() => {
+    setBoomerMode(localStorage.getItem('sausage_jerry_mode') === 'true')
+  }, [])
+
+  const toggleBoomer = useCallback(() => {
+    setBoomerMode(prev => {
+      const next = !prev
+      localStorage.setItem('sausage_jerry_mode', String(next))
+      if (next) document.documentElement.classList.add('jerry-mode')
+      else document.documentElement.classList.remove('jerry-mode')
+      return next
+    })
+  }, [])
 
   // Close menu on navigation
   useEffect(() => {
@@ -82,6 +97,22 @@ export function MobileMenu() {
               {item.label}
             </Link>
           ))}
+          <button
+            onClick={toggleBoomer}
+            style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '9px',
+              color: boomerMode ? 'var(--crt-amber, #ffaa00)' : 'var(--amiga-white, #ddd)',
+              textDecoration: 'none',
+              padding: '10px 16px',
+              background: boomerMode ? 'rgba(255, 170, 0, 0.1)' : 'transparent',
+              border: 'none',
+              textAlign: 'left',
+              cursor: 'pointer',
+            }}
+          >
+            👓 {boomerMode ? 'BOOMER ON' : 'BOOMER OFF'}
+          </button>
         </div>
       )}
     </div>
