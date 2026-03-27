@@ -1406,7 +1406,7 @@ function rowToChallenge(row: any): WeeklyChallenge {
     weekKey: row.week_key,
     bingoItems: row.bingo_items ?? [],
     exerciseMinimum: row.exercise_minimum ?? 3,
-    exerciseRequirements: row.exercise_requirements ?? null,
+    exerciseRequirements: typeof row.exercise_requirements === 'string' ? JSON.parse(row.exercise_requirements) : (row.exercise_requirements ?? null),
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
   }
 }
