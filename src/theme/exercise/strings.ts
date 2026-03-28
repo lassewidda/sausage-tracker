@@ -32,7 +32,7 @@ export const exerciseStrings: ThemeStrings = {
   // Tips & rules
   tipsTitle: 'WORKOUT TIPS',
   tipsLines: [
-    'Supported apps: Strava, Apple Health, Nike Run Club, Garmin Connect, Fitbit, Peloton, Strong, JEFIT, Whoop',
+    'Supported apps: Strava, Apple Health, Nike Run Club, Garmin Connect, Fitbit...',
     'You can also upload photos taken during your run, ride, hike, or gym session',
     'Each upload counts as one workout — pick cardio or strength',
     'The clearer the photo, the better the AI detection',
