@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useName } from '@/lib/useName'
 
 export function NameSetter() {
   const { name, setName, loaded } = useName()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
+  const router = useRouter()
 
   if (!loaded) return null
 
@@ -60,27 +62,66 @@ export function NameSetter() {
     )
   }
 
+  if (!name) {
+    return (
+      <button
+        onClick={() => { setDraft(''); setEditing(true) }}
+        style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '7px',
+          textTransform: 'uppercase',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          color: '#AA0000',
+          padding: '0',
+          letterSpacing: '1px',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        [ SET NAME ]
+      </button>
+    )
+  }
+
   return (
-    <button
-      onClick={() => { setDraft(name); setEditing(true) }}
-      style={{
-        fontFamily: 'var(--font-pixel)',
-        fontSize: '7px',
-        textTransform: 'uppercase',
-        background: 'transparent',
-        border: 'none',
-        cursor: 'pointer',
-        color: name ? 'var(--crt-amber)' : '#AA0000',
-        padding: '0',
-        letterSpacing: '1px',
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        maxWidth: '120px',
-        flexShrink: 0,
-      }}
-    >
-      {name ? `PLAYER: ${name}` : '[ SET NAME ]'}
-    </button>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+      <button
+        onClick={() => router.push(`/player/${encodeURIComponent(name)}`)}
+        style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '7px',
+          textTransform: 'uppercase',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          color: 'var(--crt-amber)',
+          padding: '0',
+          letterSpacing: '1px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxWidth: '120px',
+        }}
+      >
+        PLAYER: {name}
+      </button>
+      <button
+        onClick={() => { setDraft(name); setEditing(true) }}
+        style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '7px',
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          color: 'var(--crt-amber)',
+          padding: '0',
+          opacity: 0.5,
+        }}
+        title="Change name"
+      >
+        ✎
+      </button>
+    </div>
   )
 }
