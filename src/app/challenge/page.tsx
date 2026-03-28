@@ -466,14 +466,15 @@ export default function ChallengePage() {
                   flexWrap: 'wrap',
                   gap: '4px',
                 }}>
-                  <div style={{
+                  <a href={`/player/${encodeURIComponent(p.playerName)}`} style={{
                     fontFamily: 'var(--font-pixel)',
                     fontSize: '9px',
                     color: p.isComplete ? '#FFD700' : 'var(--crt-amber)',
                     textTransform: 'uppercase',
+                    textDecoration: 'none',
                   }}>
                     {p.isComplete && '★ '}{p.playerName}
-                  </div>
+                  </a>
                   <ExerciseProgress participant={p} challenge={challenge} />
                 </div>
                 <div style={{

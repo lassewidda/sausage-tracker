@@ -312,14 +312,16 @@ export default function ProgressPage() {
           <div className="stack" style={{ gap: '10px' }}>
             {sortedPlayers.map(({ playerName, days, total }) => (
               <div key={playerName}>
-                <div style={{
+                <a href={`/player/${encodeURIComponent(playerName)}`} style={{
                   fontFamily: 'var(--font-pixel)',
                   fontSize: '7px',
                   color: playerName === name ? 'var(--crt-amber)' : 'var(--amiga-dark-grey)',
                   marginBottom: '3px',
+                  textDecoration: 'none',
+                  display: 'block',
                 }}>
                   {playerName.toUpperCase()} ({total})
-                </div>
+                </a>
                 <Timeline dates={dates} playerDates={days} today={today} size="grid" />
               </div>
             ))}

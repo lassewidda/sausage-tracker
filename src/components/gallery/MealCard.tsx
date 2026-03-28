@@ -72,9 +72,9 @@ export function MealCard({ meal }: MealCardProps) {
           </p>
         )}
         {meal.playerName && meal.playerName !== 'Anonymous' && (
-          <div className="amiga-badge amiga-badge--orange" style={{ fontSize: '8px', padding: '2px 6px' }}>
+          <a href={`/player/${encodeURIComponent(meal.playerName)}`} className="amiga-badge amiga-badge--orange" style={{ fontSize: '8px', padding: '2px 6px', textDecoration: 'none', color: 'inherit' }}>
             {meal.playerName.toUpperCase()}
-          </div>
+          </a>
         )}
         <div className="row row--between">
           <span className="meal-card__date">{dateStr.toUpperCase()}</span>
