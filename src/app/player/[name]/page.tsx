@@ -186,7 +186,7 @@ export default async function PlayerPage({ params }: Props) {
           <div style={{
             fontFamily: 'var(--font-pixel)',
             fontSize: '9px',
-            color: '#AAA',
+            color: 'var(--amiga-dark-grey)',
             letterSpacing: '1px',
           }}>
             {subtitle}
@@ -205,7 +205,7 @@ export default async function PlayerPage({ params }: Props) {
         }}>
           {statCards.map((s, i) => (
             <div key={i} style={{
-              background: '#1a1a2e',
+              background: 'var(--amiga-black)',
               border: `2px solid ${s.accent}`,
               borderRadius: '4px',
               padding: '12px 8px',
@@ -223,7 +223,7 @@ export default async function PlayerPage({ params }: Props) {
               <div style={{
                 fontFamily: 'var(--font-pixel)',
                 fontSize: '7px',
-                color: '#888',
+                color: 'var(--amiga-white)',
                 letterSpacing: '1px',
               }}>
                 {s.label}
@@ -254,7 +254,7 @@ export default async function PlayerPage({ params }: Props) {
                   alignItems: 'center',
                   gap: '8px',
                   padding: '6px 8px',
-                  borderBottom: '1px solid #333',
+                  borderBottom: '1px solid var(--bevel-shadow)',
                   fontFamily: 'var(--font-pixel)',
                   fontSize: '8px',
                   textDecoration: 'none',
@@ -271,10 +271,10 @@ export default async function PlayerPage({ params }: Props) {
                   }}>
                     {badge.label}
                   </span>
-                  <span style={{ color: '#CCC', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <span style={{ color: 'var(--amiga-black)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {desc}
                   </span>
-                  <span style={{ color: '#666', whiteSpace: 'nowrap', fontSize: '7px' }}>
+                  <span style={{ color: 'var(--amiga-dark-grey)', whiteSpace: 'nowrap', fontSize: '7px' }}>
                     {timeAgo(a.createdAt)}
                   </span>
                 </Link>
@@ -301,7 +301,7 @@ export default async function PlayerPage({ params }: Props) {
             <div style={{
               fontFamily: 'var(--font-pixel)',
               fontSize: '10px',
-              color: '#666',
+              color: 'var(--amiga-dark-grey)',
             }}>
               NO BATTLES YET
             </div>
@@ -318,7 +318,7 @@ export default async function PlayerPage({ params }: Props) {
                 <div style={{
                   fontFamily: 'var(--font-pixel)',
                   fontSize: '7px',
-                  color: '#888',
+                  color: 'var(--amiga-dark-grey)',
                 }}>
                   WINS
                 </div>
@@ -326,7 +326,7 @@ export default async function PlayerPage({ params }: Props) {
               <div style={{
                 fontFamily: 'var(--font-pixel)',
                 fontSize: '14px',
-                color: '#666',
+                color: 'var(--amiga-dark-grey)',
               }}>
                 -
               </div>
@@ -341,13 +341,13 @@ export default async function PlayerPage({ params }: Props) {
                 <div style={{
                   fontFamily: 'var(--font-pixel)',
                   fontSize: '7px',
-                  color: '#888',
+                  color: 'var(--amiga-dark-grey)',
                 }}>
                   LOSSES
                 </div>
               </div>
               <div style={{
-                borderLeft: '2px solid #333',
+                borderLeft: '2px solid var(--bevel-shadow)',
                 paddingLeft: '24px',
                 textAlign: 'center',
               }}>
@@ -361,7 +361,7 @@ export default async function PlayerPage({ params }: Props) {
                 <div style={{
                   fontFamily: 'var(--font-pixel)',
                   fontSize: '7px',
-                  color: '#888',
+                  color: 'var(--amiga-dark-grey)',
                 }}>
                   ELO
                 </div>
