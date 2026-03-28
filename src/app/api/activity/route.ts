@@ -42,8 +42,10 @@ export async function GET() {
     } else if (IS_EXERCISE && type) {
       const emoji = type === 'cardio' ? '🏃' : '💪'
       events.push({ text: `${emoji} ${name} just logged ${type.toUpperCase()}`, time, href })
-    } else {
+    } else if (IS_EXERCISE) {
       events.push({ text: `🔥 ${name} logged a workout`, time, href })
+    } else {
+      events.push({ text: `🌭 ${name} logged a meal`, time, href })
     }
   }
 
