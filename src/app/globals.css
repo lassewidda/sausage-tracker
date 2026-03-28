@@ -76,6 +76,8 @@ body {
   flex-shrink: 0;
   flex-wrap: nowrap;
   min-width: 0;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .amiga-menubar__title {
