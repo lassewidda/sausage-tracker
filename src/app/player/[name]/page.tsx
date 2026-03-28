@@ -238,7 +238,7 @@ export default async function PlayerPage({ params }: Props) {
                 ? (a.description.length > 60 ? a.description.slice(0, 57) + '...' : a.description)
                 : (IS_EXERCISE ? 'Exercise session' : 'Meal logged')
               return (
-                <div key={a.id} style={{
+                <Link key={a.id} href={`/feed?week=${encodeURIComponent(a.weekKey)}`} style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
@@ -246,6 +246,7 @@ export default async function PlayerPage({ params }: Props) {
                   borderBottom: '1px solid #333',
                   fontFamily: 'var(--font-pixel)',
                   fontSize: '8px',
+                  textDecoration: 'none',
                 }}>
                   <span style={{
                     background: badge.color,
@@ -265,7 +266,7 @@ export default async function PlayerPage({ params }: Props) {
                   <span style={{ color: '#666', whiteSpace: 'nowrap', fontSize: '7px' }}>
                     {timeAgo(a.createdAt)}
                   </span>
-                </div>
+                </Link>
               )
             })}
           </div>

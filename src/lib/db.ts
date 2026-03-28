@@ -655,6 +655,7 @@ export async function getPlayerProfileData(playerName: string) {
       imageUrl: r.image_url as string,
       description: r.ai_description as string | null,
       exerciseType: r.exercise_type as string | null,
+      weekKey: r.week_key as string,
       createdAt: (r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at) as string,
     })),
     battleStats,
