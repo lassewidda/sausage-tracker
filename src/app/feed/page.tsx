@@ -23,7 +23,7 @@ export default async function FeedPage({ searchParams }: { searchParams: { page?
     const [paginatedResult, weeks, sums] = await Promise.all([
       getMealsPaginated({ page, perPage, weekKey: weekFilter }),
       getAvailableWeeks(),
-      weekFilter ? getWeeklySummaries(weekFilter) : (page === 1 ? getAllWeeklySummaries() : Promise.resolve([])),
+      weekFilter ? getWeeklySummaries(weekFilter) : getAllWeeklySummaries(),
     ])
     meals = paginatedResult.meals
     total = paginatedResult.total
@@ -55,24 +55,38 @@ export default async function FeedPage({ searchParams }: { searchParams: { page?
             {total} {total === 1 ? 'SESSION' : 'SESSIONS'}{weekFilter ? ` IN ${formatWeekLabel(weekFilter).toUpperCase()}` : ' TOTAL'}
           </div>
 
-          {/* Weekly summaries */}
-          {summaries.length > 0 && (
-            <div className="stack" style={{ gap: '12px' }}>
-              {summaries.map((summary) => (
-                <WeeklySummaryCard key={summary.id} summary={summary} />
-              ))}
-            </div>
-          )}
-
           {meals.length === 0 ? (
             <div className="amiga-info" style={{ textAlign: 'center' }}>
               {theme.strings.feedEmpty}
             </div>
           ) : (
             <div className="stack" style={{ gap: '12px' }}>
-              {meals.map((meal) => (
-                <FeedCard key={meal.id} meal={meal} />
-              ))}
+              {(() => {
+                const summaryByWeek = new Map(summaries.map(s => [s.weekKey, s]))
+                const items: React.ReactNode[] = []
+                let lastWeek: string | null = null
+
+                for (const meal of meals) {
+                  if (lastWeek && meal.weekKey !== lastWeek) {
+                    const summary = summaryByWeek.get(lastWeek)
+                    if (summary) {
+                      items.push(<WeeklySummaryCard key={`summary-${summary.id}`} summary={summary} />)
+                    }
+                  }
+                  items.push(<FeedCard key={meal.id} meal={meal} />)
+                  lastWeek = meal.weekKey
+                }
+
+                // Summary for the last week on the page
+                if (lastWeek) {
+                  const summary = summaryByWeek.get(lastWeek)
+                  if (summary) {
+                    items.push(<WeeklySummaryCard key={`summary-${summary.id}`} summary={summary} />)
+                  }
+                }
+
+                return items
+              })()}
             </div>
           )}
 
