@@ -21,9 +21,11 @@ function ExerciseProgress({ participant, challenge }: {
   const typeCounts = participant.exerciseTypeCounts ?? {}
 
   if (IS_EXERCISE && reqs && Object.keys(reqs).length > 0) {
+    const validTypes = Object.entries(reqs).filter(([type]) => type === 'cardio' || type === 'strength')
+    if (validTypes.length === 0) return null
     return (
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontFamily: 'var(--font-pixel)', fontSize: '7px' }}>
-        {Object.entries(reqs).map(([type, required]) => {
+        {validTypes.map(([type, required]) => {
           const count = typeCounts[type] ?? 0
           const met = count >= (required as number)
           return (
@@ -55,8 +57,10 @@ function ChallengeRequirementLabel({ challenge }: { challenge: ChallengeView['ch
   if (!challenge) return null
   const reqs = challenge.exerciseRequirements
   if (IS_EXERCISE && reqs && Object.keys(reqs).length > 0) {
-    const parts = Object.entries(reqs).map(([type, n]) => `${n} ${TYPE_LABELS[type] ?? type.toUpperCase()}`)
-    return <>{`COMPLETE ALL PHOTO BINGO ITEMS + LOG ${parts.join(' + ')}`}</>
+    const parts = Object.entries(reqs)
+      .filter(([type]) => type === 'cardio' || type === 'strength')
+      .map(([type, n]) => `${n} ${TYPE_LABELS[type] ?? type.toUpperCase()}`)
+    if (parts.length > 0) return <>{`COMPLETE ALL PHOTO BINGO ITEMS + LOG ${parts.join(' + ')}`}</>
   }
   return <>COMPLETE ALL PHOTO BINGO ITEMS + LOG {challenge.exerciseMinimum}+ EXERCISES</>
 }
