@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
 
 interface ActivityEvent {
   text: string
   time: string
+  href: string
 }
 
 function timeAgo(dateStr: string): string {
@@ -64,11 +66,17 @@ export function ActivityTicker() {
       textAlign: 'right',
       transition: 'opacity 0.3s',
     }}>
-      <span key={index} style={{
-        animation: 'ticker-fade 4s ease-in-out',
-      }}>
+      <Link
+        key={index}
+        href={event.href}
+        style={{
+          animation: 'ticker-fade 4s ease-in-out',
+          color: 'inherit',
+          textDecoration: 'none',
+        }}
+      >
         {event.text} · {timeAgo(event.time)}
-      </span>
+      </Link>
     </div>
   )
 }

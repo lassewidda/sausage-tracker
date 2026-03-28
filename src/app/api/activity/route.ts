@@ -28,28 +28,31 @@ export async function GET() {
 
   await sql.end()
 
-  const events: { text: string; time: string }[] = []
+  const events: { text: string; time: string; href: string }[] = []
 
   for (const m of recentMeals) {
-    const name = (m.player_name as string).toUpperCase()
+    const playerName = m.player_name as string
+    const name = playerName.toUpperCase()
     const type = m.exercise_type as string | null
     const time = (m.created_at instanceof Date ? m.created_at.toISOString() : m.created_at) as string
+    const href = `/player/${encodeURIComponent(playerName)}`
 
     if (type === 'photo') {
-      events.push({ text: `📸 ${name} uploaded a bingo photo`, time })
+      events.push({ text: `📸 ${name} uploaded a bingo photo`, time, href })
     } else if (IS_EXERCISE && type) {
       const emoji = type === 'cardio' ? '🏃' : '💪'
-      events.push({ text: `${emoji} ${name} just logged ${type.toUpperCase()}`, time })
+      events.push({ text: `${emoji} ${name} just logged ${type.toUpperCase()}`, time, href })
     } else {
-      events.push({ text: `🔥 ${name} logged a workout`, time })
+      events.push({ text: `🔥 ${name} logged a workout`, time, href })
     }
   }
 
   for (const p of recentPhotos) {
-    const name = (p.player_name as string).toUpperCase()
+    const playerName = p.player_name as string
+    const name = playerName.toUpperCase()
     const item = p.bingo_item as string
     const time = (p.created_at instanceof Date ? p.created_at.toISOString() : p.created_at) as string
-    events.push({ text: `📸 ${name} found "${item}" for the challenge`, time })
+    events.push({ text: `📸 ${name} found "${item}" for the challenge`, time, href: `/player/${encodeURIComponent(playerName)}` })
   }
 
   // Sort by time descending, deduplicate, take top 8
