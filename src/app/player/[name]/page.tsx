@@ -1,8 +1,8 @@
 import { getHeroCard, insertHeroCard, getPlayerAllTimeStats, getPlayerProfileData, getWeekKey } from '@/lib/db'
 import { generateHeroCard } from '@/lib/claude'
-import { HeroCardDisplay } from '@/components/player/HeroCardDisplay'
 import { RegenerateButton } from '@/components/player/RegenerateButton'
 import { ChangeNameButton } from '@/components/player/ChangeNameButton'
+import { CardCollection } from '@/components/player/CardCollection'
 import { Window } from '@/components/amiga/Window'
 import Link from 'next/link'
 import type { HeroCard } from '@/types'
@@ -278,34 +278,11 @@ export default async function PlayerPage({ params }: Props) {
       {/* Hero Card Collection */}
       <Window title={`HERO CARDS (${profile.cards.length})`}>
         {card && (
-          <div style={{ marginBottom: '16px' }}>
-            <HeroCardDisplay card={card} stats={stats} />
+          <div style={{ textAlign: 'center', padding: '4px 0' }}>
             <RegenerateButton playerName={playerName} cardCreatedAt={card.createdAt} />
           </div>
         )}
-        {profile.cards.length > 1 && (
-          <div style={{ padding: '8px' }}>
-            <div style={{
-              fontFamily: 'var(--font-pixel)',
-              fontSize: '9px',
-              color: '#FF8800',
-              marginBottom: '8px',
-            }}>
-              COLLECTION
-            </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-              gap: '8px',
-            }}>
-              {profile.cards
-                .filter(c => c.id !== card?.id)
-                .map((c: HeroCard) => (
-                  <CompactCard key={c.id} card={c} />
-                ))}
-            </div>
-          </div>
-        )}
+        <CardCollection cards={profile.cards} />
       </Window>
 
       {/* Battle Record */}
@@ -388,51 +365,3 @@ export default async function PlayerPage({ params }: Props) {
   )
 }
 
-function CompactCard({ card }: { card: HeroCard }) {
-  const types = card.heroType.split('/')
-  return (
-    <div style={{
-      background: '#1a1a2e',
-      border: '2px solid #FF8800',
-      borderRadius: '4px',
-      padding: '8px',
-      fontFamily: 'var(--font-pixel)',
-    }}>
-      <div style={{
-        fontSize: '8px',
-        color: '#FF8800',
-        marginBottom: '4px',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-      }}>
-        {card.heroTitle.toUpperCase()}
-      </div>
-      <div style={{
-        fontSize: '7px',
-        color: '#888',
-        marginBottom: '6px',
-      }}>
-        {types.join(' / ')}
-      </div>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '2px',
-        fontSize: '7px',
-      }}>
-        <span style={{ color: '#FF4444' }}>HP {card.hp}</span>
-        <span style={{ color: '#FF8800' }}>ATK {card.attack}</span>
-        <span style={{ color: '#4488FF' }}>DEF {card.defense}</span>
-        <span style={{ color: '#44FF44' }}>SPD {card.speed}</span>
-      </div>
-      <div style={{
-        fontSize: '6px',
-        color: '#555',
-        marginTop: '4px',
-      }}>
-        {card.weekKey}
-      </div>
-    </div>
-  )
-}
