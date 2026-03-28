@@ -5,6 +5,7 @@ import { NameSetter } from '@/components/ui/NameSetter'
 import { AboutModal } from '@/components/ui/AboutModal'
 import { ChallengeNavLink } from '@/components/ui/ChallengeNavLink'
 import { MobileMenu } from '@/components/ui/MobileMenu'
+import { ActivityTicker } from '@/components/ui/ActivityTicker'
 import theme from '@/theme'
 import './globals.css'
 
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{ backgroundColor: theme.colors.bodyBg }}>
         <div className="amiga-screen">
           <nav className="amiga-menubar">
-            <span className="amiga-menubar__title">{theme.strings.menubarTitle}<AboutModal /></span>
+            <Link href="/" className="amiga-menubar__title" style={{ textDecoration: 'none', color: 'inherit' }}>{theme.strings.menubarTitle}</Link><AboutModal />
             <div className="amiga-menubar__spacer" />
             {/* Always visible */}
             <Link href="/" className="amiga-menubar__item">LOG</Link>
@@ -50,8 +51,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* Mobile hamburger */}
             <MobileMenu />
           </nav>
-          <div className="amiga-menubar" style={{ borderTop: 'none', justifyContent: 'flex-start', padding: '2px 8px' }}>
+          <div className="amiga-menubar" style={{ borderTop: 'none', justifyContent: 'flex-start', padding: '2px 8px', gap: '8px', alignItems: 'center' }}>
             <NameSetter />
+            <ActivityTicker />
           </div>
           {children}
         </div>
