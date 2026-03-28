@@ -41,6 +41,12 @@ export const exerciseTheme: ThemeConfig = {
     bodyBg: '#121D30',
   },
 
+  // Feature flags
+  features: {
+    challenge: true,
+    progress: true,
+  },
+
   fallbackCardTitle: 'Gym Newbie',
   fallbackCardType: 'CARDIO/STRENGTH',
   fallbackCardMoves: [

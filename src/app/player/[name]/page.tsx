@@ -141,14 +141,21 @@ export default async function PlayerPage({ params }: Props) {
   const profile = await getPlayerProfileData(playerName)
   const subtitle = getSubtitle(stats)
 
-  const statCards: { value: string; label: string; accent: string }[] = [
-    { value: `${stats.mealCount}`, label: IS_EXERCISE ? 'WORKOUTS' : 'MEALS', accent: '#FF8800' },
-    { value: `${stats.cardioCount}`, label: 'CARDIO', accent: '#FF4444' },
-    { value: `${stats.strengthCount}`, label: 'STRENGTH', accent: '#4488FF' },
-    { value: `${stats.chainLength}w`, label: 'STREAK', accent: '#44FF44' },
-    { value: `${profile.challengesCompleted}`, label: 'CHALLENGES', accent: '#FFD700' },
-    { value: profile.rank > 0 ? `#${profile.rank}` : '-', label: `OF ${profile.totalPlayers}`, accent: '#FF44FF' },
-  ]
+  const statCards: { value: string; label: string; accent: string }[] = IS_EXERCISE
+    ? [
+        { value: `${stats.mealCount}`, label: 'WORKOUTS', accent: '#FF8800' },
+        { value: `${stats.cardioCount}`, label: 'CARDIO', accent: '#FF4444' },
+        { value: `${stats.strengthCount}`, label: 'STRENGTH', accent: '#4488FF' },
+        { value: `${stats.chainLength}w`, label: 'STREAK', accent: '#44FF44' },
+        { value: `${profile.challengesCompleted}`, label: 'CHALLENGES', accent: '#FFD700' },
+        { value: profile.rank > 0 ? `#${profile.rank}` : '-', label: `OF ${profile.totalPlayers}`, accent: '#FF44FF' },
+      ]
+    : [
+        { value: `${stats.mealCount}`, label: 'MEALS', accent: '#FF8800' },
+        { value: `${stats.totalItems}`, label: 'SAUSAGES', accent: '#FF4444' },
+        { value: `${stats.chainLength}w`, label: 'STREAK', accent: '#44FF44' },
+        { value: profile.rank > 0 ? `#${profile.rank}` : '-', label: `OF ${profile.totalPlayers}`, accent: '#FF44FF' },
+      ]
 
   return (
     <main className="container">
@@ -235,7 +242,9 @@ export default async function PlayerPage({ params }: Props) {
         ) : (
           <div style={{ padding: '4px' }}>
             {profile.recentActivity.map((a) => {
-              const badge = exerciseTypeBadge(a.exerciseType)
+              const badge = IS_EXERCISE
+                ? exerciseTypeBadge(a.exerciseType)
+                : { label: `${a.itemCount} ${theme.strings.itemEmoji}`, color: '#FF8800' }
               const desc = a.description
                 ? (a.description.length > 60 ? a.description.slice(0, 57) + '...' : a.description)
                 : (IS_EXERCISE ? 'Exercise session' : 'Meal logged')

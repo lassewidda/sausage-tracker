@@ -47,6 +47,12 @@ export const sausageTheme: ThemeConfig = {
     bodyBg: '#0055AA',
   },
 
+  // Feature flags
+  features: {
+    challenge: false,
+    progress: false,
+  },
+
   // Fallbacks
   fallbackCardTitle: 'Mystery Sausage',
   fallbackCardType: 'BRATWURST/GRILLED',

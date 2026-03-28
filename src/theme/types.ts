@@ -207,6 +207,12 @@ export interface ThemeConfig {
   // Colors (CSS variable overrides)
   colors: ThemeColors
 
+  // Feature flags
+  features: {
+    challenge: boolean
+    progress: boolean
+  }
+
   // Fallbacks
   fallbackCardTitle: string
   fallbackCardType: string

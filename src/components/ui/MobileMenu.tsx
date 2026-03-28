@@ -3,13 +3,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import theme from '@/theme'
 
-const MENU_ITEMS = [
+const ALL_MENU_ITEMS = [
   { href: '/highscore', label: 'HIGHSCORE' },
-  { href: '/progress', label: 'PROGRESS' },
+  { href: '/progress', label: 'PROGRESS', feature: 'progress' as const },
   { href: '/battle', label: 'BATTLE' },
   { href: '/shop', label: 'SHOP' },
 ]
+
+const MENU_ITEMS = ALL_MENU_ITEMS.filter(
+  item => !item.feature || theme.features[item.feature]
+)
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false)

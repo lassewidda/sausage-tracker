@@ -653,6 +653,7 @@ export async function getPlayerProfileData(playerName: string) {
     recentActivity: recentActivity.map(r => ({
       id: r.id as string,
       imageUrl: r.image_url as string,
+      itemCount: r.item_count as number,
       description: r.ai_description as string | null,
       exerciseType: r.exercise_type as string | null,
       weekKey: r.week_key as string,
