@@ -2,6 +2,7 @@ import { getHeroCard, insertHeroCard, getPlayerAllTimeStats, getPlayerProfileDat
 import { generateHeroCard } from '@/lib/claude'
 import { HeroCardDisplay } from '@/components/player/HeroCardDisplay'
 import { RegenerateButton } from '@/components/player/RegenerateButton'
+import { ChangeNameButton } from '@/components/player/ChangeNameButton'
 import { Window } from '@/components/amiga/Window'
 import Link from 'next/link'
 import type { HeroCard } from '@/types'
@@ -185,6 +186,7 @@ export default async function PlayerPage({ params }: Props) {
           </div>
         </div>
       </Window>
+      <ChangeNameButton profileName={playerName} />
 
       {/* Stats Grid */}
       <Window title="STATS">
