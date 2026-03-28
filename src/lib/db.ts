@@ -1594,12 +1594,18 @@ export async function recordShopPurchase(playerName: string, itemSlug: string, p
 // ── Weekly Challenges ──────────────────────────────────────────
 
 function rowToChallenge(row: any): WeeklyChallenge {
+  let reqs = typeof row.exercise_requirements === 'string' ? JSON.parse(row.exercise_requirements) : (row.exercise_requirements ?? null)
+  // Strip mobility from requirements (removed exercise type)
+  if (reqs && typeof reqs === 'object') {
+    delete reqs.mobility
+    if (Object.keys(reqs).length === 0) reqs = null
+  }
   return {
     id: row.id,
     weekKey: row.week_key,
     bingoItems: row.bingo_items ?? [],
     exerciseMinimum: row.exercise_minimum ?? 3,
-    exerciseRequirements: typeof row.exercise_requirements === 'string' ? JSON.parse(row.exercise_requirements) : (row.exercise_requirements ?? null),
+    exerciseRequirements: reqs,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
   }
 }
@@ -1727,7 +1733,7 @@ export async function getChallengeView(weekKey: string): Promise<ChallengeView> 
     exerciseMap.set(row.player_name as string, row.exercise_count as number)
   }
 
-  // Build per-type map: player -> { cardio: N, strength: N, mobility: N }
+  // Build per-type map: player -> { cardio: N, strength: N }
   const typeMap = new Map<string, Record<string, number>>()
   for (const row of typeRows) {
     const player = row.player_name as string
@@ -1761,7 +1767,7 @@ export async function getChallengeView(weekKey: string): Promise<ChallengeView> 
       playerName,
       photos: playerPhotos,
       exerciseCount,
-      exerciseTypeCounts: typeMap.get(playerName) ?? {},
+      exerciseTypeCounts: (() => { const t = { ...(typeMap.get(playerName) ?? {}) }; delete t.mobility; return t })(),
       completedBingoItems,
       isComplete: allBingoDone && exerciseMet,
     }
