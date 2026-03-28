@@ -51,30 +51,6 @@ export default async function FeedPage({ searchParams }: { searchParams: { page?
             <Link href="/highscore"><Button variant="primary">HIGHSCORE</Button></Link>
           </div>
 
-          {/* Week filter */}
-          {availableWeeks.length > 0 && (
-            <div style={{
-              display: 'flex',
-              gap: '4px',
-              flexWrap: 'wrap',
-              overflowX: 'auto',
-              padding: '4px 0',
-            }}>
-              <Link href="/feed">
-                <Button variant={!weekFilter ? 'primary' : undefined}>
-                  ALL WEEKS
-                </Button>
-              </Link>
-              {availableWeeks.map((wk) => (
-                <Link key={wk} href={buildUrl({ week: wk })}>
-                  <Button variant={weekFilter === wk ? 'primary' : undefined}>
-                    {formatWeekLabel(wk).toUpperCase()}
-                  </Button>
-                </Link>
-              ))}
-            </div>
-          )}
-
           <div style={{ textAlign: 'center', fontSize: '10px', opacity: 0.8 }}>
             {total} {total === 1 ? 'SESSION' : 'SESSIONS'}{weekFilter ? ` IN ${formatWeekLabel(weekFilter).toUpperCase()}` : ' TOTAL'}
           </div>
@@ -128,6 +104,30 @@ export default async function FeedPage({ searchParams }: { searchParams: { page?
               ) : (
                 <Button style={{ opacity: 0.3, pointerEvents: 'none' }}>NEXT &gt;</Button>
               )}
+            </div>
+          )}
+
+          {/* Week filter */}
+          {availableWeeks.length > 0 && (
+            <div style={{
+              display: 'flex',
+              gap: '4px',
+              flexWrap: 'wrap',
+              padding: '8px 0 4px',
+              justifyContent: 'center',
+            }}>
+              <Link href="/feed">
+                <Button variant={!weekFilter ? 'primary' : undefined}>
+                  ALL WEEKS
+                </Button>
+              </Link>
+              {availableWeeks.map((wk) => (
+                <Link key={wk} href={buildUrl({ week: wk })}>
+                  <Button variant={weekFilter === wk ? 'primary' : undefined}>
+                    {formatWeekLabel(wk).toUpperCase()}
+                  </Button>
+                </Link>
+              ))}
             </div>
           )}
         </div>
