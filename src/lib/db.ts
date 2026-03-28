@@ -539,11 +539,13 @@ export async function getPlayerAllTimeStats(playerName: string) {
         SUM(item_count)::int AS total_items,
         COALESCE(SUM(estimated_grams), 0)::int AS total_grams,
         MAX(item_count)::int AS max_in_one_meal,
-        COUNT(DISTINCT week_key)::int AS active_weeks
+        COUNT(DISTINCT week_key)::int AS active_weeks,
+        COUNT(*) FILTER (WHERE exercise_type = 'cardio')::int AS cardio_count,
+        COUNT(*) FILTER (WHERE exercise_type = 'strength')::int AS strength_count
       FROM meals WHERE player_name = ${playerName}
     `,
     sql`
-      SELECT ai_description, item_count, estimated_grams
+      SELECT ai_description, item_count, estimated_grams, exercise_type
       FROM meals WHERE player_name = ${playerName}
       ORDER BY created_at DESC LIMIT 10
     `,
@@ -574,11 +576,89 @@ export async function getPlayerAllTimeStats(playerName: string) {
     totalGrams: (stats.total_grams as number) || 0,
     maxInOneMeal: (stats.max_in_one_meal as number) || 0,
     activeWeeks: (stats.active_weeks as number) || 0,
+    cardioCount: (stats.cardio_count as number) || 0,
+    strengthCount: (stats.strength_count as number) || 0,
     chainLength: chain,
     recentMeals: mealRows.map(r => ({
       description: r.ai_description as string | null,
       itemCount: r.item_count as number,
+      exerciseType: r.exercise_type as string | null,
     })),
+  }
+}
+
+export async function getPlayerProfileData(playerName: string) {
+  const sql = getDb()
+
+  // Get leaderboard rank
+  const rankRows = await sql`
+    SELECT player_name, SUM(item_count)::int AS total
+    FROM meals GROUP BY player_name ORDER BY total DESC
+  `
+  const totalPlayers = rankRows.length
+  const rank = rankRows.findIndex(r => r.player_name === playerName) + 1
+
+  // Get all hero cards for this player
+  const cards = await sql`
+    SELECT * FROM hero_cards WHERE player_name = ${playerName} ORDER BY created_at DESC
+  `
+
+  // Get recent 10 meals with full data
+  const recentActivity = await sql`
+    SELECT id, image_url, item_count, ai_description, exercise_type, created_at, week_key
+    FROM meals WHERE player_name = ${playerName}
+    ORDER BY created_at DESC LIMIT 10
+  `
+
+  // Get battle stats
+  let battleStats = { wins: 0, losses: 0, eloRating: 1000 }
+  try {
+    const bRows = await sql`SELECT * FROM battle_stats WHERE player_name = ${playerName}`
+    if (bRows.length > 0) {
+      battleStats = { wins: bRows[0].wins as number, losses: bRows[0].losses as number, eloRating: bRows[0].elo_rating as number }
+    }
+  } catch { /* table may not exist */ }
+
+  // Get challenge completions
+  let challengesCompleted = 0
+  try {
+    const challenges = await sql`SELECT * FROM weekly_challenges`
+    if (challenges.length > 0) {
+      const allPhotos = await sql`SELECT * FROM challenge_photos WHERE player_name = ${playerName}`
+      const exerciseRows = await sql`
+        SELECT week_key, SUM(item_count)::int AS exercise_count
+        FROM meals WHERE player_name = ${playerName}
+        GROUP BY week_key
+      `
+      const exerciseMap = new Map<string, number>()
+      for (const row of exerciseRows) exerciseMap.set(row.week_key as string, row.exercise_count as number)
+
+      for (const ch of challenges) {
+        const bingoItems = ch.bingo_items as string[]
+        const challengePhotos = allPhotos.filter((p: Record<string, unknown>) => p.challenge_id === ch.id)
+        const completedItems = challengePhotos.map((p: Record<string, unknown>) => p.bingo_item as string)
+        const allBingoDone = bingoItems.every(item => completedItems.includes(item))
+        const exerciseMet = (exerciseMap.get(ch.week_key as string) ?? 0) >= (ch.exercise_minimum as number)
+        if (allBingoDone && exerciseMet) challengesCompleted++
+      }
+    }
+  } catch { /* tables may not exist */ }
+
+  await sql.end()
+
+  return {
+    rank,
+    totalPlayers,
+    cards: cards.map(rowToHeroCard),
+    recentActivity: recentActivity.map(r => ({
+      id: r.id as string,
+      imageUrl: r.image_url as string,
+      description: r.ai_description as string | null,
+      exerciseType: r.exercise_type as string | null,
+      createdAt: (r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at) as string,
+    })),
+    battleStats,
+    challengesCompleted,
   }
 }
 
