@@ -2,14 +2,14 @@ import type { ThemeStrings } from '../types'
 
 export const exerciseStrings: ThemeStrings = {
   // Layout / nav
-  menubarTitle: 'GAINS TRACKER',
-  metaTitle: 'Gains Tracker - Log Your Workouts, Earn Cards, Battle Friends',
+  menubarTitle: 'POWERUP',
+  metaTitle: 'PowerUp - Log Workouts, Earn Cards, Battle Friends',
   metaDescription: 'Track your runs, lifts, rides and workouts with AI. Earn hero cards and battle other fitness warriors in turn-based combat.',
 
   // About
   aboutVersion: 'v1.0 — BEAST MODE EDITION',
   aboutParagraphs: [
-    'Gains Tracker uses AI to analyze your workout screenshots from apps like Strava, Apple Health, Nike Run Club, Garmin, and Fitbit — or just a photo from your run.',
+    'PowerUp uses AI to analyze your workout screenshots from apps like Strava, Apple Health, Nike Run Club, Garmin, and Fitbit — or just a photo from your run.',
     'Every workout you log earns you points and generates unique hero cards for the battle arena. The more you train, the stronger your cards.',
     'Challenge other fitness warriors to turn-based battles using your collection of exercise-themed hero cards. Runners, lifters, cyclists — all welcome.',
   ],

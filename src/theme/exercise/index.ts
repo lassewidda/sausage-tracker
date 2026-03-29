@@ -7,7 +7,7 @@ import { exerciseShopCatalog } from './shop'
 import { exerciseStrings } from './strings'
 
 export const exerciseTheme: ThemeConfig = {
-  appName: 'Gains Tracker',
+  appName: 'PowerUp',
   appVersion: '1.0',
 
   prompts: exercisePrompts,
