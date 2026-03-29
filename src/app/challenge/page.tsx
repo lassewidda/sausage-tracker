@@ -490,14 +490,14 @@ export default function ChallengePage() {
                     const photo = p.photos.find(ph => ph.bingoItem === item)
                     return (
                       <div key={item} style={{
-                        width: '48px',
+                        width: '100px',
                         textAlign: 'center',
                       }}>
                         <div
                           onClick={photo ? () => openLightbox(photo.imageUrl, `${p.playerName.toUpperCase()} — ${item}`) : undefined}
                           style={{
-                            width: '48px',
-                            height: '48px',
+                            width: '100px',
+                            height: '100px',
                             background: photo ? 'transparent' : 'var(--amiga-black)',
                             border: photo ? '2px solid #00AA00' : '2px solid var(--bevel-shadow)',
                             display: 'flex',
@@ -515,14 +515,14 @@ export default function ChallengePage() {
                               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             />
                           ) : (
-                            <span style={{ fontFamily: 'var(--font-pixel)', fontSize: '14px', color: 'var(--bevel-shadow)' }}>?</span>
+                            <span style={{ fontFamily: 'var(--font-pixel)', fontSize: '20px', color: 'var(--bevel-shadow)' }}>?</span>
                           )}
                         </div>
                         <div style={{
                           fontFamily: 'var(--font-pixel)',
-                          fontSize: '5px',
+                          fontSize: '7px',
                           color: photo ? '#00CC00' : 'var(--amiga-dark-grey)',
-                          marginTop: '2px',
+                          marginTop: '3px',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
