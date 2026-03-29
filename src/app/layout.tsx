@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" style={themeVars}>
       <body style={{ backgroundColor: theme.colors.bodyBg }}>
         <div className="amiga-screen">
-          <nav className="amiga-menubar">
+          <nav className="amiga-menubar" style={{ zIndex: 1001 }}>
             <Link href="/" className="amiga-menubar__title" style={{ textDecoration: 'none', color: 'inherit' }}>{theme.strings.menubarTitle}</Link><AboutModal />
             <div className="amiga-menubar__spacer" />
             {/* Always visible */}
