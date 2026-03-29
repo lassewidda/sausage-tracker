@@ -49,7 +49,7 @@ export function JerryMode() {
       }}
       title="Toggle large text mode for better readability"
     >
-      {enabled ? '👓 BOOMER' : '👓'}
+      {enabled ? <><span style={{ fontSize: '16px', verticalAlign: 'middle' }}>👓</span> BOOMER</> : <span style={{ fontSize: '16px', verticalAlign: 'middle' }}>👓</span>}
     </button>
   )
 }
