@@ -543,32 +543,35 @@ export default function ChallengePage() {
       {leaderboard.length > 0 && (
         <Window title="CHALLENGE LEADERBOARD">
           <div className="stack" style={{ gap: '4px' }}>
-            {leaderboard.map((entry, i) => (
-              <div key={entry.playerName} style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '4px 8px',
-                background: i === 0 ? 'rgba(255, 215, 0, 0.1)' : 'transparent',
-                borderBottom: '1px solid var(--bevel-shadow)',
-              }}>
-                <div style={{
-                  fontFamily: 'var(--font-pixel)',
-                  fontSize: '8px',
-                  color: i === 0 ? '#FFD700' : 'var(--crt-amber)',
-                  textTransform: 'uppercase',
+            {leaderboard.map((entry, i) => {
+              const completedCurrent = participants.find(p => p.playerName === entry.playerName)?.isComplete
+              return (
+                <div key={entry.playerName} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '4px 8px',
+                  background: completedCurrent ? 'rgba(255, 215, 0, 0.1)' : 'transparent',
+                  borderBottom: '1px solid var(--bevel-shadow)',
                 }}>
-                  {i + 1}. {entry.playerName}
+                  <div style={{
+                    fontFamily: 'var(--font-pixel)',
+                    fontSize: '8px',
+                    color: completedCurrent ? '#FFD700' : 'var(--crt-amber)',
+                    textTransform: 'uppercase',
+                  }}>
+                    {completedCurrent && '★ '}{i + 1}. {entry.playerName}
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--font-pixel)',
+                    fontSize: '8px',
+                    color: 'var(--amiga-dark-grey)',
+                  }}>
+                    {entry.completedChallenges} COMPLETED
+                  </div>
                 </div>
-                <div style={{
-                  fontFamily: 'var(--font-pixel)',
-                  fontSize: '8px',
-                  color: 'var(--amiga-dark-grey)',
-                }}>
-                  {entry.completedChallenges} COMPLETED
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </Window>
       )}
