@@ -29,7 +29,7 @@ export default function InvitePage() {
           onClick={() => router.push('/')}
           style={{
             width: '100%',
-            maxWidth: '700px',
+            maxWidth: '800px',
             cursor: 'pointer',
             borderRadius: '12px',
           }}
@@ -80,12 +80,11 @@ export default function InvitePage() {
 
   return (
     <div style={{
-      minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
       padding: '20px',
+      paddingTop: '24px',
     }}>
       {/* Invite image — clicking goes to home */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
