@@ -8,35 +8,43 @@ function TransformationScene() {
   return (
     <div style={{
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
-      justifyContent: 'center',
-      gap: '0',
-      flexWrap: 'wrap',
+      gap: '12px',
       padding: '16px 0',
     }}>
-      {/* Skinny → Arnold */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/char-skinny.svg" alt="Before" style={{ height: '80px', imageRendering: 'pixelated' }} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/arrow-right.svg" alt="→" style={{ height: '16px', margin: '0 2px' }} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/char-arnold.svg" alt="After - muscle" style={{ height: '100px', imageRendering: 'pixelated' }} />
+      {/* Transformations row */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '16px',
+        flexWrap: 'wrap',
+      }}>
+        {/* Skinny → Arnold */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/char-skinny.svg" alt="Before" style={{ height: '80px', imageRendering: 'pixelated' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/arrow-right.svg" alt="→" style={{ height: '16px', margin: '0 2px' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/char-arnold.svg" alt="After - muscle" style={{ height: '100px', imageRendering: 'pixelated' }} />
+        </div>
+
+        {/* Sleepy → Runner */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/char-sleepy.svg" alt="Before" style={{ height: '75px', imageRendering: 'pixelated' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/arrow-right.svg" alt="→" style={{ height: '16px', margin: '0 2px' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/char-runner.svg" alt="After - runner" style={{ height: '90px', imageRendering: 'pixelated' }} />
+        </div>
       </div>
 
-      {/* Mushroom */}
+      {/* Mushroom on its own row */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/char-mushroom.svg" alt="PowerUp mushroom" style={{ height: '90px', margin: '0 12px', imageRendering: 'pixelated' }} />
-
-      {/* Sleepy → Runner */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/char-sleepy.svg" alt="Before" style={{ height: '75px', imageRendering: 'pixelated' }} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/arrow-right.svg" alt="→" style={{ height: '16px', margin: '0 2px' }} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/char-runner.svg" alt="After - runner" style={{ height: '90px', imageRendering: 'pixelated' }} />
-      </div>
+      <img src="/char-mushroom.svg" alt="PowerUp mushroom" style={{ height: '80px', imageRendering: 'pixelated' }} />
     </div>
   )
 }
