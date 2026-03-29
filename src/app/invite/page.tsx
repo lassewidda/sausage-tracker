@@ -44,9 +44,6 @@ function ExerciseTransformationScene() {
         </div>
       </div>
 
-      {/* Mushroom on its own row */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/char-mushroom.svg" alt="PowerUp mushroom" style={{ height: '80px', imageRendering: 'pixelated' }} />
     </div>
   )
 }
@@ -125,6 +122,8 @@ function InviteBanner() {
         }}>
           EXERCISE CHALLENGE
         </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/char-mushroom.svg" alt="PowerUp mushroom" style={{ height: '80px', imageRendering: 'pixelated', margin: '8px 0' }} />
         <ExerciseTransformationScene />
         <div style={{
           fontFamily: "'Press Start 2P', 'Courier New', monospace",
