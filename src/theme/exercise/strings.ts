@@ -16,7 +16,7 @@ export const exerciseStrings: ThemeStrings = {
   aboutTagline: 'Track gains. Collect cards. Battle friends. No rest days.',
 
   // Home page
-  windowTitle: 'LOG YOUR WORKOUT',
+  windowTitle: 'LOG YOUR WORKOUT TO POWERUP',
   uploadInstruction: 'Upload a screenshot or photo from your workout',
   uploadSubInstruction: '',
   uploadDropzoneEmoji: '💪',
