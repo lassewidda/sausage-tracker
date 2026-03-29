@@ -4,7 +4,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useName } from '@/lib/useName'
 
-function TransformationScene() {
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
+
+function ExerciseTransformationScene() {
   return (
     <div style={{
       display: 'flex',
@@ -49,49 +51,139 @@ function TransformationScene() {
   )
 }
 
-function InviteBanner() {
+function SausageTransformationScene() {
   return (
     <div style={{
-      background: 'linear-gradient(135deg, #1A2744, #0D1520)',
-      border: '2px solid rgba(74, 144, 217, 0.35)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '12px',
+      padding: '16px 0',
+    }}>
+      {/* Transformations row */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '16px',
+        flexWrap: 'wrap',
+      }}>
+        {/* Raw → Grilled */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/char-raw-sausage.svg" alt="Raw sausage" style={{ height: '80px', imageRendering: 'pixelated' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/arrow-right.svg" alt="→" style={{ height: '16px', margin: '0 2px' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/char-grilled-sausage.svg" alt="Grilled sausage" style={{ height: '100px', imageRendering: 'pixelated' }} />
+        </div>
+
+        {/* Plain → Bratwurst King */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/char-plain-sausage.svg" alt="Plain sausage" style={{ height: '75px', imageRendering: 'pixelated' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/arrow-right.svg" alt="→" style={{ height: '16px', margin: '0 2px' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/char-bratwurst-king.svg" alt="Bratwurst King" style={{ height: '100px', imageRendering: 'pixelated' }} />
+        </div>
+      </div>
+
+      {/* Hot dog mascot on its own row */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/char-hotdog.svg" alt="Hot dog" style={{ height: '80px', imageRendering: 'pixelated' }} />
+    </div>
+  )
+}
+
+function InviteBanner() {
+  if (IS_EXERCISE) {
+    return (
+      <div style={{
+        background: 'linear-gradient(135deg, #1A2744, #0D1520)',
+        border: '2px solid rgba(74, 144, 217, 0.35)',
+        borderRadius: '12px',
+        padding: '24px 16px',
+        textAlign: 'center',
+      }}>
+        <h1 style={{
+          fontFamily: "'Press Start 2P', 'Courier New', monospace",
+          fontSize: 'clamp(28px, 8vw, 48px)',
+          color: '#FFD700',
+          textShadow: '0 0 10px rgba(255, 215, 0, 0.2)',
+          margin: '0 0 8px',
+          letterSpacing: '4px',
+        }}>
+          POWERUP
+        </h1>
+        <div style={{
+          fontFamily: "'Press Start 2P', 'Courier New', monospace",
+          fontSize: 'clamp(8px, 2.5vw, 13px)',
+          color: '#5AA0E8',
+          letterSpacing: '3px',
+          marginBottom: '8px',
+        }}>
+          EXERCISE CHALLENGE
+        </div>
+        <ExerciseTransformationScene />
+        <div style={{
+          fontFamily: "'Press Start 2P', 'Courier New', monospace",
+          fontSize: 'clamp(9px, 2.5vw, 14px)',
+          color: '#CCDDEE',
+          letterSpacing: '1px',
+          lineHeight: '2.2',
+        }}>
+          Log workouts &gt; Complete challenges &gt; PowerUp!
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #0055AA, #003366)',
+      border: '2px solid rgba(255, 136, 0, 0.4)',
       borderRadius: '12px',
       padding: '24px 16px',
       textAlign: 'center',
     }}>
       <h1 style={{
         fontFamily: "'Press Start 2P', 'Courier New', monospace",
-        fontSize: 'clamp(28px, 8vw, 48px)',
-        color: '#FFD700',
-        textShadow: '0 0 10px rgba(255, 215, 0, 0.2)',
+        fontSize: 'clamp(22px, 6vw, 40px)',
+        color: '#FF8800',
+        textShadow: '0 0 10px rgba(255, 136, 0, 0.2)',
         margin: '0 0 8px',
         letterSpacing: '4px',
       }}>
-        POWERUP
+        SAUSAGE TRACKER
       </h1>
       <div style={{
         fontFamily: "'Press Start 2P', 'Courier New', monospace",
         fontSize: 'clamp(8px, 2.5vw, 13px)',
-        color: '#5AA0E8',
+        color: '#FFFFFF',
         letterSpacing: '3px',
         marginBottom: '8px',
       }}>
-        EXERCISE CHALLENGE
+        THE ULTIMATE MEAT CHALLENGE
       </div>
-
-      <TransformationScene />
-
+      <SausageTransformationScene />
       <div style={{
         fontFamily: "'Press Start 2P', 'Courier New', monospace",
         fontSize: 'clamp(9px, 2.5vw, 14px)',
-        color: '#CCDDEE',
+        color: '#FFFFFF',
         letterSpacing: '1px',
         lineHeight: '2.2',
       }}>
-        Log workouts &gt; Complete challenges &gt; PowerUp!
+        Log meals · Count sausages · Become legend
       </div>
     </div>
   )
 }
+
+const ACCENT = IS_EXERCISE ? '#DD2222' : '#FF8800'
+const CTA_RETURN = IS_EXERCISE ? 'LOG A WORKOUT' : 'LOG A MEAL'
+const CTA_JOIN = IS_EXERCISE ? 'JOIN POWERUP!' : 'JOIN THE TRACKER!'
+const CHECKBOX_TEXT = IS_EXERCISE ? "I'M READY TO POWERUP MY BOD!" : "I'M READY TO COUNT SOME SAUSAGES!"
 
 export default function InvitePage() {
   const { name, setName, loaded } = useName()
@@ -125,7 +217,7 @@ export default function InvitePage() {
             fontSize: 'clamp(11px, 3vw, 14px)',
             marginTop: '16px',
             padding: '16px 32px',
-            background: '#DD2222',
+            background: ACCENT,
             color: '#FFFFFF',
             border: 'none',
             borderRadius: '25px',
@@ -133,7 +225,7 @@ export default function InvitePage() {
             letterSpacing: '2px',
           }}
         >
-          LOG A WORKOUT
+          {CTA_RETURN}
         </button>
       </div>
     )
@@ -212,9 +304,9 @@ export default function InvitePage() {
             type="checkbox"
             checked={checked}
             onChange={(e) => { setChecked(e.target.checked); setError('') }}
-            style={{ width: '20px', height: '20px', accentColor: '#DD2222', cursor: 'pointer' }}
+            style={{ width: '20px', height: '20px', accentColor: ACCENT, cursor: 'pointer' }}
           />
-          I&apos;M READY TO POWERUP MY BOD!
+          {CHECKBOX_TEXT}
         </label>
 
         {error && (
@@ -234,7 +326,7 @@ export default function InvitePage() {
             fontFamily: "'Press Start 2P', 'Courier New', monospace",
             fontSize: 'clamp(11px, 3vw, 14px)',
             padding: '16px 40px',
-            background: checked && draft.trim() ? '#DD2222' : '#444',
+            background: checked && draft.trim() ? ACCENT : '#444',
             color: '#FFFFFF',
             border: 'none',
             borderRadius: '25px',
@@ -244,7 +336,7 @@ export default function InvitePage() {
             maxWidth: '320px',
           }}
         >
-          JOIN POWERUP!
+          {CTA_JOIN}
         </button>
       </div>
     </div>

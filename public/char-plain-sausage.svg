@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 60" width="40" height="60">
+  <!-- Plain boring sausage - before state -->
+  <rect x="12" y="8" width="16" height="44" rx="8" fill="#BB7755"/>
+  <rect x="14" y="12" width="8" height="8" rx="4" fill="#CC8866" opacity="0.4"/>
+  <!-- Neutral/bored face -->
+  <rect x="16" y="22" width="3" height="3" fill="#553322"/>
+  <rect x="21" y="22" width="3" height="3" fill="#553322"/>
+  <rect x="16" y="32" width="8" height="2" rx="1" fill="#553322"/>
+  <!-- Zzz -->
+  <text x="30" y="14" font-family="'Press Start 2P', monospace" font-size="5" fill="#FF8800" opacity="0.5">z</text>
+  <text x="33" y="10" font-family="'Press Start 2P', monospace" font-size="4" fill="#FF8800" opacity="0.3">z</text>
+</svg>

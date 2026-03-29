@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300" width="800" height="300">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0055AA"/>
+      <stop offset="100%" stop-color="#003366"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF8800"/>
+      <stop offset="100%" stop-color="#FF6600"/>
+    </linearGradient>
+    <linearGradient id="sausage-fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#CC4422"/>
+      <stop offset="40%" stop-color="#AA3311"/>
+      <stop offset="100%" stop-color="#882211"/>
+    </linearGradient>
+    <linearGradient id="bun-fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8C66A"/>
+      <stop offset="100%" stop-color="#C49A3C"/>
+    </linearGradient>
+    <linearGradient id="mustard" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#FFAA00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="300" fill="url(#bg)"/>
+  <rect x="6" y="6" width="788" height="288" rx="4" fill="none" stroke="#FF8800" stroke-width="2" opacity="0.4"/>
+
+  <!-- Title -->
+  <text x="400" y="55" font-family="'Press Start 2P', 'Courier New', monospace" font-size="36" fill="url(#gold)" text-anchor="middle" font-weight="bold" letter-spacing="4">SAUSAGE TRACKER</text>
+  <text x="400" y="56" font-family="'Press Start 2P', 'Courier New', monospace" font-size="36" fill="#FF8800" text-anchor="middle" font-weight="bold" letter-spacing="4" opacity="0.2" filter="blur(8px)">SAUSAGE TRACKER</text>
+
+  <!-- Subtitle -->
+  <text x="400" y="78" font-family="'Press Start 2P', 'Courier New', monospace" font-size="11" fill="#FFFFFF" text-anchor="middle" letter-spacing="4">THE ULTIMATE MEAT CHALLENGE</text>
+
+  <!-- Left sausage (small) -->
+  <g transform="translate(80, 120)">
+    <!-- Bun bottom -->
+    <ellipse cx="40" cy="45" rx="42" ry="14" fill="#C49A3C"/>
+    <!-- Sausage -->
+    <rect x="2" y="22" width="76" height="20" rx="10" fill="url(#sausage-fill)"/>
+    <rect x="10" y="24" width="60" height="4" rx="2" fill="#DD5533" opacity="0.5"/>
+    <!-- Grill marks -->
+    <rect x="18" y="22" width="3" height="20" rx="1" fill="#661100" opacity="0.3" transform="rotate(-15, 19, 32)"/>
+    <rect x="38" y="22" width="3" height="20" rx="1" fill="#661100" opacity="0.3" transform="rotate(-15, 39, 32)"/>
+    <rect x="56" y="22" width="3" height="20" rx="1" fill="#661100" opacity="0.3" transform="rotate(-15, 57, 32)"/>
+    <!-- Bun top -->
+    <ellipse cx="40" cy="22" rx="42" ry="14" fill="url(#bun-fill)"/>
+    <ellipse cx="40" cy="20" rx="36" ry="8" fill="#E8C66A" opacity="0.4"/>
+    <!-- Sesame seeds -->
+    <ellipse cx="25" cy="16" rx="3" ry="2" fill="#FFF4E0" opacity="0.7" transform="rotate(-20, 25, 16)"/>
+    <ellipse cx="45" cy="14" rx="3" ry="2" fill="#FFF4E0" opacity="0.7" transform="rotate(10, 45, 14)"/>
+    <ellipse cx="55" cy="18" rx="2.5" ry="1.8" fill="#FFF4E0" opacity="0.6" transform="rotate(-5, 55, 18)"/>
+    <!-- Mustard zigzag -->
+    <path d="M10 30 L18 26 L26 30 L34 26 L42 30 L50 26 L58 30 L66 26 L72 30" fill="none" stroke="url(#mustard)" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Center: big sausage with fork -->
+  <g transform="translate(280, 95)">
+    <!-- Fork -->
+    <rect x="108" y="10" width="6" height="80" rx="2" fill="#AAAAAA"/>
+    <rect x="102" y="0" width="6" height="30" rx="2" fill="#CCCCCC"/>
+    <rect x="114" y="0" width="6" height="30" rx="2" fill="#CCCCCC"/>
+    <rect x="108" y="0" width="6" height="30" rx="2" fill="#CCCCCC"/>
+    <!-- Sausage on fork -->
+    <rect x="0" y="30" width="120" height="32" rx="16" fill="url(#sausage-fill)"/>
+    <rect x="12" y="34" width="96" height="6" rx="3" fill="#DD5533" opacity="0.4"/>
+    <!-- Grill marks -->
+    <rect x="24" y="30" width="4" height="32" rx="2" fill="#661100" opacity="0.3" transform="rotate(-12, 26, 46)"/>
+    <rect x="50" y="30" width="4" height="32" rx="2" fill="#661100" opacity="0.3" transform="rotate(-12, 52, 46)"/>
+    <rect x="76" y="30" width="4" height="32" rx="2" fill="#661100" opacity="0.3" transform="rotate(-12, 78, 46)"/>
+    <!-- Shine -->
+    <rect x="20" y="36" width="30" height="4" rx="2" fill="#EE6644" opacity="0.4"/>
+    <!-- Steam -->
+    <path d="M30 25 Q35 15 30 5" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.3" stroke-linecap="round"/>
+    <path d="M60 22 Q65 12 60 2" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.25" stroke-linecap="round"/>
+    <path d="M85 25 Q90 15 85 5" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Right sausage (small, with ketchup) -->
+  <g transform="translate(580, 120)">
+    <!-- Bun bottom -->
+    <ellipse cx="40" cy="45" rx="42" ry="14" fill="#C49A3C"/>
+    <!-- Sausage -->
+    <rect x="2" y="22" width="76" height="20" rx="10" fill="url(#sausage-fill)"/>
+    <rect x="10" y="24" width="60" height="4" rx="2" fill="#DD5533" opacity="0.5"/>
+    <!-- Grill marks -->
+    <rect x="20" y="22" width="3" height="20" rx="1" fill="#661100" opacity="0.3" transform="rotate(-15, 21, 32)"/>
+    <rect x="40" y="22" width="3" height="20" rx="1" fill="#661100" opacity="0.3" transform="rotate(-15, 41, 32)"/>
+    <rect x="58" y="22" width="3" height="20" rx="1" fill="#661100" opacity="0.3" transform="rotate(-15, 59, 32)"/>
+    <!-- Bun top -->
+    <ellipse cx="40" cy="22" rx="42" ry="14" fill="url(#bun-fill)"/>
+    <ellipse cx="40" cy="20" rx="36" ry="8" fill="#E8C66A" opacity="0.4"/>
+    <!-- Ketchup zigzag -->
+    <path d="M12 30 L20 26 L28 30 L36 26 L44 30 L52 26 L60 30 L68 26" fill="none" stroke="#DD2222" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Decorative sausage links left -->
+  <g transform="translate(30, 220)" opacity="0.5">
+    <rect x="0" y="0" width="24" height="10" rx="5" fill="#AA3311"/>
+    <rect x="28" y="0" width="24" height="10" rx="5" fill="#AA3311"/>
+    <path d="M24 5 Q26 -2 28 5" fill="none" stroke="#AA3311" stroke-width="2"/>
+  </g>
+
+  <!-- Decorative sausage links right -->
+  <g transform="translate(680, 220)" opacity="0.5">
+    <rect x="0" y="0" width="24" height="10" rx="5" fill="#AA3311"/>
+    <rect x="28" y="0" width="24" height="10" rx="5" fill="#AA3311"/>
+    <path d="M24 5 Q26 -2 28 5" fill="none" stroke="#AA3311" stroke-width="2"/>
+  </g>
+
+  <!-- Slogan -->
+  <text x="400" y="272" font-family="'Press Start 2P', 'Courier New', monospace" font-size="13" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">Log meals · Count sausages · Become legend</text>
+
+</svg>
