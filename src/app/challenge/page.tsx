@@ -476,8 +476,11 @@ export default function ChallengePage() {
                     color: p.isComplete ? '#FFD700' : 'var(--crt-amber)',
                     textTransform: 'uppercase',
                     textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
                   }}>
-                    {p.isComplete && '★ '}{p.playerName}
+                    {p.isComplete && <span style={{ fontSize: '16px', lineHeight: 1 }}>⭐</span>}{p.playerName}
                   </a>
                   <ExerciseProgress participant={p} challenge={challenge} />
                 </div>
