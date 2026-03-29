@@ -4,6 +4,87 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useName } from '@/lib/useName'
 
+function TransformationScene() {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '0',
+      flexWrap: 'wrap',
+      padding: '16px 0',
+    }}>
+      {/* Skinny → Arnold */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/char-skinny.svg" alt="Before" style={{ height: '80px', imageRendering: 'pixelated' }} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/arrow-right.svg" alt="→" style={{ height: '16px', margin: '0 2px' }} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/char-arnold.svg" alt="After - muscle" style={{ height: '100px', imageRendering: 'pixelated' }} />
+      </div>
+
+      {/* Mushroom */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/char-mushroom.svg" alt="PowerUp mushroom" style={{ height: '90px', margin: '0 12px', imageRendering: 'pixelated' }} />
+
+      {/* Sleepy → Runner */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/char-sleepy.svg" alt="Before" style={{ height: '75px', imageRendering: 'pixelated' }} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/arrow-right.svg" alt="→" style={{ height: '16px', margin: '0 2px' }} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/char-runner.svg" alt="After - runner" style={{ height: '90px', imageRendering: 'pixelated' }} />
+      </div>
+    </div>
+  )
+}
+
+function InviteBanner() {
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #1A2744, #0D1520)',
+      border: '2px solid rgba(74, 144, 217, 0.35)',
+      borderRadius: '12px',
+      padding: '24px 16px',
+      textAlign: 'center',
+    }}>
+      <h1 style={{
+        fontFamily: "'Press Start 2P', 'Courier New', monospace",
+        fontSize: 'clamp(28px, 8vw, 48px)',
+        color: '#FFD700',
+        textShadow: '0 0 10px rgba(255, 215, 0, 0.2)',
+        margin: '0 0 8px',
+        letterSpacing: '4px',
+      }}>
+        POWERUP
+      </h1>
+      <div style={{
+        fontFamily: "'Press Start 2P', 'Courier New', monospace",
+        fontSize: 'clamp(8px, 2.5vw, 13px)',
+        color: '#5AA0E8',
+        letterSpacing: '3px',
+        marginBottom: '8px',
+      }}>
+        EXERCISE CHALLENGE
+      </div>
+
+      <TransformationScene />
+
+      <div style={{
+        fontFamily: "'Press Start 2P', 'Courier New', monospace",
+        fontSize: 'clamp(9px, 2.5vw, 14px)',
+        color: '#CCDDEE',
+        letterSpacing: '1px',
+        lineHeight: '2.2',
+      }}>
+        Log workouts &gt; Complete challenges &gt; PowerUp!
+      </div>
+    </div>
+  )
+}
+
 export default function InvitePage() {
   const { name, setName, loaded } = useName()
   const router = useRouter()
@@ -11,7 +92,6 @@ export default function InvitePage() {
   const [checked, setChecked] = useState(false)
   const [error, setError] = useState('')
 
-  // Already has a name — show welcome back
   if (loaded && name) {
     return (
       <div style={{
@@ -20,22 +100,12 @@ export default function InvitePage() {
         alignItems: 'center',
         padding: '16px',
       }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/powerup-invite.svg"
-          alt="PowerUp Exercise Challenge"
-          onClick={() => router.push('/')}
-          style={{
-            width: '100%',
-            cursor: 'pointer',
-            borderRadius: '12px',
-          }}
-        />
+        <InviteBanner />
         <div style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '11px',
+          fontFamily: "'Press Start 2P', 'Courier New', monospace",
+          fontSize: 'clamp(10px, 3vw, 14px)',
           color: 'var(--crt-amber)',
-          marginTop: '20px',
+          marginTop: '24px',
           textAlign: 'center',
         }}>
           WELCOME BACK, {name.toUpperCase()}!
@@ -43,10 +113,10 @@ export default function InvitePage() {
         <button
           onClick={() => router.push('/')}
           style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: '12px',
+            fontFamily: "'Press Start 2P', 'Courier New', monospace",
+            fontSize: 'clamp(11px, 3vw, 14px)',
             marginTop: '16px',
-            padding: '14px 32px',
+            padding: '16px 32px',
             background: '#DD2222',
             color: '#FFFFFF',
             border: 'none',
@@ -63,14 +133,8 @@ export default function InvitePage() {
 
   const handleJoin = () => {
     const trimmed = draft.trim()
-    if (!trimmed) {
-      setError('ENTER YOUR NAME!')
-      return
-    }
-    if (!checked) {
-      setError('YOU MUST CHECK THE BOX!')
-      return
-    }
+    if (!trimmed) { setError('ENTER YOUR NAME!'); return }
+    if (!checked) { setError('YOU MUST CHECK THE BOX!'); return }
     setName(trimmed)
     router.push('/')
   }
@@ -82,17 +146,8 @@ export default function InvitePage() {
       alignItems: 'center',
       padding: '16px',
     }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/powerup-invite.svg"
-        alt="PowerUp Exercise Challenge"
-        style={{
-          width: '100%',
-          borderRadius: '12px',
-        }}
-      />
+      <InviteBanner />
 
-      {/* Join form */}
       <div style={{
         marginTop: '24px',
         width: '100%',
@@ -103,8 +158,8 @@ export default function InvitePage() {
         gap: '16px',
       }}>
         <div style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '12px',
+          fontFamily: "'Press Start 2P', 'Courier New', monospace",
+          fontSize: 'clamp(10px, 3vw, 14px)',
           color: 'var(--crt-amber)',
           textAlign: 'center',
           letterSpacing: '2px',
@@ -121,7 +176,7 @@ export default function InvitePage() {
           placeholder="YOUR NAME"
           autoFocus
           style={{
-            fontFamily: 'var(--font-pixel)',
+            fontFamily: "'Press Start 2P', 'Courier New', monospace",
             fontSize: '14px',
             textTransform: 'uppercase',
             background: '#0a0a0a',
@@ -141,27 +196,22 @@ export default function InvitePage() {
           alignItems: 'center',
           gap: '10px',
           cursor: 'pointer',
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '9px',
+          fontFamily: "'Press Start 2P', 'Courier New', monospace",
+          fontSize: 'clamp(8px, 2vw, 10px)',
           color: checked ? '#FFD700' : 'var(--crt-amber)',
         }}>
           <input
             type="checkbox"
             checked={checked}
             onChange={(e) => { setChecked(e.target.checked); setError('') }}
-            style={{
-              width: '20px',
-              height: '20px',
-              accentColor: '#DD2222',
-              cursor: 'pointer',
-            }}
+            style={{ width: '20px', height: '20px', accentColor: '#DD2222', cursor: 'pointer' }}
           />
           I&apos;M READY TO POWERUP MY BOD!
         </label>
 
         {error && (
           <div style={{
-            fontFamily: 'var(--font-pixel)',
+            fontFamily: "'Press Start 2P', monospace",
             fontSize: '9px',
             color: '#FF4444',
             textAlign: 'center',
@@ -173,16 +223,15 @@ export default function InvitePage() {
         <button
           onClick={handleJoin}
           style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: '14px',
-            padding: '14px 40px',
+            fontFamily: "'Press Start 2P', 'Courier New', monospace",
+            fontSize: 'clamp(11px, 3vw, 14px)',
+            padding: '16px 40px',
             background: checked && draft.trim() ? '#DD2222' : '#444',
             color: '#FFFFFF',
             border: 'none',
             borderRadius: '25px',
             cursor: checked && draft.trim() ? 'pointer' : 'not-allowed',
             letterSpacing: '3px',
-            transition: 'background 0.2s',
             width: '100%',
             maxWidth: '320px',
           }}
