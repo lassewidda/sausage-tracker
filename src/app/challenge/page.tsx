@@ -369,8 +369,8 @@ export default function ChallengePage() {
                               alt={item}
                               onClick={() => openLightbox(myPhoto.imageUrl, `${myParticipant?.playerName?.toUpperCase()} — ${item}`)}
                               style={{
-                                width: '50px',
-                                height: '50px',
+                                width: '120px',
+                                height: '120px',
                                 objectFit: 'cover',
                                 cursor: 'pointer',
                                 borderTop: '1px solid var(--bevel-shadow)',
