@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, ChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleTaunt, BattleStats, BattleState, PlayerItem, BattleEffect, ItemEffectType, WeeklyChallenge, ChallengePhoto, ChallengeParticipant, ChallengeView, ChallengeLeaderboardEntry } from '@/types'
+import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, ChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleTaunt, BattleStats, BattleState, PlayerItem, BattleEffect, ItemEffectType, WeeklyChallenge, ChallengePhoto, ChallengeParticipant, ChallengeView, ChallengeLeaderboardEntry, Team, TeamProgress, GroupLeaderboardEntry } from '@/types'
 
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
@@ -1601,14 +1601,21 @@ function rowToChallenge(row: any): WeeklyChallenge {
     delete reqs.mobility
     if (Object.keys(reqs).length === 0) reqs = null
   }
+  let teams: Team[] | null = row.teams ? (typeof row.teams === 'string' ? JSON.parse(row.teams) : row.teams) : null
+  if (teams) {
+    teams = teams.map(t => ({ ...t, members: t.members.map((m: string) => m.toLowerCase()) }))
+  }
+
   return {
     id: row.id,
     weekKey: row.week_key,
     bingoItems: row.bingo_items ?? [],
     exerciseMinimum: row.exercise_minimum ?? 3,
     exerciseRequirements: reqs,
+    challengeMode: (row.challenge_mode as string) ?? 'individual',
+    teams,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
-  }
+  } as WeeklyChallenge
 }
 
 function rowToChallengePhoto(row: any): ChallengePhoto {
@@ -1623,13 +1630,21 @@ function rowToChallengePhoto(row: any): ChallengePhoto {
   }
 }
 
-export async function upsertChallenge(weekKey: string, bingoItems: string[], exerciseMinimum: number, exerciseRequirements?: Record<string, number> | null): Promise<WeeklyChallenge> {
+export async function upsertChallenge(
+  weekKey: string,
+  bingoItems: string[],
+  exerciseMinimum: number,
+  exerciseRequirements?: Record<string, number> | null,
+  challengeMode: 'individual' | 'group' = 'individual',
+  teams?: Team[] | null,
+): Promise<WeeklyChallenge> {
   const sql = getDb()
   const reqJson = exerciseRequirements ? JSON.stringify(exerciseRequirements) : null
+  const teamsJson = teams ? JSON.stringify(teams.map(t => ({ ...t, members: t.members.map(m => m.toLowerCase()) }))) : null
   const rows = await sql`
-    INSERT INTO weekly_challenges (week_key, bingo_items, exercise_minimum, exercise_requirements)
-    VALUES (${weekKey}, ${bingoItems}, ${exerciseMinimum}, ${reqJson}::jsonb)
-    ON CONFLICT (week_key) DO UPDATE SET bingo_items = ${bingoItems}, exercise_minimum = ${exerciseMinimum}, exercise_requirements = ${reqJson}::jsonb
+    INSERT INTO weekly_challenges (week_key, bingo_items, exercise_minimum, exercise_requirements, challenge_mode, teams)
+    VALUES (${weekKey}, ${bingoItems}, ${exerciseMinimum}, ${reqJson}::jsonb, ${challengeMode}, ${teamsJson}::jsonb)
+    ON CONFLICT (week_key) DO UPDATE SET bingo_items = ${bingoItems}, exercise_minimum = ${exerciseMinimum}, exercise_requirements = ${reqJson}::jsonb, challenge_mode = ${challengeMode}, teams = ${teamsJson}::jsonb
     RETURNING *
   `
   await sql.end()
@@ -1668,9 +1683,33 @@ export async function upsertChallengePhoto(
   playerName: string,
   bingoItem: string,
   imageUrl: string,
-  blobPath: string
+  blobPath: string,
+  challenge?: WeeklyChallenge | null,
 ): Promise<ChallengePhoto> {
   const sql = getDb()
+
+  // Group mode guards
+  if (challenge && challenge.challengeMode === 'group' && challenge.teams) {
+    const playerTeam = challenge.teams.find(t => t.members.includes(playerName.toLowerCase()))
+    if (!playerTeam) {
+      await sql.end()
+      throw new Error('You are not assigned to a team for this challenge')
+    }
+    // Check if a teammate already submitted this bingo item
+    const teamMembers = playerTeam.members
+    const existing = await sql`
+      SELECT 1 FROM challenge_photos
+      WHERE challenge_id = ${challengeId}
+        AND bingo_item = ${bingoItem}
+        AND player_name = ANY(${teamMembers})
+        AND player_name != ${playerName.toLowerCase()}
+    `
+    if (existing.length > 0) {
+      await sql.end()
+      throw new Error('A teammate already submitted this item')
+    }
+  }
+
   const rows = await sql`
     INSERT INTO challenge_photos (challenge_id, player_name, bingo_item, image_url, blob_path)
     VALUES (${challengeId}, ${playerName}, ${bingoItem}, ${imageUrl}, ${blobPath})
@@ -1781,7 +1820,45 @@ export async function getChallengeView(weekKey: string): Promise<ChallengeView> 
     return a.playerName.localeCompare(b.playerName)
   })
 
-  return { challenge, participants }
+  // Build team progress for group mode
+  let teamProgress: TeamProgress[] | undefined
+  if (challenge.challengeMode === 'group' && challenge.teams) {
+    teamProgress = challenge.teams.map(team => {
+      const teamPhotos = photos.filter(p => team.members.includes(p.playerName.toLowerCase()))
+      const completedBingoItems = Array.from(new Set(teamPhotos.map(p => p.bingoItem)))
+      const memberProgress = participants.filter(p => team.members.includes(p.playerName.toLowerCase()))
+
+      // Team complete: all bingo items done AND every member met exercise requirements
+      const allBingoDone = challenge.bingoItems.every(item => completedBingoItems.includes(item))
+      const allMembersExerciseMet = team.members.every(memberName => {
+        const mp = participants.find(p => p.playerName === memberName)
+        if (!mp) return false
+        if (challenge.exerciseRequirements) {
+          const playerTypes = mp.exerciseTypeCounts ?? {}
+          return Object.entries(challenge.exerciseRequirements).every(
+            ([type, required]) => (playerTypes[type] ?? 0) >= (required as number)
+          )
+        }
+        return mp.exerciseCount >= challenge.exerciseMinimum
+      })
+
+      return {
+        team,
+        photos: teamPhotos,
+        completedBingoItems,
+        memberProgress,
+        isComplete: allBingoDone && allMembersExerciseMet,
+      }
+    })
+
+    // Sort: complete teams first
+    teamProgress.sort((a, b) => {
+      if (a.isComplete !== b.isComplete) return a.isComplete ? -1 : 1
+      return a.team.name.localeCompare(b.team.name)
+    })
+  }
+
+  return { challenge, participants, teamProgress }
 }
 
 export async function getChallengeLeaderboard(): Promise<ChallengeLeaderboardEntry[]> {
@@ -1846,6 +1923,87 @@ export async function getChallengeLeaderboard(): Promise<ChallengeLeaderboardEnt
     .sort((a, b) => b.completedChallenges - a.completedChallenges || a.playerName.localeCompare(b.playerName))
 
   return entries
+}
+
+export async function getGroupChallengeLeaderboard(): Promise<GroupLeaderboardEntry[]> {
+  const sql = getDb()
+
+  // Get only group-mode challenges
+  const challenges = await sql`SELECT * FROM weekly_challenges WHERE challenge_mode = 'group'`
+
+  if (challenges.length === 0) {
+    await sql.end()
+    return []
+  }
+
+  const challengeIds = challenges.map(c => c.id)
+  const allPhotos = await sql`SELECT * FROM challenge_photos WHERE challenge_id = ANY(${challengeIds})`
+
+  // Get exercise counts per player per week + per-type
+  const exerciseRows = await sql`
+    SELECT player_name, week_key, COUNT(*)::int AS exercise_count
+    FROM meals
+    GROUP BY player_name, week_key
+  `
+  const typeRows = await sql`
+    SELECT player_name, week_key, exercise_type, COUNT(*)::int AS type_count
+    FROM meals WHERE exercise_type IS NOT NULL
+    GROUP BY player_name, week_key, exercise_type
+  `
+
+  await sql.end()
+
+  // Build exercise maps
+  const exerciseMap = new Map<string, Map<string, number>>()
+  for (const row of exerciseRows) {
+    const wk = row.week_key as string
+    const pn = row.player_name as string
+    if (!exerciseMap.has(wk)) exerciseMap.set(wk, new Map())
+    exerciseMap.get(wk)!.set(pn, row.exercise_count as number)
+  }
+  const typeCountMap = new Map<string, Map<string, Record<string, number>>>()
+  for (const row of typeRows) {
+    const wk = row.week_key as string
+    const pn = row.player_name as string
+    if (!typeCountMap.has(wk)) typeCountMap.set(wk, new Map())
+    const weekMap = typeCountMap.get(wk)!
+    if (!weekMap.has(pn)) weekMap.set(pn, {})
+    weekMap.get(pn)![row.exercise_type as string] = row.type_count as number
+  }
+
+  const teamCompletionCount = new Map<string, number>()
+
+  for (const ch of challenges) {
+    const challenge = rowToChallenge(ch)
+    if (!challenge.teams) continue
+    const challengePhotos = allPhotos.filter((p: any) => p.challenge_id === challenge.id).map(rowToChallengePhoto)
+    const weekExercise = exerciseMap.get(challenge.weekKey) ?? new Map()
+    const weekTypes = typeCountMap.get(challenge.weekKey) ?? new Map()
+
+    for (const team of challenge.teams) {
+      const teamPhotos = challengePhotos.filter(p => team.members.includes(p.playerName.toLowerCase()))
+      const completedBingoItems = Array.from(new Set(teamPhotos.map(p => p.bingoItem)))
+      const allBingoDone = challenge.bingoItems.every(item => completedBingoItems.includes(item))
+
+      const allMembersExerciseMet = team.members.every(memberName => {
+        if (challenge.exerciseRequirements) {
+          const playerTypes = weekTypes.get(memberName) ?? {}
+          return Object.entries(challenge.exerciseRequirements).every(
+            ([type, required]) => (playerTypes[type] ?? 0) >= (required as number)
+          )
+        }
+        return (weekExercise.get(memberName) ?? 0) >= challenge.exerciseMinimum
+      })
+
+      if (allBingoDone && allMembersExerciseMet) {
+        teamCompletionCount.set(team.name, (teamCompletionCount.get(team.name) ?? 0) + 1)
+      }
+    }
+  }
+
+  return Array.from(teamCompletionCount.entries())
+    .map(([teamName, completedChallenges]) => ({ teamName, completedChallenges }))
+    .sort((a, b) => b.completedChallenges - a.completedChallenges || a.teamName.localeCompare(b.teamName))
 }
 
 // ── App Config ─────────────────────────────────────────────────

@@ -6,7 +6,7 @@ import { Window } from '@/components/amiga/Window'
 import { Button } from '@/components/amiga/Button'
 import { useName } from '@/lib/useName'
 import { processImage, isHeic, MAX_RAW_SIZE } from '@/lib/imageProcess'
-import type { ChallengeView, ChallengeLeaderboardEntry, ChallengeParticipant, WeeklyChallenge } from '@/types'
+import type { ChallengeView, ChallengeLeaderboardEntry, GroupLeaderboardEntry, ChallengeParticipant, WeeklyChallenge, TeamProgress } from '@/types'
 
 const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
 const TYPE_LABELS: Record<string, string> = { cardio: '🏃 CARDIO', strength: '💪 STRENGTH' }
@@ -69,6 +69,7 @@ export default function ChallengePage() {
   const { name } = useName()
   const [view, setView] = useState<ChallengeView | null>(null)
   const [leaderboard, setLeaderboard] = useState<ChallengeLeaderboardEntry[]>([])
+  const [groupLeaderboard, setGroupLeaderboard] = useState<GroupLeaderboardEntry[]>([])
   const [allChallenges, setAllChallenges] = useState<WeeklyChallenge[]>([])
   const [selectedWeek, setSelectedWeek] = useState<string | null>(null) // null = current week
   const [loading, setLoading] = useState(true)
@@ -94,7 +95,17 @@ export default function ChallengePage() {
         fetch('/api/challenge/leaderboard'),
       ])
       if (viewRes.ok) setView(await viewRes.json())
-      if (lbRes.ok) setLeaderboard(await lbRes.json())
+      if (lbRes.ok) {
+        const lbData = await lbRes.json()
+        if (Array.isArray(lbData)) {
+          // Backward compat: old shape was just an array
+          setLeaderboard(lbData)
+          setGroupLeaderboard([])
+        } else {
+          setLeaderboard(lbData.individual ?? [])
+          setGroupLeaderboard(lbData.groups ?? [])
+        }
+      }
     } catch {
       // silent
     } finally {
@@ -194,6 +205,13 @@ export default function ChallengePage() {
   const participants = view?.participants ?? []
   const myParticipant = name ? participants.find(p => p.playerName === name.toLowerCase()) : null
   const isCurrentWeek = selectedWeek === null
+  const isGroupMode = challenge?.challengeMode === 'group'
+  const myTeam = isGroupMode && challenge?.teams && name
+    ? challenge.teams.find(t => t.members.includes(name.toLowerCase()))
+    : null
+  const myTeamProgress = isGroupMode && view?.teamProgress && myTeam
+    ? view.teamProgress.find(tp => tp.team.name === myTeam.name)
+    : null
 
   return (
     <div className="stack" style={{ gap: '12px' }}>
@@ -320,8 +338,8 @@ export default function ChallengePage() {
               </div>
             )}
 
-            {/* My bingo grid */}
-            {name && (
+            {/* Bingo grid: individual or group */}
+            {name && !isGroupMode && (
               <div>
                 <div style={{
                   fontFamily: 'var(--font-pixel)',
@@ -406,7 +424,7 @@ export default function ChallengePage() {
                             {isUploading ? 'UPLOADING...' : 'UPLOAD'}
                           </Button>
                         ) : (
-                          <span style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: 'var(--bevel-shadow)' }}>—</span>
+                          <span style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: 'var(--bevel-shadow)' }}>---</span>
                         )}
                       </div>
                     )
@@ -437,6 +455,220 @@ export default function ChallengePage() {
               </div>
             )}
 
+            {/* Group mode bingo card */}
+            {name && isGroupMode && (
+              <div>
+                {!myTeam ? (
+                  <div style={{
+                    textAlign: 'center',
+                    fontFamily: 'var(--font-pixel)',
+                    fontSize: '9px',
+                    color: '#AA0000',
+                    padding: '16px',
+                    border: '2px solid #AA0000',
+                  }}>
+                    YOU ARE NOT ASSIGNED TO A TEAM
+                  </div>
+                ) : (
+                  <>
+                    <div style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: '8px',
+                      color: 'var(--crt-amber)',
+                      marginBottom: '8px',
+                      textTransform: 'uppercase',
+                    }}>
+                      YOUR TEAM&apos;S BINGO CARD — {myTeam.name.toUpperCase()}
+                    </div>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: `repeat(${Math.min(challenge.bingoItems.length, 4)}, 1fr)`,
+                      gap: '8px',
+                    }}>
+                      {challenge.bingoItems.map(item => {
+                        const teamPhoto = myTeamProgress?.photos.find(p => p.bingoItem === item)
+                        const isUploading = uploading === item
+                        return (
+                          <div key={item} style={{
+                            background: teamPhoto ? 'rgba(0, 180, 0, 0.15)' : 'var(--amiga-black)',
+                            border: teamPhoto ? '2px solid #00AA00' : '2px solid var(--bevel-shadow)',
+                            padding: '6px',
+                            textAlign: 'center',
+                            minHeight: '80px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                          }}>
+                            <div style={{
+                              fontFamily: 'var(--font-pixel)',
+                              fontSize: '7px',
+                              color: teamPhoto ? '#00CC00' : 'var(--crt-amber)',
+                              wordBreak: 'break-word',
+                            }}>
+                              {item}
+                            </div>
+                            {teamPhoto ? (
+                              <>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={teamPhoto.imageUrl}
+                                  alt={item}
+                                  onClick={() => openLightbox(teamPhoto.imageUrl, `${teamPhoto.playerName.toUpperCase()} — ${item}`)}
+                                  style={{
+                                    width: '120px',
+                                    height: '120px',
+                                    objectFit: 'cover',
+                                    cursor: 'pointer',
+                                    borderTop: '1px solid var(--bevel-shadow)',
+                                    borderLeft: '1px solid var(--bevel-shadow)',
+                                    borderRight: '1px solid var(--bevel-light)',
+                                    borderBottom: '1px solid var(--bevel-light)',
+                                  }}
+                                />
+                                <div style={{
+                                  fontFamily: 'var(--font-pixel)',
+                                  fontSize: '6px',
+                                  color: 'var(--amiga-dark-grey)',
+                                }}>
+                                  BY {teamPhoto.playerName.toUpperCase()}
+                                </div>
+                                {isCurrentWeek && teamPhoto.playerName === name.toLowerCase() && (
+                                  <button
+                                    onClick={() => handleDeletePhoto(teamPhoto.id)}
+                                    style={{
+                                      fontFamily: 'var(--font-pixel)',
+                                      fontSize: '6px',
+                                      color: '#AA0000',
+                                      background: 'none',
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      padding: '2px',
+                                    }}
+                                    title="Remove photo"
+                                  >
+                                    [X]
+                                  </button>
+                                )}
+                              </>
+                            ) : isCurrentWeek ? (
+                              <Button
+                                onClick={() => handleUploadClick(item)}
+                                disabled={isUploading}
+                                style={{ fontSize: '6px', padding: '4px 8px' }}
+                              >
+                                {isUploading ? 'UPLOADING...' : 'UPLOAD'}
+                              </Button>
+                            ) : (
+                              <span style={{ fontFamily: 'var(--font-pixel)', fontSize: '10px', color: 'var(--bevel-shadow)' }}>---</span>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* Team member exercise progress */}
+                    <div style={{ marginTop: '12px' }}>
+                      <div style={{
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: '7px',
+                        color: 'var(--crt-amber)',
+                        marginBottom: '6px',
+                      }}>
+                        TEAM MEMBER PROGRESS
+                      </div>
+                      <div className="stack" style={{ gap: '4px' }}>
+                        {myTeam.members.map(memberName => {
+                          const mp = participants.find(p => p.playerName === memberName)
+                          const reqs = challenge.exerciseRequirements
+                          if (IS_EXERCISE && reqs && Object.keys(reqs).length > 0) {
+                            const typeCounts = mp?.exerciseTypeCounts ?? {}
+                            const validTypes = Object.entries(reqs).filter(([type]) => type === 'cardio' || type === 'strength')
+                            const allMet = validTypes.every(([type, required]) => (typeCounts[type] ?? 0) >= (required as number))
+                            return (
+                              <div key={memberName} style={{
+                                fontFamily: 'var(--font-pixel)',
+                                fontSize: '7px',
+                                display: 'flex',
+                                gap: '8px',
+                                flexWrap: 'wrap',
+                                color: allMet ? '#00CC00' : 'var(--crt-amber)',
+                                padding: '2px 0',
+                              }}>
+                                <span style={{ minWidth: '80px', textTransform: 'uppercase' }}>{memberName}</span>
+                                {validTypes.map(([type, required]) => {
+                                  const count = typeCounts[type] ?? 0
+                                  const met = count >= (required as number)
+                                  return (
+                                    <span key={type} style={{ color: met ? '#00CC00' : TYPE_COLORS[type] ?? 'var(--crt-amber)' }}>
+                                      {count}/{required as number} {TYPE_LABELS[type] ?? type.toUpperCase()} {met && '\u2713'}
+                                    </span>
+                                  )
+                                })}
+                              </div>
+                            )
+                          }
+                          const exerciseCount = mp?.exerciseCount ?? 0
+                          const met = exerciseCount >= challenge.exerciseMinimum
+                          return (
+                            <div key={memberName} style={{
+                              fontFamily: 'var(--font-pixel)',
+                              fontSize: '7px',
+                              color: met ? '#00CC00' : 'var(--crt-amber)',
+                              padding: '2px 0',
+                              textTransform: 'uppercase',
+                            }}>
+                              {memberName}: {exerciseCount}/{challenge.exerciseMinimum} EXERCISES {met && '\u2713'}
+                            </div>
+                          )
+                        })}
+                      </div>
+                      {(() => {
+                        const readyCount = myTeam.members.filter(memberName => {
+                          const mp = participants.find(p => p.playerName === memberName)
+                          if (!mp) return false
+                          const reqs = challenge.exerciseRequirements
+                          if (IS_EXERCISE && reqs && Object.keys(reqs).length > 0) {
+                            const typeCounts = mp.exerciseTypeCounts ?? {}
+                            return Object.entries(reqs)
+                              .filter(([type]) => type === 'cardio' || type === 'strength')
+                              .every(([type, required]) => (typeCounts[type] ?? 0) >= (required as number))
+                          }
+                          return mp.exerciseCount >= challenge.exerciseMinimum
+                        }).length
+                        return (
+                          <div style={{
+                            marginTop: '6px',
+                            fontFamily: 'var(--font-pixel)',
+                            fontSize: '8px',
+                            color: readyCount === myTeam.members.length ? '#00CC00' : 'var(--crt-amber)',
+                            textAlign: 'center',
+                          }}>
+                            {readyCount}/{myTeam.members.length} MEMBERS READY
+                          </div>
+                        )
+                      })()}
+                    </div>
+
+                    {/* Team completion banner */}
+                    {myTeamProgress?.isComplete && (
+                      <div style={{
+                        marginTop: '8px',
+                        textAlign: 'center',
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: '11px',
+                        color: '#FFD700',
+                        textShadow: '0 0 8px rgba(255, 215, 0, 0.5)',
+                      }}>
+                        TEAM CHALLENGE COMPLETE!
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
             {!name && (
               <div style={{
                 textAlign: 'center',
@@ -452,8 +684,8 @@ export default function ChallengePage() {
         )}
       </Window>
 
-      {/* Participants */}
-      {challenge && participants.length > 0 && (
+      {/* Participants (individual mode) */}
+      {challenge && !isGroupMode && participants.length > 0 && (
         <Window title="PARTICIPANTS">
           <div className="stack" style={{ gap: '12px' }}>
             {participants.map(p => (
@@ -480,7 +712,7 @@ export default function ChallengePage() {
                     alignItems: 'center',
                     gap: '6px',
                   }}>
-                    {p.isComplete && <span style={{ fontSize: '16px', lineHeight: 1 }}>⭐</span>}{p.playerName}
+                    {p.isComplete && <span style={{ fontSize: '16px', lineHeight: 1 }}>&#11088;</span>}{p.playerName}
                   </a>
                   <ExerciseProgress participant={p} challenge={challenge} />
                 </div>
@@ -497,7 +729,7 @@ export default function ChallengePage() {
                         textAlign: 'center',
                       }}>
                         <div
-                          onClick={photo ? () => openLightbox(photo.imageUrl, `${p.playerName.toUpperCase()} — ${item}`) : undefined}
+                          onClick={photo ? () => openLightbox(photo.imageUrl, `${p.playerName.toUpperCase()} --- ${item}`) : undefined}
                           style={{
                             width: '100px',
                             height: '100px',
@@ -542,7 +774,161 @@ export default function ChallengePage() {
         </Window>
       )}
 
-      {/* Leaderboard */}
+      {/* Teams (group mode) */}
+      {challenge && isGroupMode && view?.teamProgress && view.teamProgress.length > 0 && (
+        <Window title="TEAMS">
+          <div className="stack" style={{ gap: '12px' }}>
+            {view.teamProgress.map(tp => (
+              <div key={tp.team.name} style={{
+                background: tp.isComplete ? 'rgba(0, 180, 0, 0.08)' : 'transparent',
+                border: tp.isComplete ? '1px solid #00AA00' : '1px solid var(--bevel-shadow)',
+                padding: '8px',
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '6px',
+                  flexWrap: 'wrap',
+                  gap: '4px',
+                }}>
+                  <div style={{
+                    fontFamily: 'var(--font-pixel)',
+                    fontSize: '9px',
+                    color: tp.isComplete ? '#FFD700' : 'var(--crt-amber)',
+                    textTransform: 'uppercase',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}>
+                    {tp.isComplete && <span style={{ fontSize: '16px', lineHeight: 1 }}>&#11088;</span>}
+                    {tp.team.name}
+                  </div>
+                  {tp.isComplete && (
+                    <span style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: '7px',
+                      color: '#FFD700',
+                    }}>
+                      COMPLETE
+                    </span>
+                  )}
+                </div>
+                {/* Team bingo grid */}
+                <div style={{
+                  display: 'flex',
+                  gap: '6px',
+                  flexWrap: 'wrap',
+                  marginBottom: '8px',
+                }}>
+                  {challenge.bingoItems.map(item => {
+                    const photo = tp.photos.find(ph => ph.bingoItem === item)
+                    return (
+                      <div key={item} style={{
+                        width: '80px',
+                        textAlign: 'center',
+                      }}>
+                        <div
+                          onClick={photo ? () => openLightbox(photo.imageUrl, `${tp.team.name.toUpperCase()} --- ${item}`) : undefined}
+                          style={{
+                            width: '80px',
+                            height: '80px',
+                            background: photo ? 'transparent' : 'var(--amiga-black)',
+                            border: photo ? '2px solid #00AA00' : '2px solid var(--bevel-shadow)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            cursor: photo ? 'pointer' : 'default',
+                          }}
+                        >
+                          {photo ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={photo.imageUrl}
+                              alt={item}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <span style={{ fontFamily: 'var(--font-pixel)', fontSize: '16px', color: 'var(--bevel-shadow)' }}>?</span>
+                          )}
+                        </div>
+                        <div style={{
+                          fontFamily: 'var(--font-pixel)',
+                          fontSize: '6px',
+                          color: photo ? '#00CC00' : 'var(--amiga-dark-grey)',
+                          marginTop: '2px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {item}
+                        </div>
+                        {photo && (
+                          <div style={{
+                            fontFamily: 'var(--font-pixel)',
+                            fontSize: '5px',
+                            color: 'var(--amiga-dark-grey)',
+                          }}>
+                            {photo.playerName.toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                {/* Per-member exercise status */}
+                <div className="stack" style={{ gap: '2px' }}>
+                  {tp.team.members.map(memberName => {
+                    const mp = tp.memberProgress.find(p => p.playerName === memberName)
+                    const reqs = challenge.exerciseRequirements
+                    if (IS_EXERCISE && reqs && Object.keys(reqs).length > 0) {
+                      const typeCounts = mp?.exerciseTypeCounts ?? {}
+                      const validTypes = Object.entries(reqs).filter(([type]) => type === 'cardio' || type === 'strength')
+                      const allMet = validTypes.every(([type, required]) => (typeCounts[type] ?? 0) >= (required as number))
+                      return (
+                        <div key={memberName} style={{
+                          fontFamily: 'var(--font-pixel)',
+                          fontSize: '6px',
+                          display: 'flex',
+                          gap: '6px',
+                          flexWrap: 'wrap',
+                          color: allMet ? '#00CC00' : 'var(--amiga-dark-grey)',
+                        }}>
+                          <span style={{ minWidth: '60px', textTransform: 'uppercase' }}>{memberName}</span>
+                          {validTypes.map(([type, required]) => {
+                            const count = typeCounts[type] ?? 0
+                            const met = count >= (required as number)
+                            return (
+                              <span key={type} style={{ color: met ? '#00CC00' : TYPE_COLORS[type] ?? 'var(--amiga-dark-grey)' }}>
+                                {count}/{required as number} {type.toUpperCase()} {met && '\u2713'}
+                              </span>
+                            )
+                          })}
+                        </div>
+                      )
+                    }
+                    const exerciseCount = mp?.exerciseCount ?? 0
+                    const met = exerciseCount >= challenge.exerciseMinimum
+                    return (
+                      <div key={memberName} style={{
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: '6px',
+                        color: met ? '#00CC00' : 'var(--amiga-dark-grey)',
+                        textTransform: 'uppercase',
+                      }}>
+                        {memberName}: {exerciseCount}/{challenge.exerciseMinimum} {met && '\u2713'}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Window>
+      )}
+
+      {/* Individual Leaderboard */}
       {leaderboard.length > 0 && (
         <Window title="CHALLENGE LEADERBOARD">
           <div className="stack" style={{ gap: '4px' }}>
@@ -563,7 +949,45 @@ export default function ChallengePage() {
                     color: completedCurrent ? '#FFD700' : 'var(--crt-amber)',
                     textTransform: 'uppercase',
                   }}>
-                    {completedCurrent && '★ '}{i + 1}. {entry.playerName}
+                    {completedCurrent && '\u2605 '}{i + 1}. {entry.playerName}
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--font-pixel)',
+                    fontSize: '8px',
+                    color: 'var(--amiga-dark-grey)',
+                  }}>
+                    {entry.completedChallenges} COMPLETED
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </Window>
+      )}
+
+      {/* Group Leaderboard */}
+      {groupLeaderboard.length > 0 && (
+        <Window title="GROUP CHALLENGE LEADERBOARD">
+          <div className="stack" style={{ gap: '4px' }}>
+            {groupLeaderboard.map((entry, i) => {
+              const isMyTeam = myTeam && entry.teamName === myTeam.name
+              const completedCurrent = view?.teamProgress?.find(tp => tp.team.name === entry.teamName)?.isComplete
+              return (
+                <div key={entry.teamName} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '4px 8px',
+                  background: completedCurrent ? 'rgba(255, 215, 0, 0.1)' : isMyTeam ? 'rgba(0, 85, 170, 0.1)' : 'transparent',
+                  borderBottom: '1px solid var(--bevel-shadow)',
+                }}>
+                  <div style={{
+                    fontFamily: 'var(--font-pixel)',
+                    fontSize: '8px',
+                    color: completedCurrent ? '#FFD700' : 'var(--crt-amber)',
+                    textTransform: 'uppercase',
+                  }}>
+                    {completedCurrent && '\u2605 '}{i + 1}. {entry.teamName}
                   </div>
                   <div style={{
                     fontFamily: 'var(--font-pixel)',

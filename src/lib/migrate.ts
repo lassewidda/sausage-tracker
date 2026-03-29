@@ -289,6 +289,10 @@ async function migrate() {
     )
   `
 
+  // Group challenges: add challenge_mode and teams columns
+  await sql`ALTER TABLE weekly_challenges ADD COLUMN IF NOT EXISTS challenge_mode TEXT NOT NULL DEFAULT 'individual'`
+  await sql`ALTER TABLE weekly_challenges ADD COLUMN IF NOT EXISTS teams JSONB`
+
   await sql.end()
   console.log('Migration complete.')
 }

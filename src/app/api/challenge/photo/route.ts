@@ -22,13 +22,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid bingo item for this challenge' }, { status: 400 })
   }
 
-  const photo = await upsertChallengePhoto(
-    challenge.id,
-    playerName.toLowerCase(),
-    bingoItem,
-    imageUrl,
-    blobPath
-  )
+  let photo
+  try {
+    photo = await upsertChallengePhoto(
+      challenge.id,
+      playerName.toLowerCase(),
+      bingoItem,
+      imageUrl,
+      blobPath,
+      challenge,
+    )
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Upload failed' }, { status: 400 })
+  }
 
   // Also insert into meals so it appears in the feed
   try {

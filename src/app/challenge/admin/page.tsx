@@ -31,6 +31,8 @@ export default function ChallengeAdminPage() {
   const [exerciseMinimum, setExerciseMinimum] = useState(3)
   const [cardioReq, setCardioReq] = useState(0)
   const [strengthReq, setStrengthReq] = useState(0)
+  const [challengeMode, setChallengeMode] = useState<'individual' | 'group'>('individual')
+  const [teams, setTeams] = useState<Array<{ name: string; members: string[] }>>([])
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -111,7 +113,17 @@ export default function ChallengeAdminPage() {
       const res = await fetch('/api/challenge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ weekKey, bingoItems: items, exerciseMinimum, exerciseRequirements }),
+        body: JSON.stringify({
+          weekKey,
+          bingoItems: items,
+          exerciseMinimum,
+          exerciseRequirements,
+          challengeMode,
+          teams: challengeMode === 'group' ? teams.map(t => ({
+            name: t.name.trim(),
+            members: t.members.map(m => m.trim().toLowerCase()).filter(Boolean),
+          })).filter(t => t.name && t.members.length > 0) : null,
+        }),
       })
 
       if (!res.ok) {
@@ -158,6 +170,8 @@ export default function ChallengeAdminPage() {
       setCardioReq(0)
       setStrengthReq(0)
     }
+    setChallengeMode(challenge.challengeMode ?? 'individual')
+    setTeams(challenge.teams ?? [])
     setMessage(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -362,6 +376,117 @@ export default function ChallengeAdminPage() {
             </Button>
           </div>
 
+          {/* Challenge mode toggle */}
+          <div>
+            <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: 'var(--crt-amber)', display: 'block', marginBottom: '4px' }}>
+              CHALLENGE MODE
+            </label>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button
+                onClick={() => setChallengeMode('individual')}
+                style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: '8px',
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  border: challengeMode === 'individual' ? '2px solid var(--crt-amber)' : '1px solid var(--bevel-shadow)',
+                  background: challengeMode === 'individual' ? 'var(--amiga-black)' : 'transparent',
+                  color: challengeMode === 'individual' ? 'var(--crt-amber)' : 'var(--amiga-dark-grey)',
+                }}
+              >
+                INDIVIDUAL
+              </button>
+              <button
+                onClick={() => setChallengeMode('group')}
+                style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: '8px',
+                  padding: '6px 12px',
+                  cursor: 'pointer',
+                  border: challengeMode === 'group' ? '2px solid var(--crt-amber)' : '1px solid var(--bevel-shadow)',
+                  background: challengeMode === 'group' ? 'var(--amiga-black)' : 'transparent',
+                  color: challengeMode === 'group' ? 'var(--crt-amber)' : 'var(--amiga-dark-grey)',
+                }}
+              >
+                GROUP
+              </button>
+            </div>
+          </div>
+
+          {/* Team editor (group mode) */}
+          {challengeMode === 'group' && (
+            <div>
+              <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: 'var(--crt-amber)', display: 'block', marginBottom: '8px' }}>
+                TEAMS
+              </label>
+              <div className="stack" style={{ gap: '10px' }}>
+                {teams.map((team, tidx) => (
+                  <div key={tidx} style={{
+                    border: '1px solid var(--bevel-shadow)',
+                    padding: '8px',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <input
+                        type="text"
+                        value={team.name}
+                        onChange={e => {
+                          const updated = [...teams]
+                          updated[tidx] = { ...updated[tidx], name: e.target.value }
+                          setTeams(updated)
+                        }}
+                        placeholder="TEAM NAME"
+                        style={{ ...inputStyle, width: '60%' }}
+                      />
+                      <button
+                        onClick={() => setTeams(teams.filter((_, i) => i !== tidx))}
+                        style={{
+                          fontFamily: 'var(--font-pixel)',
+                          fontSize: '7px',
+                          color: '#AA0000',
+                          background: 'none',
+                          border: '1px solid #AA0000',
+                          cursor: 'pointer',
+                          padding: '4px 8px',
+                        }}
+                      >
+                        REMOVE
+                      </button>
+                    </div>
+                    <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: 'var(--amiga-dark-grey)', display: 'block', marginBottom: '4px' }}>
+                      MEMBERS (ONE PER LINE OR COMMA-SEPARATED)
+                    </label>
+                    <textarea
+                      value={team.members.join('\n')}
+                      onChange={e => {
+                        const updated = [...teams]
+                        const raw = e.target.value
+                        updated[tidx] = {
+                          ...updated[tidx],
+                          members: raw.includes(',')
+                            ? raw.split(',').map(s => s.trim())
+                            : raw.split('\n').map(s => s.trim()),
+                        }
+                        setTeams(updated)
+                      }}
+                      rows={3}
+                      style={{
+                        ...inputStyle,
+                        resize: 'vertical',
+                        minHeight: '50px',
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <Button
+                onClick={() => setTeams([...teams, { name: '', members: [] }])}
+                style={{ marginTop: '6px', fontSize: '7px' }}
+              >
+                + ADD TEAM
+              </Button>
+            </div>
+          )}
+
           {/* Save */}
           <Button variant="primary" onClick={handleSave} disabled={saving}>
             {saving ? 'SAVING...' : 'SAVE CHALLENGE'}
@@ -416,12 +541,27 @@ export default function ChallengeAdminPage() {
                   fontSize: '7px',
                   color: 'var(--amiga-dark-grey)',
                   marginBottom: '4px',
+                  display: 'flex',
+                  gap: '8px',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
                 }}>
-                  MIN EXERCISES: {ch.exerciseMinimum}
+                  <span style={{
+                    background: ch.challengeMode === 'group' ? '#884400' : '#004488',
+                    color: '#FFFFFF',
+                    padding: '1px 6px',
+                    fontSize: '6px',
+                  }}>
+                    {(ch.challengeMode ?? 'individual').toUpperCase()}
+                  </span>
+                  <span>MIN EXERCISES: {ch.exerciseMinimum}</span>
                   {ch.exerciseRequirements && (
-                    <span style={{ marginLeft: '8px' }}>
+                    <span>
                       ({Object.entries(ch.exerciseRequirements).map(([t, n]) => `${t}: ${n}`).join(', ')})
                     </span>
+                  )}
+                  {ch.teams && ch.teams.length > 0 && (
+                    <span>{ch.teams.length} TEAMS</span>
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>

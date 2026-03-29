@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
-import { getChallengeLeaderboard } from '@/lib/db'
+import { getChallengeLeaderboard, getGroupChallengeLeaderboard } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const leaderboard = await getChallengeLeaderboard()
-  return NextResponse.json(leaderboard)
+  const [individual, groups] = await Promise.all([
+    getChallengeLeaderboard(),
+    getGroupChallengeLeaderboard(),
+  ])
+  return NextResponse.json({ individual, groups })
 }

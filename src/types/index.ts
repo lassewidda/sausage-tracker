@@ -195,12 +195,19 @@ export interface BattleEffect {
 
 // ── Weekly Challenges ──────────────────────────────────────
 
+export interface Team {
+  name: string
+  members: string[]
+}
+
 export interface WeeklyChallenge {
   id: string
   weekKey: string
   bingoItems: string[]
   exerciseMinimum: number
   exerciseRequirements?: Record<string, number> | null
+  challengeMode: 'individual' | 'group'
+  teams: Team[] | null
   createdAt: string
 }
 
@@ -223,13 +230,27 @@ export interface ChallengeParticipant {
   isComplete: boolean
 }
 
+export interface TeamProgress {
+  team: Team
+  photos: ChallengePhoto[]
+  completedBingoItems: string[]
+  memberProgress: ChallengeParticipant[]
+  isComplete: boolean
+}
+
 export interface ChallengeView {
   challenge: WeeklyChallenge | null
   participants: ChallengeParticipant[]
+  teamProgress?: TeamProgress[]
 }
 
 export interface ChallengeLeaderboardEntry {
   playerName: string
+  completedChallenges: number
+}
+
+export interface GroupLeaderboardEntry {
+  teamName: string
   completedChallenges: number
 }
 
