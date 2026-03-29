@@ -207,7 +207,7 @@ export function UploadZone() {
           </div>
         )}
         <div className="row row--center" style={{ gap: '12px', flexWrap: 'wrap' }}>
-          <Button onClick={reset}>ADD ANOTHER MEAL</Button>
+          <Button onClick={reset}>{process.env.NEXT_PUBLIC_THEME === 'exercise' ? 'LOG ANOTHER WORKOUT' : 'ADD ANOTHER MEAL'}</Button>
           <Button
             variant="primary"
             onClick={() => {
