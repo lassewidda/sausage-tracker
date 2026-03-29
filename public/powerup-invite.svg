@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" width="800" height="360">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A2744"/>
+      <stop offset="100%" stop-color="#0D1520"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#FFAA00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="360" fill="url(#bg)"/>
+  <rect x="6" y="6" width="788" height="348" rx="10" fill="none" stroke="#4A90D9" stroke-width="2" opacity="0.35"/>
+
+  <!-- POWERUP title -->
+  <text x="400" y="55" font-family="'Press Start 2P', 'Courier New', monospace" font-size="44" fill="url(#gold)" text-anchor="middle" font-weight="bold" letter-spacing="6">POWERUP</text>
+  <text x="400" y="56" font-family="'Press Start 2P', 'Courier New', monospace" font-size="44" fill="#FFD700" text-anchor="middle" font-weight="bold" letter-spacing="6" opacity="0.2" filter="blur(8px)">POWERUP</text>
+
+  <!-- Subtitle -->
+  <text x="400" y="78" font-family="'Press Start 2P', 'Courier New', monospace" font-size="11" fill="#5AA0E8" text-anchor="middle" letter-spacing="4">EXERCISE CHALLENGE</text>
+
+  <!-- ===== LEFT: Skinny → Arnold ===== -->
+  <g transform="translate(70, 100) scale(1.3)">
+    <rect x="12" y="0" width="10" height="10" fill="#F0B866" rx="2"/>
+    <rect x="14" y="3" width="2" height="2" fill="#111"/>
+    <rect x="18" y="3" width="2" height="2" fill="#111"/>
+    <rect x="15" y="7" width="4" height="1" fill="#AA7744"/>
+    <rect x="13" y="11" width="8" height="14" fill="#888" rx="1"/>
+    <rect x="8" y="13" width="5" height="3" fill="#F0B866"/>
+    <rect x="21" y="13" width="5" height="3" fill="#F0B866"/>
+    <rect x="14" y="26" width="3" height="12" fill="#4466AA"/>
+    <rect x="18" y="26" width="3" height="12" fill="#4466AA"/>
+    <rect x="13" y="38" width="5" height="3" fill="#666"/>
+    <rect x="17" y="38" width="5" height="3" fill="#666"/>
+    <rect x="24" y="2" width="3" height="4" fill="#44AAFF" rx="1" opacity="0.7"/>
+  </g>
+
+  <g transform="translate(140, 170)">
+    <rect x="0" y="0" width="35" height="4" fill="#FFD700" rx="2"/>
+    <polygon points="35,-4 46,2 35,8" fill="#FFD700"/>
+    <ellipse cx="18" cy="-7" rx="8" ry="6" fill="#DD2222"/>
+    <circle cx="14" cy="-9" r="2" fill="#FFF" opacity="0.9"/>
+    <circle cx="21" cy="-8" r="1.5" fill="#FFF" opacity="0.9"/>
+    <rect x="14" y="-2" width="7" height="4" rx="2" fill="#FFF4E0"/>
+  </g>
+
+  <g transform="translate(195, 90) scale(1.3)">
+    <rect x="14" y="0" width="14" height="12" fill="#F0B866" rx="2"/>
+    <rect x="15" y="3" width="5" height="3" fill="#111" rx="1"/>
+    <rect x="21" y="3" width="5" height="3" fill="#111" rx="1"/>
+    <rect x="20" y="4" width="1" height="1" fill="#111"/>
+    <rect x="17" y="8" width="8" height="2" fill="#FFF" rx="1"/>
+    <rect x="16" y="12" width="10" height="4" fill="#F0B866"/>
+    <rect x="8" y="16" width="26" height="18" fill="#DD2222" rx="2"/>
+    <rect x="12" y="16" width="18" height="3" fill="#F0B866"/>
+    <rect x="-2" y="14" width="10" height="8" fill="#F0B866" rx="3"/>
+    <rect x="34" y="14" width="10" height="8" fill="#F0B866" rx="3"/>
+    <rect x="-2" y="10" width="6" height="5" fill="#F0B866" rx="2"/>
+    <rect x="38" y="10" width="6" height="5" fill="#F0B866" rx="2"/>
+    <rect x="8" y="34" width="26" height="4" fill="#CC8800"/>
+    <rect x="18" y="34" width="6" height="4" fill="#FFD700" rx="1"/>
+    <rect x="10" y="38" width="8" height="16" fill="#4466AA"/>
+    <rect x="24" y="38" width="8" height="16" fill="#4466AA"/>
+    <rect x="8" y="54" width="12" height="4" fill="#333" rx="1"/>
+    <rect x="22" y="54" width="12" height="4" fill="#333" rx="1"/>
+    <rect x="-8" y="8" width="4" height="1" fill="#FFD700" opacity="0.6"/>
+    <rect x="46" y="8" width="4" height="1" fill="#FFD700" opacity="0.6"/>
+    <rect x="-6" y="20" width="3" height="1" fill="#FFD700" opacity="0.4"/>
+    <rect x="45" y="20" width="3" height="1" fill="#FFD700" opacity="0.4"/>
+  </g>
+
+  <!-- Center mushroom -->
+  <g transform="translate(356, 105)">
+    <ellipse cx="30" cy="20" rx="32" ry="22" fill="#DD2222"/>
+    <ellipse cx="30" cy="17" rx="28" ry="19" fill="#EE3333"/>
+    <circle cx="21" cy="11" r="6" fill="#FFF" opacity="0.9"/>
+    <circle cx="37" cy="9" r="5" fill="#FFF" opacity="0.9"/>
+    <circle cx="28" cy="25" r="4" fill="#FFF" opacity="0.85"/>
+    <circle cx="44" cy="20" r="3.5" fill="#FFF" opacity="0.8"/>
+    <circle cx="15" cy="22" r="3" fill="#FFF" opacity="0.8"/>
+    <rect x="10" y="35" width="40" height="5" rx="2" fill="#BB1111"/>
+    <rect x="16" y="40" width="28" height="16" rx="5" fill="#FFF4E0"/>
+    <rect x="18" y="40" width="24" height="14" rx="4" fill="#FFFFFF"/>
+    <ellipse cx="24" cy="18" rx="3.5" ry="4.5" fill="#111"/>
+    <ellipse cx="36" cy="18" rx="3.5" ry="4.5" fill="#111"/>
+    <ellipse cx="25" cy="17" rx="1.2" ry="1.6" fill="#FFF"/>
+    <ellipse cx="37" cy="17" rx="1.2" ry="1.6" fill="#FFF"/>
+    <path d="M26 26 Q30 31 34 26" fill="none" stroke="#111" stroke-width="1.8" stroke-linecap="round"/>
+  </g>
+
+  <!-- ===== RIGHT: Sleepy → Speed runner ===== -->
+  <g transform="translate(490, 105) scale(1.3)">
+    <rect x="10" y="0" width="10" height="10" fill="#F0B866" rx="2"/>
+    <rect x="12" y="4" width="2" height="1" fill="#111"/>
+    <rect x="16" y="4" width="2" height="1" fill="#111"/>
+    <rect x="14" y="7" width="3" height="2" fill="#AA5533" rx="1"/>
+    <rect x="10" y="11" width="10" height="12" fill="#777" rx="1"/>
+    <rect x="6" y="14" width="4" height="8" fill="#F0B866"/>
+    <rect x="20" y="14" width="4" height="8" fill="#F0B866"/>
+    <rect x="11" y="24" width="4" height="12" fill="#4466AA"/>
+    <rect x="16" y="24" width="4" height="12" fill="#4466AA"/>
+    <rect x="10" y="36" width="6" height="3" fill="#666"/>
+    <rect x="15" y="36" width="6" height="3" fill="#666"/>
+    <text x="24" y="3" font-family="'Press Start 2P', monospace" font-size="5" fill="#5AA0E8" opacity="0.6">z</text>
+    <text x="28" y="-1" font-family="'Press Start 2P', monospace" font-size="4" fill="#5AA0E8" opacity="0.4">z</text>
+  </g>
+
+  <g transform="translate(545, 170)">
+    <rect x="0" y="0" width="35" height="4" fill="#FFD700" rx="2"/>
+    <polygon points="35,-4 46,2 35,8" fill="#FFD700"/>
+    <ellipse cx="18" cy="-7" rx="8" ry="6" fill="#DD2222"/>
+    <circle cx="14" cy="-9" r="2" fill="#FFF" opacity="0.9"/>
+    <circle cx="21" cy="-8" r="1.5" fill="#FFF" opacity="0.9"/>
+    <rect x="14" y="-2" width="7" height="4" rx="2" fill="#FFF4E0"/>
+  </g>
+
+  <g transform="translate(600, 95) scale(1.3)">
+    <rect x="20" y="0" width="12" height="10" fill="#F0B866" rx="2"/>
+    <rect x="23" y="3" width="2" height="2" fill="#111"/>
+    <rect x="27" y="3" width="2" height="2" fill="#111"/>
+    <rect x="24" y="3" width="1" height="1" fill="#FFF"/>
+    <rect x="28" y="3" width="1" height="1" fill="#FFF"/>
+    <rect x="24" y="7" width="5" height="2" fill="#FFF" rx="1"/>
+    <rect x="19" y="1" width="14" height="3" fill="#DD2222"/>
+    <rect x="33" y="1" width="6" height="2" fill="#DD2222" opacity="0.7"/>
+    <rect x="37" y="2" width="4" height="1" fill="#DD2222" opacity="0.5"/>
+    <rect x="14" y="10" width="14" height="14" fill="#44AADD" rx="1"/>
+    <rect x="6" y="10" width="8" height="4" fill="#F0B866" rx="1"/>
+    <rect x="28" y="16" width="8" height="4" fill="#F0B866" rx="1"/>
+    <rect x="2" y="9" width="5" height="4" fill="#F0B866" rx="1"/>
+    <rect x="10" y="24" width="5" height="14" fill="#222" transform="rotate(-20, 12, 24)"/>
+    <rect x="20" y="24" width="5" height="14" fill="#222" transform="rotate(25, 22, 24)"/>
+    <rect x="2" y="36" width="10" height="4" fill="#DD2222" rx="2"/>
+    <rect x="28" y="36" width="10" height="4" fill="#DD2222" rx="2"/>
+    <rect x="-12" y="14" width="8" height="2" fill="#FFD700" opacity="0.6" rx="1"/>
+    <rect x="-8" y="20" width="6" height="2" fill="#FFD700" opacity="0.4" rx="1"/>
+    <rect x="-10" y="26" width="7" height="2" fill="#FFD700" opacity="0.5" rx="1"/>
+    <circle cx="-4" cy="38" r="4" fill="#5AA0E8" opacity="0.15"/>
+    <circle cx="-8" cy="35" r="3" fill="#5AA0E8" opacity="0.1"/>
+  </g>
+
+  <!-- Slogan -->
+  <text x="400" y="272" font-family="'Press Start 2P', 'Courier New', monospace" font-size="14" fill="#CCDDEE" text-anchor="middle" letter-spacing="2">Log workouts > Complete challenges > PowerUp!</text>
+
+  <!-- CTA button -->
+  <rect x="240" y="295" width="320" height="50" rx="25" fill="#DD2222"/>
+  <rect x="243" y="298" width="314" height="44" rx="22" fill="none" stroke="#FF6666" stroke-width="1" opacity="0.4"/>
+  <text x="400" y="327" font-family="'Press Start 2P', 'Courier New', monospace" font-size="18" fill="#FFFFFF" text-anchor="middle" letter-spacing="3">JOIN NOW!</text>
+</svg>
