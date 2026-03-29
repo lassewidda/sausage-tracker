@@ -11,16 +11,14 @@ export default function InvitePage() {
   const [checked, setChecked] = useState(false)
   const [error, setError] = useState('')
 
-  // Already has a name — go straight to home
+  // Already has a name — show welcome back
   if (loaded && name) {
     return (
       <div style={{
-        minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
+        padding: '16px',
       }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -29,7 +27,6 @@ export default function InvitePage() {
           onClick={() => router.push('/')}
           style={{
             width: '100%',
-            maxWidth: '800px',
             cursor: 'pointer',
             borderRadius: '12px',
           }}
@@ -83,17 +80,14 @@ export default function InvitePage() {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      padding: '20px',
-      paddingTop: '24px',
+      padding: '16px',
     }}>
-      {/* Invite image — clicking goes to home */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/powerup-invite.svg"
         alt="PowerUp Exercise Challenge"
         style={{
           width: '100%',
-          maxWidth: '700px',
           borderRadius: '12px',
         }}
       />
