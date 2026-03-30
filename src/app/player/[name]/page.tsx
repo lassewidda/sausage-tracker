@@ -86,8 +86,8 @@ export default async function PlayerPage({ params }: Props) {
     )
   }
 
-  // Generate card if none exists
-  if (!card) {
+  // Generate card if none exists — but only after the first week (activeWeeks > 0 means they have data from a past week)
+  if (!card && stats.activeWeeks > 1) {
     try {
       const generated = await generateHeroCard({
         playerName,
@@ -299,7 +299,19 @@ export default async function PlayerPage({ params }: Props) {
             <RegenerateButton playerName={playerName} cardCreatedAt={card.createdAt} />
           </div>
         )}
-        <CardCollection cards={profile.cards} />
+        {profile.cards.length === 0 ? (
+          <div style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '9px',
+            color: 'var(--amiga-dark-grey)',
+            textAlign: 'center',
+            padding: '16px',
+          }}>
+            HERO CARDS ARE GENERATED AFTER YOUR FIRST WEEK OF TRAINING. KEEP LOGGING!
+          </div>
+        ) : (
+          <CardCollection cards={profile.cards} />
+        )}
       </Window>
 
       {/* Battle Record */}
