@@ -21,7 +21,7 @@ export function CriticalHitOverlay({ turns }: Props) {
       if (critTurn) {
         setAttacker(critTurn.attacker)
         setVisible(true)
-        const timer = setTimeout(() => setVisible(false), 1800)
+        const timer = setTimeout(() => setVisible(false), 1500)
         return () => clearTimeout(timer)
       }
     }
@@ -38,14 +38,14 @@ export function CriticalHitOverlay({ turns }: Props) {
       alignItems: 'center',
       justifyContent: 'center',
       pointerEvents: 'none',
-      animation: 'crit-flash 1.8s steps(1) forwards',
+      animation: 'crit-flash 1.5s steps(1) forwards',
     }}>
       <div style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         gap: '8px',
-        animation: 'crit-text-enter 0.4s steps(6)',
+        animation: 'crit-text-enter 1.5s ease-out forwards',
       }}>
         <div style={{
           fontFamily: 'var(--font-pixel)',
@@ -54,7 +54,7 @@ export function CriticalHitOverlay({ turns }: Props) {
           textShadow: '0 0 20px rgba(255, 68, 255, 0.9), 0 0 40px rgba(255, 68, 255, 0.5), 2px 2px 0 #000',
           textTransform: 'uppercase',
           letterSpacing: '4px',
-          animation: 'crit-shake 0.15s steps(2) infinite',
+          animation: 'crit-shake 0.15s steps(2) 4',
         }}>
           CRITICAL HIT!
         </div>
