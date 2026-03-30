@@ -396,6 +396,372 @@ function getItemPixels(itemKey: string, m: string, a: string): JSX.Element {
         <rect x="15" y="4" width="2" height="4" fill={a} />
         <rect x="14" y="14" width="4" height="4" fill={a} opacity="0.4" />
       </>
+
+    // ── EXERCISE COMMON ──
+    case 'protein_bar':
+      return <>
+        <rect x="6" y="12" width="20" height="8" rx="1" fill="#8B4513" />
+        <rect x="8" y="14" width="16" height="4" fill="#D2691E" />
+        <rect x="10" y="13" width="4" height="2" fill="#FFD700" />
+        <rect x="16" y="13" width="4" height="2" fill="#FFD700" />
+        <rect x="6" y="11" width="20" height="2" fill="#A0522D" />
+      </>
+    case 'water_bottle':
+      return <>
+        <rect x="12" y="4" width="8" height="4" fill="#4488FF" />
+        <rect x="13" y="2" width="6" height="3" fill="#888" />
+        <rect x="10" y="8" width="12" height="18" rx="2" fill="#4488FF" />
+        <rect x="12" y="10" width="8" height="6" fill="#66AAFF" opacity="0.5" />
+        <rect x="14" y="26" width="4" height="2" fill="#3366CC" />
+      </>
+    case 'resistance_band':
+      return <>
+        <rect x="8" y="8" width="4" height="16" rx="2" fill={m} />
+        <rect x="20" y="8" width="4" height="16" rx="2" fill={m} />
+        <rect x="10" y="6" width="12" height="3" fill={a} />
+        <rect x="10" y="23" width="12" height="3" fill={a} />
+      </>
+    case 'sweatband':
+      return <>
+        <rect x="6" y="12" width="20" height="6" rx="2" fill="#FF4444" />
+        <rect x="8" y="14" width="3" height="2" fill="#FFFFFF" />
+        <rect x="13" y="14" width="3" height="2" fill="#FFFFFF" />
+        <rect x="18" y="14" width="4" height="2" fill="#FFFFFF" />
+        <rect x="7" y="18" width="2" height="4" fill="#44AAFF" opacity="0.5" />
+      </>
+    case 'chalk_bag':
+      return <>
+        <rect x="10" y="8" width="12" height="16" rx="2" fill="#886644" />
+        <rect x="12" y="6" width="8" height="4" fill="#AA8866" />
+        <rect x="14" y="4" width="4" height="3" fill="#665544" />
+        <rect x="12" y="12" width="8" height="8" fill="#FFFFFF" opacity="0.7" />
+      </>
+    case 'jump_rope':
+      return <>
+        <rect x="8" y="22" width="4" height="8" rx="1" fill="#444" />
+        <rect x="20" y="22" width="4" height="8" rx="1" fill="#444" />
+        <path d="M10 24 Q16 4 22 24" fill="none" stroke={m} strokeWidth="2" />
+      </>
+    case 'foam_roller_slice':
+      return <>
+        <ellipse cx="16" cy="16" rx="10" ry="8" fill={m} />
+        <ellipse cx="16" cy="16" rx="7" ry="5" fill={a} opacity="0.4" />
+        <rect x="8" y="14" width="16" height="1" fill={a} opacity="0.3" />
+        <rect x="8" y="18" width="16" height="1" fill={a} opacity="0.3" />
+      </>
+    case 'towel_snap':
+      return <>
+        <rect x="4" y="14" width="24" height="6" fill="#FFFFFF" />
+        <rect x="4" y="14" width="6" height="6" fill="#FF4444" />
+        <rect x="22" y="14" width="6" height="6" fill="#FF4444" />
+        <rect x="26" y="12" width="4" height="3" fill="#FFFFFF" opacity="0.5" />
+      </>
+    case 'grip_tape':
+      return <>
+        <ellipse cx="16" cy="16" rx="8" ry="8" fill={m} />
+        <ellipse cx="16" cy="16" rx="4" ry="4" fill={a} opacity="0.3" />
+        <rect x="16" y="8" width="2" height="4" fill={a} />
+      </>
+    case 'wrist_wrap':
+      return <>
+        <rect x="10" y="10" width="12" height="14" rx="2" fill="#222" />
+        <rect x="10" y="12" width="12" height="2" fill={m} />
+        <rect x="10" y="16" width="12" height="2" fill={m} />
+        <rect x="10" y="20" width="12" height="2" fill={m} />
+      </>
+    case 'knee_sleeve':
+      return <>
+        <rect x="10" y="6" width="12" height="20" rx="3" fill="#222" />
+        <rect x="12" y="8" width="8" height="16" fill={m} opacity="0.6" />
+        <rect x="13" y="14" width="6" height="4" fill={a} />
+      </>
+    case 'athletic_tape':
+      return <>
+        <ellipse cx="16" cy="16" rx="9" ry="9" fill="#FFFFFF" />
+        <ellipse cx="16" cy="16" rx="4" ry="4" fill="#DDDDDD" />
+        <rect x="16" y="7" width="2" height="3" fill="#FFFFFF" />
+      </>
+    case 'sports_drink':
+      return <>
+        <rect x="11" y="6" width="10" height="20" rx="2" fill="#44CC44" />
+        <rect x="12" y="4" width="8" height="4" fill="#888" />
+        <rect x="13" y="10" width="6" height="4" fill="#FFFFFF" opacity="0.7" />
+        <rect x="14" y="24" width="4" height="2" fill="#33AA33" />
+      </>
+    case 'ammonia_salt':
+      return <>
+        <rect x="10" y="10" width="12" height="12" rx="1" fill="#DDDDDD" />
+        <rect x="12" y="6" width="8" height="6" fill="#CCCCCC" />
+        <rect x="14" y="14" width="4" height="4" fill="#FFFF00" opacity="0.6" />
+        <rect x="12" y="8" width="2" height="3" fill="#AAAAAA" />
+      </>
+    case 'energy_gel':
+      return <>
+        <rect x="12" y="4" width="8" height="22" rx="3" fill="#FF6600" />
+        <rect x="14" y="6" width="4" height="6" fill="#FFAA00" />
+        <rect x="14" y="24" width="4" height="4" fill="#CC5500" />
+        <rect x="15" y="14" width="2" height="6" fill="#FFFFFF" opacity="0.3" />
+      </>
+    case 'running_socks':
+      return <>
+        <rect x="6" y="10" width="8" height="14" rx="2" fill="#FFFFFF" />
+        <rect x="6" y="20" width="10" height="4" rx="2" fill="#FFFFFF" />
+        <rect x="6" y="10" width="8" height="4" fill="#FF4444" />
+        <rect x="18" y="10" width="8" height="14" rx="2" fill="#FFFFFF" />
+        <rect x="18" y="20" width="10" height="4" rx="2" fill="#FFFFFF" />
+        <rect x="18" y="10" width="8" height="4" fill="#FF4444" />
+      </>
+    case 'cycling_gloves':
+      return <>
+        <rect x="8" y="10" width="7" height="12" rx="2" fill="#222" />
+        <rect x="8" y="10" width="7" height="4" fill="#FF4444" />
+        <rect x="17" y="10" width="7" height="12" rx="2" fill="#222" />
+        <rect x="17" y="10" width="7" height="4" fill="#FF4444" />
+        <rect x="10" y="8" width="3" height="3" fill="#222" />
+        <rect x="19" y="8" width="3" height="3" fill="#222" />
+      </>
+    case 'reflective_vest':
+      return <>
+        <rect x="8" y="6" width="16" height="20" rx="1" fill="#AAFF00" />
+        <rect x="10" y="8" width="12" height="2" fill="#FFFFFF" />
+        <rect x="10" y="16" width="12" height="2" fill="#FFFFFF" />
+        <rect x="14" y="10" width="4" height="10" fill="#FFFFFF" />
+      </>
+    case 'pace_band':
+      return <>
+        <rect x="6" y="12" width="20" height="8" rx="2" fill="#FFFFFF" />
+        <rect x="8" y="13" width="4" height="2" fill="#222" />
+        <rect x="13" y="13" width="2" height="2" fill="#FF0000" />
+        <rect x="16" y="13" width="4" height="2" fill="#222" />
+        <rect x="21" y="13" width="3" height="2" fill="#222" />
+      </>
+    case 'trail_mix':
+      return <>
+        <rect x="8" y="8" width="16" height="18" rx="2" fill="#886644" />
+        <rect x="10" y="6" width="12" height="4" fill="#AA8866" />
+        <circle cx="12" cy="16" r="2" fill="#44AA44" />
+        <circle cx="16" cy="14" r="2" fill="#8B4513" />
+        <circle cx="20" cy="17" r="2" fill="#FFD700" />
+        <circle cx="14" cy="20" r="1.5" fill="#FF4444" />
+      </>
+
+    // ── EXERCISE UNCOMMON ──
+    case 'pre_workout_powder':
+      return <>
+        <rect x="8" y="8" width="16" height="18" rx="2" fill="#222" />
+        <rect x="10" y="6" width="12" height="4" fill="#444" />
+        <rect x="10" y="12" width="12" height="4" fill="#FF00FF" opacity="0.5" />
+        <rect x="12" y="18" width="8" height="2" fill="#FF44FF" />
+        <rect x="13" y="4" width="6" height="3" fill="#333" />
+      </>
+    case 'compression_sleeves':
+      return <>
+        <rect x="8" y="6" width="6" height="20" rx="2" fill="#222" />
+        <rect x="18" y="6" width="6" height="20" rx="2" fill="#222" />
+        <rect x="9" y="10" width="4" height="2" fill={m} />
+        <rect x="9" y="16" width="4" height="2" fill={m} />
+        <rect x="19" y="10" width="4" height="2" fill={m} />
+        <rect x="19" y="16" width="4" height="2" fill={m} />
+      </>
+    case 'lifting_belt':
+      return <>
+        <rect x="4" y="12" width="24" height="8" rx="1" fill="#8B4513" />
+        <rect x="13" y="12" width="6" height="8" fill="#FFD700" />
+        <rect x="14" y="13" width="4" height="6" fill="#DAA520" />
+        <rect x="15" y="15" width="2" height="2" fill="#FFD700" />
+      </>
+    case 'ice_bath':
+      return <>
+        <rect x="6" y="10" width="20" height="16" rx="2" fill="#4488FF" />
+        <rect x="8" y="8" width="16" height="4" fill="#888" />
+        <rect x="10" y="14" width="4" height="4" fill="#AADDFF" opacity="0.6" />
+        <rect x="18" y="16" width="3" height="3" fill="#AADDFF" opacity="0.4" />
+        <rect x="14" y="12" width="2" height="2" fill="#FFFFFF" />
+      </>
+    case 'massage_gun':
+      return <>
+        <rect x="10" y="4" width="6" height="16" rx="2" fill="#333" />
+        <rect x="8" y="18" width="10" height="10" rx="2" fill="#444" />
+        <circle cx="13" cy="8" r="3" fill="#888" />
+        <rect x="12" y="5" width="2" height="2" fill="#FF4444" />
+      </>
+    case 'creatine_scoop':
+      return <>
+        <rect x="8" y="12" width="16" height="10" rx="2" fill="#FFFFFF" />
+        <rect x="6" y="10" width="4" height="14" fill="#888" />
+        <rect x="10" y="14" width="12" height="6" fill="#EEEEEE" />
+        <rect x="12" y="16" width="8" height="2" fill="#DDDDDD" />
+      </>
+    case 'smelling_salts':
+      return <>
+        <rect x="10" y="8" width="12" height="16" rx="2" fill="#DDDDDD" />
+        <rect x="12" y="6" width="8" height="4" fill="#AAAAAA" />
+        <rect x="14" y="14" width="4" height="4" fill="#FFFF00" />
+        <rect x="13" y="12" width="6" height="2" fill="#FF0000" />
+        <rect x="18" y="10" width="4" height="3" fill="#FFFF88" opacity="0.4" />
+      </>
+    case 'battle_rope':
+      return <>
+        <rect x="4" y="22" width="6" height="6" rx="1" fill="#444" />
+        <rect x="22" y="22" width="6" height="6" rx="1" fill="#444" />
+        <path d="M7 24 Q10 10 16 18 Q22 26 25 12" fill="none" stroke="#886644" strokeWidth="3" />
+      </>
+    case 'weight_plate':
+      return <>
+        <circle cx="16" cy="16" r="11" fill="#555" />
+        <circle cx="16" cy="16" r="8" fill="#666" />
+        <circle cx="16" cy="16" r="3" fill="#444" />
+        <rect x="5" y="15" width="4" height="2" fill="#777" />
+        <rect x="23" y="15" width="4" height="2" fill="#777" />
+      </>
+    case 'gym_chalk_block':
+      return <>
+        <rect x="8" y="10" width="16" height="12" rx="1" fill="#FFFFFF" />
+        <rect x="10" y="12" width="12" height="8" fill="#EEEEEE" />
+        <rect x="8" y="22" width="6" height="3" fill="#FFFFFF" opacity="0.5" />
+        <rect x="18" y="8" width="4" height="3" fill="#FFFFFF" opacity="0.4" />
+      </>
+    case 'bcaa_mix':
+      return <>
+        <rect x="10" y="6" width="12" height="20" rx="2" fill="#FF6699" />
+        <rect x="12" y="4" width="8" height="4" fill="#888" />
+        <rect x="12" y="10" width="8" height="4" fill="#FFFFFF" opacity="0.6" />
+        <rect x="14" y="16" width="4" height="4" fill="#FF88AA" />
+      </>
+    case 'gps_watch':
+      return <>
+        <rect x="8" y="4" width="16" height="4" fill="#333" rx="1" />
+        <rect x="8" y="24" width="16" height="4" fill="#333" rx="1" />
+        <rect x="8" y="8" width="16" height="16" rx="2" fill="#222" />
+        <rect x="10" y="10" width="12" height="12" fill="#003300" />
+        <rect x="12" y="12" width="4" height="6" fill="#00FF00" />
+        <rect x="16" y="14" width="4" height="2" fill="#00FF00" />
+      </>
+    case 'clipless_pedals':
+      return <>
+        <rect x="6" y="14" width="20" height="6" rx="1" fill="#888" />
+        <rect x="10" y="12" width="12" height="2" fill="#666" />
+        <rect x="14" y="10" width="4" height="4" fill="#FFD700" />
+        <rect x="8" y="20" width="4" height="4" fill="#555" />
+        <rect x="20" y="20" width="4" height="4" fill="#555" />
+      </>
+    case 'racing_flats':
+      return <>
+        <rect x="4" y="18" width="14" height="8" rx="2" fill="#FF4444" />
+        <rect x="4" y="16" width="10" height="4" rx="2" fill="#FF6666" />
+        <rect x="4" y="24" width="16" height="2" fill="#FFFFFF" />
+        <rect x="6" y="20" width="4" height="2" fill="#FFFFFF" opacity="0.5" />
+        <rect x="20" y="18" width="8" height="4" fill="#FFD700" opacity="0.3" />
+      </>
+    case 'recovery_shake':
+      return <>
+        <rect x="10" y="6" width="12" height="20" rx="2" fill="#8B4513" />
+        <rect x="12" y="4" width="8" height="4" fill="#666" />
+        <rect x="12" y="10" width="8" height="8" fill="#FFFFFF" opacity="0.6" />
+        <circle cx="16" cy="14" r="2" fill="#8B4513" />
+        <rect x="14" y="20" width="4" height="2" fill="#AA6633" />
+      </>
+    case 'wind_resistance_spray':
+      return <>
+        <rect x="10" y="6" width="10" height="20" rx="3" fill="#4488FF" />
+        <rect x="12" y="4" width="6" height="4" fill="#888" />
+        <rect x="14" y="2" width="4" height="3" fill="#666" />
+        <rect x="8" y="10" width="4" height="2" fill="#88CCFF" opacity="0.5" />
+        <rect x="6" y="14" width="4" height="1" fill="#88CCFF" opacity="0.3" />
+        <rect x="7" y="18" width="3" height="1" fill="#88CCFF" opacity="0.3" />
+      </>
+
+    // ── EXERCISE RARE ──
+    case 'golden_dumbbell':
+      return <>
+        <rect x="4" y="12" width="6" height="10" rx="1" fill="#FFD700" />
+        <rect x="22" y="12" width="6" height="10" rx="1" fill="#FFD700" />
+        <rect x="10" y="15" width="12" height="4" fill="#DAA520" />
+        <rect x="4" y="14" width="6" height="6" fill="#FFEE44" opacity="0.3" />
+      </>
+    case 'unlimited_gym_pass':
+      return <>
+        <rect x="4" y="8" width="24" height="16" rx="2" fill="#FFD700" />
+        <rect x="6" y="10" width="20" height="12" fill="#DAA520" />
+        <rect x="8" y="12" width="8" height="2" fill="#FFFFFF" />
+        <rect x="8" y="16" width="12" height="2" fill="#FFFFFF" opacity="0.5" />
+        <rect x="22" y="12" width="4" height="6" fill="#FF4444" />
+      </>
+    case 'personal_trainer':
+      return <>
+        <rect x="12" y="4" width="8" height="8" rx="4" fill="#F0B866" />
+        <rect x="14" y="7" width="2" height="1" fill="#111" />
+        <rect x="16" y="7" width="2" height="1" fill="#111" />
+        <rect x="10" y="12" width="12" height="12" rx="1" fill="#222" />
+        <rect x="14" y="12" width="4" height="2" fill="#F0B866" />
+        <rect x="20" y="14" width="6" height="3" fill="#F0B866" />
+        <rect x="4" y="14" width="6" height="3" fill="#F0B866" />
+      </>
+    case 'titanium_barbell':
+      return <>
+        <rect x="2" y="12" width="6" height="8" rx="1" fill="#AAAAAA" />
+        <rect x="24" y="12" width="6" height="8" rx="1" fill="#AAAAAA" />
+        <rect x="8" y="15" width="16" height="3" fill="#CCCCCC" />
+        <rect x="2" y="14" width="6" height="4" fill="#BBBBBB" opacity="0.5" />
+        <rect x="24" y="14" width="6" height="4" fill="#BBBBBB" opacity="0.5" />
+      </>
+    case 'olympic_rings':
+      return <>
+        <circle cx="10" cy="14" r="4" fill="none" stroke="#4488FF" strokeWidth="2" />
+        <circle cx="16" cy="14" r="4" fill="none" stroke="#222" strokeWidth="2" />
+        <circle cx="22" cy="14" r="4" fill="none" stroke="#FF4444" strokeWidth="2" />
+        <circle cx="13" cy="18" r="4" fill="none" stroke="#FFD700" strokeWidth="2" />
+        <circle cx="19" cy="18" r="4" fill="none" stroke="#44CC44" strokeWidth="2" />
+      </>
+    case 'dragon_flag_cape':
+      return <>
+        <rect x="14" y="4" width="2" height="24" fill="#888" />
+        <rect x="16" y="6" width="12" height="8" fill="#FF4444" />
+        <rect x="16" y="14" width="10" height="6" fill="#FF4444" />
+        <rect x="16" y="20" width="8" height="4" fill="#FF4444" />
+        <rect x="18" y="8" width="4" height="4" fill="#FFD700" />
+      </>
+    case 'elixir_of_gains':
+      return <>
+        <rect x="12" y="8" width="8" height="16" rx="2" fill="#8800FF" />
+        <rect x="14" y="4" width="4" height="6" fill="#666" />
+        <rect x="15" y="2" width="2" height="3" fill="#888" />
+        <rect x="14" y="12" width="4" height="4" fill="#AA44FF" opacity="0.6" />
+        <rect x="13" y="18" width="2" height="2" fill="#FF44FF" opacity="0.5" />
+        <rect x="17" y="16" width="2" height="2" fill="#FF44FF" opacity="0.5" />
+      </>
+    case 'marathon_medal':
+      return <>
+        <rect x="12" y="2" width="8" height="4" fill="#4488FF" />
+        <rect x="14" y="6" width="4" height="4" fill="#4488FF" />
+        <circle cx="16" cy="18" r="8" fill="#FFD700" />
+        <circle cx="16" cy="18" r="5" fill="#DAA520" />
+        <rect x="14" y="16" width="4" height="4" fill="#FFD700" />
+      </>
+    case 'carbon_fiber_frame':
+      return <>
+        <circle cx="10" cy="22" r="5" fill="none" stroke="#444" strokeWidth="2" />
+        <circle cx="22" cy="22" r="5" fill="none" stroke="#444" strokeWidth="2" />
+        <line x1="10" y1="22" x2="16" y2="10" stroke="#222" strokeWidth="2" />
+        <line x1="16" y1="10" x2="22" y2="22" stroke="#222" strokeWidth="2" />
+        <line x1="10" y1="22" x2="22" y2="22" stroke="#222" strokeWidth="2" />
+        <rect x="14" y="8" width="4" height="4" rx="1" fill="#888" />
+      </>
+    case 'finisher_tape':
+      return <>
+        <rect x="2" y="12" width="28" height="8" fill="#FFFFFF" />
+        <rect x="2" y="12" width="4" height="8" fill="#FF0000" />
+        <rect x="10" y="12" width="4" height="8" fill="#FF0000" />
+        <rect x="18" y="12" width="4" height="8" fill="#FF0000" />
+        <rect x="26" y="12" width="4" height="8" fill="#FF0000" />
+      </>
+
+    // ── DEFAULT FALLBACK ──
+    default:
+      return <>
+        <rect x="10" y="10" width="12" height="12" rx="2" fill={m} opacity="0.5" />
+        <rect x="13" y="13" width="6" height="6" fill={a} opacity="0.3" />
+      </>
   }
 }
 
