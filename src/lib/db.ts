@@ -730,6 +730,7 @@ function rowToDeckCard(row: any): BattleDeckCard {
     currentHp: row.current_hp,
     isActive: row.is_active,
     isKnockedOut: row.is_knocked_out,
+    lastMoveUsed: row.last_move_used ?? null,
     card: row.hero_title ? rowToHeroCard(row) : undefined,
   }
 }
@@ -750,6 +751,8 @@ function rowToTurn(row: any): BattleTurn {
     defenderHpAfter: row.defender_hp_after,
     isKnockout: row.is_knockout,
     isCritical: row.is_critical ?? false,
+    isMiss: row.is_miss as boolean,
+    isGuard: row.is_guard as boolean,
     itemUsed: row.item_used ?? null,
     itemEffect: row.item_effect ?? null,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
@@ -1078,6 +1081,34 @@ export async function executeTurn(
   const { calculateDamage, checkBattleEnd, determineTurnOrder, parseMoveDamage } = await import('./battleEngine')
   const { getItemDefinition } = await import('./itemCatalog')
 
+  const opponentName = defenderName
+
+  // ── GUARD ACTION ─────────────────────────────────────────
+  if (moveIndex === -1) {
+    if (attackerDeck.last_move_used === 'GUARD') {
+      await sql.end()
+      throw new Error('Cannot guard twice in a row')
+    }
+
+    const guardTurn = await sql`
+      INSERT INTO battle_turns (battle_id, turn_number, attacker, attacker_card_id, defender_card_id, move_used, move_damage, type_multiplier, damage_dealt, defender_hp_after, is_knockout, is_critical, is_miss, is_guard)
+      VALUES (${battleId}, ${battle.currentTurn + 1}, ${playerName}, ${attackerDeck.card_id}, ${defenderDeck.card_id}, ${'GUARD'}, ${0}, ${1.0}, ${0}, ${defenderDeck.current_hp}, ${false}, ${false}, ${false}, ${true})
+      RETURNING *
+    `
+
+    await sql`UPDATE battle_decks SET last_move_used = 'GUARD' WHERE id = ${attackerDeck.id}`
+    await sql`UPDATE battles SET current_turn = current_turn + 1, turn_player = ${opponentName}, updated_at = NOW() WHERE id = ${battleId}`
+
+    await sql.end()
+    return {
+      id: guardTurn[0].id, battleId, turnNumber: guardTurn[0].turn_number,
+      attacker: playerName, attackerCardId: attackerDeck.card_id, defenderCardId: defenderDeck.card_id,
+      moveUsed: 'GUARD', moveDamage: 0, typeMultiplier: 1.0, damageDealt: 0,
+      defenderHpAfter: defenderDeck.current_hp, isKnockout: false, isCritical: false,
+      isMiss: false, isGuard: true, itemUsed: null, itemEffect: null, createdAt: guardTurn[0].created_at,
+    } as BattleTurn
+  }
+
   // ── ITEM PATH ─────────────────────────────────────────────
   if (itemId && moveIndex === null) {
     // Validate item ownership, check cooldown, and put on 3-day cooldown
@@ -1159,10 +1190,10 @@ export async function executeTurn(
     // Record turn
     const turnRows = await sql`
       INSERT INTO battle_turns (battle_id, turn_number, attacker, attacker_card_id, defender_card_id,
-        move_used, move_damage, type_multiplier, damage_dealt, defender_hp_after, is_knockout, item_used, item_effect)
+        move_used, move_damage, type_multiplier, damage_dealt, defender_hp_after, is_knockout, is_critical, is_miss, is_guard, item_used, item_effect)
       VALUES (${battleId}, ${battle.currentTurn}, ${playerName}, ${attackerDeck.card_id},
         ${defenderDeck.card_id}, ${'ITEM'}, ${0}, ${1.0},
-        ${damageDealt}, ${defenderHpAfter}, ${isKo}, ${itemKey}, ${itemEffectDesc})
+        ${damageDealt}, ${defenderHpAfter}, ${isKo}, ${false}, ${false}, ${false}, ${itemKey}, ${itemEffectDesc})
       RETURNING *
     `
 
@@ -1244,6 +1275,14 @@ export async function executeTurn(
   const modAttacker = { ...attackerCard, attack: Math.max(1, attackerCard.attack + atkMod) }
   const modDefender = { ...defenderCard, defense: Math.max(0, defenderCard.defense + defModDefender) }
 
+  // Cooldown check: can't use same move twice in a row
+  const chosenMoveForCooldown = modAttacker.specialMoves[moveIndex!] ?? modAttacker.specialMoves[0]
+  const cooldownMoveName = parseMoveDamage(chosenMoveForCooldown).name
+  if (attackerDeck.last_move_used === cooldownMoveName) {
+    await sql.end()
+    throw new Error('This move is on cooldown — use a different move')
+  }
+
   // PP validation: check if the chosen move still has uses left
   const chosenMove = modAttacker.specialMoves[moveIndex!] ?? modAttacker.specialMoves[0]
   const { maxPp, name: moveName } = parseMoveDamage(chosenMove)
@@ -1253,11 +1292,40 @@ export async function executeTurn(
   `
   const usedCount = (usedCountRows[0]?.used as number) ?? 0
 
+  const defenderIsGuarding = defenderDeck.last_move_used === 'GUARD'
+
   let result
   if (usedCount >= maxPp) {
-    result = { damage: 10, multiplier: 1.0, moveName: 'Struggle', baseDamage: 10, isCritical: false }
+    result = { damage: 10, multiplier: 1.0, moveName: 'Struggle', baseDamage: 10, isCritical: false, isMiss: false }
   } else {
-    result = calculateDamage(modAttacker, modDefender, moveIndex!)
+    result = calculateDamage(modAttacker, modDefender, moveIndex!, defenderIsGuarding)
+  }
+
+  // Handle miss
+  if (result.isMiss) {
+    const turnRow = await sql`
+      INSERT INTO battle_turns (battle_id, turn_number, attacker, attacker_card_id, defender_card_id, move_used, move_damage, type_multiplier, damage_dealt, defender_hp_after, is_knockout, is_critical, is_miss, is_guard)
+      VALUES (${battleId}, ${battle.currentTurn + 1}, ${playerName}, ${attackerDeck.card_id}, ${defenderDeck.card_id}, ${result.moveName}, ${result.baseDamage}, ${result.multiplier}, ${0}, ${defenderDeck.current_hp}, ${false}, ${false}, ${true}, ${false})
+      RETURNING *
+    `
+
+    await sql`UPDATE battle_decks SET last_move_used = ${result.moveName} WHERE id = ${attackerDeck.id}`
+    await sql`UPDATE battle_decks SET last_move_used = NULL WHERE id = ${defenderDeck.id} AND last_move_used = 'GUARD'`
+    await sql`UPDATE battles SET current_turn = current_turn + 1, turn_player = ${opponentName}, updated_at = NOW() WHERE id = ${battleId}`
+
+    // Tick effects
+    await sql`UPDATE battle_effects SET remaining_turns = remaining_turns - 1 WHERE battle_id = ${battleId}`
+    await sql`DELETE FROM battle_effects WHERE battle_id = ${battleId} AND remaining_turns <= 0`
+
+    await sql.end()
+    return {
+      id: turnRow[0].id, battleId, turnNumber: turnRow[0].turn_number,
+      attacker: playerName, attackerCardId: attackerDeck.card_id, defenderCardId: defenderDeck.card_id,
+      moveUsed: result.moveName, moveDamage: result.baseDamage, typeMultiplier: result.multiplier,
+      damageDealt: 0, defenderHpAfter: defenderDeck.current_hp as number,
+      isKnockout: false, isCritical: false, isMiss: true, isGuard: false,
+      itemUsed: null, itemEffect: null, createdAt: turnRow[0].created_at,
+    } as BattleTurn
   }
 
   const newHp = Math.max(0, (defenderDeck.current_hp as number) - result.damage)
@@ -1272,12 +1340,16 @@ export async function executeTurn(
   // Record turn
   const turnRows = await sql`
     INSERT INTO battle_turns (battle_id, turn_number, attacker, attacker_card_id, defender_card_id,
-      move_used, move_damage, type_multiplier, damage_dealt, defender_hp_after, is_knockout, is_critical)
+      move_used, move_damage, type_multiplier, damage_dealt, defender_hp_after, is_knockout, is_critical, is_miss, is_guard)
     VALUES (${battleId}, ${battle.currentTurn}, ${playerName}, ${attackerDeck.card_id},
       ${defenderDeck.card_id}, ${result.moveName}, ${result.baseDamage}, ${result.multiplier},
-      ${result.damage}, ${newHp}, ${isKo}, ${result.isCritical})
+      ${result.damage}, ${newHp}, ${isKo}, ${result.isCritical}, ${false}, ${false})
     RETURNING *
   `
+
+  // Track cooldown: update last_move_used for attacker, clear guard for defender
+  await sql`UPDATE battle_decks SET last_move_used = ${result.moveName} WHERE id = ${attackerDeck.id}`
+  await sql`UPDATE battle_decks SET last_move_used = NULL WHERE id = ${defenderDeck.id} AND last_move_used = 'GUARD'`
 
   // Tick effects: decrement remaining_turns, delete expired
   await sql`

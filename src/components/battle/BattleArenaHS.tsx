@@ -65,6 +65,15 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
     return Math.max(0, maxPp - usedCount)
   }
 
+  const getIsOnCooldown = (moveIndex: number): boolean => {
+    if (!myActive?.card) return false
+    const move = myActive.card.specialMoves[moveIndex]
+    const { name } = parseMoveDamage(move)
+    return myActive.lastMoveUsed === name
+  }
+
+  const isGuardOnCooldown = myActive?.lastMoveUsed === 'GUARD'
+
   const allMovesEmpty = myActive?.card?.specialMoves.every((_, i) => getRemainingPp(i) <= 0) ?? false
 
   const handleMove = async (moveIndex: number) => {
@@ -189,21 +198,34 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
           padding: '4px 8px',
           background: 'rgba(0,0,0,0.4)',
           borderRadius: '4px',
-          borderLeft: `3px solid ${lastTurn.isCritical ? '#FF44FF' : lastTurn.typeMultiplier > 1 ? '#44CC44' : lastTurn.typeMultiplier < 1 ? '#FF8844' : 'var(--amiga-orange)'}`,
+          borderLeft: `3px solid ${lastTurn.isGuard ? '#4488FF' : lastTurn.isMiss ? '#FFDD00' : lastTurn.isCritical ? '#FF44FF' : lastTurn.typeMultiplier > 1 ? '#44CC44' : lastTurn.typeMultiplier < 1 ? '#FF8844' : 'var(--amiga-orange)'}`,
         }}>
           <span style={{ color: 'var(--crt-amber)' }}>{lastTurn.attacker}</span>
-          {' used '}
-          <span style={{ color: 'var(--amiga-orange)' }}>{lastTurn.moveUsed}</span>
-          {'! '}
-          <span style={{ color: lastTurn.isCritical ? '#FF44FF' : '#FF4444' }}>{lastTurn.damageDealt} dmg</span>
-          {lastTurn.isCritical && (
-            <span style={{ color: '#FF44FF' }}> CRIT!</span>
-          )}
-          {lastTurn.typeMultiplier > 1 && (
-            <span style={{ color: '#44CC44' }}> (super effective!)</span>
-          )}
-          {lastTurn.typeMultiplier < 1 && (
-            <span style={{ color: '#888' }}> (not very effective)</span>
+          {lastTurn.isGuard ? (
+            <span style={{ color: '#4488FF' }}> raises their guard!</span>
+          ) : lastTurn.isMiss ? (
+            <>
+              {' used '}
+              <span style={{ color: 'var(--amiga-orange)' }}>{lastTurn.moveUsed}</span>
+              {' but '}
+              <span style={{ color: '#FFDD00' }}>MISSED!</span>
+            </>
+          ) : (
+            <>
+              {' used '}
+              <span style={{ color: 'var(--amiga-orange)' }}>{lastTurn.moveUsed}</span>
+              {'! '}
+              <span style={{ color: lastTurn.isCritical ? '#FF44FF' : '#FF4444' }}>{lastTurn.damageDealt} dmg</span>
+              {lastTurn.isCritical && (
+                <span style={{ color: '#FF44FF' }}> CRIT!</span>
+              )}
+              {lastTurn.typeMultiplier > 1 && (
+                <span style={{ color: '#44CC44' }}> (super effective!)</span>
+              )}
+              {lastTurn.typeMultiplier < 1 && (
+                <span style={{ color: '#888' }}> (not very effective)</span>
+              )}
+            </>
           )}
           {lastTurn.isKnockout && (
             <span style={{ color: '#FF4444' }}> KO!</span>
@@ -307,6 +329,8 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
           moves={myActive.card.specialMoves}
           disabled={submitting || !isMyTurn}
           getRemainingPp={getRemainingPp}
+          getIsOnCooldown={getIsOnCooldown}
+          isGuardOnCooldown={isGuardOnCooldown}
           onMove={handleMove}
           onSwitchClick={() => setShowSwitchFromGrid(true)}
           allMovesEmpty={allMovesEmpty}

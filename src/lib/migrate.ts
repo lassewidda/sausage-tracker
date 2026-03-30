@@ -293,6 +293,15 @@ async function migrate() {
   await sql`ALTER TABLE weekly_challenges ADD COLUMN IF NOT EXISTS challenge_mode TEXT NOT NULL DEFAULT 'individual'`
   await sql`ALTER TABLE weekly_challenges ADD COLUMN IF NOT EXISTS teams JSONB`
 
+  // Battle tactics: miss tracking
+  await sql`ALTER TABLE battle_turns ADD COLUMN IF NOT EXISTS is_miss BOOLEAN NOT NULL DEFAULT false`
+
+  // Battle tactics: guard tracking
+  await sql`ALTER TABLE battle_turns ADD COLUMN IF NOT EXISTS is_guard BOOLEAN NOT NULL DEFAULT false`
+
+  // Battle tactics: cooldown tracking (last move name used by this card)
+  await sql`ALTER TABLE battle_decks ADD COLUMN IF NOT EXISTS last_move_used TEXT`
+
   await sql.end()
   console.log('Migration complete.')
 }

@@ -100,6 +100,7 @@ export interface BattleDeckCard {
   currentHp: number
   isActive: boolean
   isKnockedOut: boolean
+  lastMoveUsed: string | null
   card?: HeroCard
 }
 
@@ -117,6 +118,8 @@ export interface BattleTurn {
   defenderHpAfter: number
   isKnockout: boolean
   isCritical: boolean
+  isMiss: boolean
+  isGuard: boolean
   itemUsed: string | null
   itemEffect: string | null
   createdAt: string

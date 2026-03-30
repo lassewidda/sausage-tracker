@@ -45,16 +45,28 @@ export interface DamageResult {
   moveName: string
   baseDamage: number
   isCritical: boolean
+  isMiss: boolean
 }
 
 // 12.5% crit chance, 1.5x crit multiplier
 const CRIT_CHANCE = 0.125
 const CRIT_MULTIPLIER = 1.5
 
+// Accuracy: stronger moves are less accurate
+export function getMoveAccuracy(baseDamage: number): number {
+  if (baseDamage >= 40) return 0.75
+  if (baseDamage >= 25) return 0.90
+  return 1.0
+}
+
+// Guard halves incoming damage
+export const GUARD_DAMAGE_MULTIPLIER = 0.5
+
 export function calculateDamage(
   attacker: HeroCard,
   defender: HeroCard,
-  moveIndex: number
+  moveIndex: number,
+  defenderIsGuarding: boolean = false,
 ): DamageResult {
   const move = attacker.specialMoves[moveIndex] ?? attacker.specialMoves[0]
   const { name, baseDamage } = parseMoveDamage(move)
@@ -62,15 +74,23 @@ export function calculateDamage(
   const defenderTypes = getTypes(defender.heroType)
   const multiplier = getTypeMultiplier(attackerTypes, defenderTypes)
 
+  // Accuracy roll — stronger moves can miss
+  const accuracy = getMoveAccuracy(baseDamage)
+  const isMiss = Math.random() >= accuracy
+
+  if (isMiss) {
+    return { damage: 0, multiplier, moveName: name, baseDamage, isCritical: false, isMiss: true }
+  }
+
   const isCritical = Math.random() < CRIT_CHANCE
 
   // Rebalanced formula: additive attack+baseDamage, softer defense scaling
-  // Target: ~15-30 damage per hit against typical stats, games finish in 10-20 turns
   const raw = ((attacker.attack + baseDamage) / 2.5) * multiplier * (60 / (60 + defender.defense))
   const critRaw = isCritical ? raw * CRIT_MULTIPLIER : raw
-  const damage = Math.max(1, Math.floor(critRaw))
+  const guardRaw = defenderIsGuarding ? critRaw * GUARD_DAMAGE_MULTIPLIER : critRaw
+  const damage = Math.max(1, Math.floor(guardRaw))
 
-  return { damage, multiplier, moveName: name, baseDamage, isCritical }
+  return { damage, multiplier, moveName: name, baseDamage, isCritical, isMiss: false }
 }
 
 // Exported for UI type matchup preview

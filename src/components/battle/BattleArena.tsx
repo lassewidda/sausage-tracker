@@ -46,6 +46,16 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
   const isLastAttacker = lastTurn?.attacker === playerName
   const isLastDefender = lastTurn && !isLastAttacker
 
+  // Check if a move is on cooldown (was the last move used)
+  const getIsOnCooldown = (moveIndex: number): boolean => {
+    if (!myActive?.card) return false
+    const move = myActive.card.specialMoves[moveIndex]
+    const { name } = parseMoveDamage(move)
+    return myActive.lastMoveUsed === name
+  }
+
+  const isGuardOnCooldown = myActive?.lastMoveUsed === 'GUARD'
+
   // Calculate remaining PP for active card's moves
   const getRemainingPp = (moveIndex: number): number => {
     if (!myActive?.card) return 0
@@ -334,10 +344,32 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
                     index={i}
                     disabled={submitting || !isMyTurn}
                     remainingPp={getRemainingPp(i)}
+                    onCooldown={getIsOnCooldown(i)}
                     onUse={handleMove}
                   />
                 ))
               )}
+              <button
+                onClick={() => handleMove(-1)}
+                disabled={submitting || !isMyTurn || isGuardOnCooldown}
+                className="amiga-btn"
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: '9px',
+                  opacity: isGuardOnCooldown ? 0.35 : (!isMyTurn || submitting) ? 0.6 : 1,
+                  background: 'var(--amiga-dark-grey)',
+                  color: 'var(--amiga-white)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span>GUARD</span>
+                <span style={{ fontSize: '7px', color: '#888' }}>HALVES INCOMING DMG</span>
+                {isGuardOnCooldown && <span style={{ color: '#FF4444' }}>ON COOLDOWN</span>}
+              </button>
             </>
           )}
 

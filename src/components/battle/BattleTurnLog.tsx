@@ -46,6 +46,17 @@ export function BattleTurnLog({ turns }: Props) {
               {'! '}
               <span style={{ color: '#88CCFF' }}>{turn.itemEffect}</span>
             </>
+          ) : turn.isGuard ? (
+            <>
+              <span style={{ color: '#4488FF' }}> raises their guard!</span>
+            </>
+          ) : turn.isMiss ? (
+            <>
+              {' used '}
+              <span style={{ color: 'var(--amiga-orange)' }}>{turn.moveUsed}</span>
+              {' but '}
+              <span style={{ color: '#FFDD00' }}>MISSED!</span>
+            </>
           ) : (
             <>
               {' used '}
