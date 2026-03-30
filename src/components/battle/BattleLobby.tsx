@@ -200,6 +200,13 @@ export function BattleLobby() {
         >
           LEADERBOARD
         </Link>
+        <Link
+          href="/battle/types"
+          className="amiga-btn"
+          style={{ fontFamily: 'var(--font-pixel)', fontSize: '8px', textDecoration: 'none' }}
+        >
+          TYPE CHART
+        </Link>
       </div>
 
       {/* New card available */}
