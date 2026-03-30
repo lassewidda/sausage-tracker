@@ -6,6 +6,7 @@ import { AboutModal } from '@/components/ui/AboutModal'
 import { ChallengeNavLink } from '@/components/ui/ChallengeNavLink'
 import { MobileMenu } from '@/components/ui/MobileMenu'
 import { ActivityTicker } from '@/components/ui/ActivityTicker'
+import { BattleNavLink } from '@/components/ui/BattleNavLink'
 import theme from '@/theme'
 import './globals.css'
 
@@ -44,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {theme.features.challenge && <ChallengeNavLink />}
             <Link href="/highscore" className="amiga-menubar__item desktop-nav">HIGHSCORE</Link>
             {theme.features.progress && <Link href="/progress" className="amiga-menubar__item desktop-nav">PROGRESS</Link>}
-            <Link href="/battle" className="amiga-menubar__item desktop-nav">BATTLE</Link>
+            <BattleNavLink />
             <Link href="/shop" className="amiga-menubar__item desktop-nav">SHOP</Link>
             <span className="desktop-nav"><JerryMode /></span>
             {/* Mobile hamburger */}
