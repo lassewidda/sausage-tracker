@@ -13,6 +13,7 @@ import { TauntBubble } from './TauntBubble'
 import { BattleTurnLog } from './BattleTurnLog'
 import { CriticalHitOverlay } from './CriticalHitOverlay'
 import { parseMoveDamage, getTypeMatchupMultiplier } from '@/lib/battleEngine'
+import { DeckStatusBar } from './DeckStatusBar'
 import theme from '@/theme'
 
 interface InventoryItem extends PlayerItem {
@@ -159,8 +160,8 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
               effects={theirActiveEffects}
             />
           ) : (
-            <div style={{ textAlign: 'center', color: '#666', fontFamily: 'var(--font-pixel)', fontSize: '8px', padding: '20px' }}>
-              NO CARDS LEFT
+            <div style={{ padding: '10px', display: 'flex', justifyContent: 'center' }}>
+              <DeckStatusBar deck={theirDeck} align="right" />
             </div>
           )}
         </div>
@@ -262,8 +263,8 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
             effects={myActiveEffects}
           />
         ) : (
-          <div style={{ textAlign: 'center', color: '#666', fontFamily: 'var(--font-pixel)', fontSize: '8px', padding: '20px' }}>
-            NO CARDS LEFT
+          <div style={{ padding: '10px', display: 'flex', justifyContent: 'center' }}>
+            <DeckStatusBar deck={myDeck} align="left" />
           </div>
         )}
       </div>

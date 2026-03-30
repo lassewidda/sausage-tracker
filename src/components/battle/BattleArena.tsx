@@ -11,6 +11,7 @@ import { TauntBar } from './TauntBar'
 import { TauntBubble } from './TauntBubble'
 import { CriticalHitOverlay } from './CriticalHitOverlay'
 import { parseMoveDamage, getTypeMatchupMultiplier } from '@/lib/battleEngine'
+import { DeckStatusBar } from './DeckStatusBar'
 import theme from '@/theme'
 
 interface InventoryItem extends PlayerItem {
@@ -156,9 +157,7 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
               isHit={isLastDefender && turns.length > 0}
             />
           ) : (
-            <div style={{ color: '#666', fontFamily: 'var(--font-pixel)', fontSize: '8px' }}>
-              NO CARDS LEFT
-            </div>
+            <DeckStatusBar deck={myDeck} align="left" />
           )}
         </div>
 
@@ -173,9 +172,7 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
               isHit={isLastAttacker && turns.length > 0}
             />
           ) : (
-            <div style={{ color: '#666', fontFamily: 'var(--font-pixel)', fontSize: '8px' }}>
-              NO CARDS LEFT
-            </div>
+            <DeckStatusBar deck={theirDeck} align="right" />
           )}
         </div>
       </div>
@@ -184,12 +181,10 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
-        fontFamily: 'var(--font-pixel)',
-        fontSize: '7px',
-        color: '#888',
+        gap: '8px',
       }}>
-        <span>YOUR TEAM: {myDeck.filter(c => !c.isKnockedOut).length}/{myDeck.length} alive</span>
-        <span>ENEMY TEAM: {theirDeck.filter(c => !c.isKnockedOut).length}/{theirDeck.length} alive</span>
+        <DeckStatusBar deck={myDeck} align="left" />
+        <DeckStatusBar deck={theirDeck} align="right" />
       </div>
 
       {/* Effect badges */}
