@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { Meal } from '@/types'
 import { DeleteButton } from './DeleteButton'
+import { ImageLightbox } from './ImageLightbox'
 import theme from '@/theme'
 
 const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
@@ -40,14 +41,16 @@ export function FeedCard({ meal }: FeedCardProps) {
       <div style={{ display: 'flex', gap: '0', minHeight: '140px' }}>
         {/* Image */}
         <div style={{ position: 'relative', width: 'clamp(110px, 35vw, 180px)', flexShrink: 0, background: 'var(--amiga-black)' }}>
-          <Image
-            src={meal.imageUrl}
-            alt={meal.aiDescription ?? theme.strings.photoAltText}
-            fill
-            style={{ objectFit: 'cover' }}
-            unoptimized
-            sizes="180px"
-          />
+          <ImageLightbox src={meal.imageUrl} alt={meal.aiDescription ?? theme.strings.photoAltText}>
+            <Image
+              src={meal.imageUrl}
+              alt={meal.aiDescription ?? theme.strings.photoAltText}
+              fill
+              style={{ objectFit: 'cover' }}
+              unoptimized
+              sizes="180px"
+            />
+          </ImageLightbox>
         </div>
 
         {/* Details */}
