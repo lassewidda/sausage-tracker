@@ -3,6 +3,7 @@ import { generateHeroCard } from '@/lib/claude'
 import { RegenerateButton } from '@/components/player/RegenerateButton'
 import { ChangeNameButton } from '@/components/player/ChangeNameButton'
 import { CardCollection } from '@/components/player/CardCollection'
+import { PhotoGrid } from '@/components/player/PhotoGrid'
 import { Window } from '@/components/amiga/Window'
 import Link from 'next/link'
 import type { HeroCard } from '@/types'
@@ -283,6 +284,13 @@ export default async function PlayerPage({ params }: Props) {
           </div>
         )}
       </Window>
+
+      {/* Photo Grid */}
+      {profile.photos.length > 0 && (
+        <Window title={`PHOTOS (${profile.photos.length})`}>
+          <PhotoGrid photos={profile.photos} />
+        </Window>
+      )}
 
       {/* Hero Card Collection */}
       <Window title={`HERO CARDS (${profile.cards.length})`}>

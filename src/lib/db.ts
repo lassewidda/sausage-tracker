@@ -610,6 +610,13 @@ export async function getPlayerProfileData(playerName: string) {
     ORDER BY created_at DESC LIMIT 10
   `
 
+  // Get all photos for photo grid
+  const allPhotos = await sql`
+    SELECT id, image_url, ai_description, exercise_type, created_at
+    FROM meals WHERE player_name = ${playerName}
+    ORDER BY created_at DESC
+  `
+
   // Get battle stats
   let battleStats = { wins: 0, losses: 0, eloRating: 1000 }
   try {
@@ -657,6 +664,13 @@ export async function getPlayerProfileData(playerName: string) {
       description: r.ai_description as string | null,
       exerciseType: r.exercise_type as string | null,
       weekKey: r.week_key as string,
+      createdAt: (r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at) as string,
+    })),
+    photos: allPhotos.map(r => ({
+      id: r.id as string,
+      imageUrl: r.image_url as string,
+      description: r.ai_description as string | null,
+      exerciseType: r.exercise_type as string | null,
       createdAt: (r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at) as string,
     })),
     battleStats,
