@@ -239,6 +239,123 @@ function getShopPixels(slug: string): JSX.Element {
         <rect x="15" y="15" width="3" height="2" fill="#FFFFFF" opacity="0.7" />
         <rect x="21" y="15" width="3" height="2" fill="#FFFFFF" opacity="0.7" />
       </>
+    // ── EXERCISE MERCH ──
+    case 'golden-dumbbell-trophy':
+      return <>
+        <rect x="6" y="18" width="8" height="6" rx="1" fill="#FFD700" />
+        <rect x="18" y="18" width="8" height="6" rx="1" fill="#FFD700" />
+        <rect x="14" y="20" width="4" height="3" fill="#DAA520" />
+        <rect x="12" y="8" width="8" height="10" fill="#FFD700" rx="1" />
+        <rect x="10" y="9" width="3" height="6" fill="#DDAA00" />
+        <rect x="19" y="9" width="3" height="6" fill="#DDAA00" />
+        <rect x="14" y="26" width="4" height="2" fill="#DDAA00" />
+        <rect x="12" y="28" width="8" height="2" fill="#FFD700" />
+        <rect x="15" y="12" width="2" height="2" fill="#FFF" opacity="0.7" />
+      </>
+    case 'finisher-medal-display':
+      return <>
+        <rect x="6" y="6" width="20" height="20" rx="2" fill="#5A3A1A" />
+        <rect x="8" y="8" width="16" height="16" fill="#3A2A10" />
+        <circle cx="12" cy="16" r="3" fill="#FFD700" />
+        <circle cx="20" cy="16" r="3" fill="#C0C0C0" />
+        <circle cx="16" cy="12" r="3" fill="#CD7F32" />
+        <rect x="10" y="10" width="4" height="2" fill="#4488FF" />
+        <rect x="18" y="10" width="4" height="2" fill="#FF4444" />
+      </>
+    case 'mystery-supplement-plushie':
+      return <>
+        <rect x="8" y="6" width="16" height="20" rx="4" fill="#FF88CC" />
+        <rect x="10" y="8" width="12" height="14" fill="#FFAADD" />
+        <circle cx="13" cy="14" r="2" fill="#111" />
+        <circle cx="19" cy="14" r="2" fill="#111" />
+        <rect x="14" y="18" width="4" height="2" rx="1" fill="#111" />
+        <rect x="16" y="4" width="4" height="4" fill="#FF88CC" />
+      </>
+    case 'strava-crown-pin':
+      return <>
+        <circle cx="16" cy="18" r="8" fill="#FFD700" />
+        <circle cx="16" cy="18" r="6" fill="#DAA520" />
+        <polygon points="10,12 12,8 14,12" fill="#FFD700" />
+        <polygon points="14,12 16,6 18,12" fill="#FFD700" />
+        <polygon points="18,12 20,8 22,12" fill="#FFD700" />
+        <rect x="15" y="16" width="2" height="4" fill="#FFF" opacity="0.5" />
+      </>
+    case 'survived-leg-day-tee':
+      return <>
+        <rect x="8" y="8" width="16" height="18" rx="1" fill="#333" />
+        <rect x="4" y="8" width="6" height="8" fill="#333" />
+        <rect x="22" y="8" width="6" height="8" fill="#333" />
+        <rect x="10" y="12" width="12" height="2" fill="#FF4444" />
+        <rect x="12" y="16" width="8" height="2" fill="#FF4444" />
+        <rect x="14" y="20" width="4" height="2" fill="#FF4444" />
+      </>
+    case 'dns-dnf-cap':
+      return <>
+        <rect x="6" y="12" width="20" height="10" rx="4" fill="#222" />
+        <rect x="4" y="18" width="24" height="4" rx="1" fill="#333" />
+        <rect x="8" y="14" width="16" height="2" fill="#FF4444" />
+        <rect x="22" y="18" width="6" height="2" fill="#333" />
+      </>
+
+    // ── EXERCISE CARD PACKS ──
+    case 'budget-bro-pack':
+      return <>
+        <rect x="8" y="6" width="16" height="20" rx="2" fill="#886644" />
+        <rect x="10" y="8" width="12" height="16" fill="#AA8866" />
+        <rect x="12" y="10" width="8" height="4" fill="#FFD700" opacity="0.3" />
+        <rect x="14" y="16" width="4" height="4" fill="#888" />
+      </>
+    case 'coachs-selection':
+      return <>
+        <rect x="6" y="6" width="20" height="20" rx="2" fill="#4488FF" />
+        <rect x="8" y="8" width="16" height="16" fill="#3366CC" />
+        <rect x="10" y="10" width="12" height="6" fill="#FFD700" opacity="0.4" />
+        <rect x="14" y="12" width="4" height="8" fill="#FFFFFF" opacity="0.3" />
+        <rect x="12" y="18" width="8" height="2" fill="#FFD700" />
+      </>
+    case 'forbidden-locker':
+      return <>
+        <rect x="6" y="4" width="20" height="24" rx="2" fill="#8B4513" />
+        <rect x="8" y="6" width="16" height="20" fill="#A0522D" />
+        <rect x="13" y="14" width="6" height="6" fill="#FFD700" />
+        <rect x="15" y="16" width="2" height="2" fill="#111" />
+        <rect x="8" y="6" width="16" height="2" fill="#FFD700" opacity="0.3" />
+        <rect x="8" y="24" width="16" height="2" fill="#FFD700" opacity="0.3" />
+      </>
+
+    // ── EXERCISE ITEMS ──
+    case 'mystery-supplement':
+      return <>
+        <rect x="10" y="8" width="12" height="16" rx="2" fill="#8800FF" />
+        <rect x="12" y="6" width="8" height="4" fill="#666" />
+        <rect x="14" y="12" width="4" height="4" fill="#AA44FF" opacity="0.6" />
+        <rect x="15" y="14" width="2" height="2" fill="#FFFFFF" opacity="0.5" />
+      </>
+    case 'premium-pre-workout':
+      return <>
+        <rect x="8" y="6" width="16" height="20" rx="2" fill="#FF6600" />
+        <rect x="10" y="4" width="12" height="4" fill="#444" />
+        <rect x="10" y="10" width="12" height="4" fill="#FFFFFF" opacity="0.4" />
+        <rect x="12" y="18" width="8" height="2" fill="#FFAA00" />
+        <rect x="8" y="6" width="4" height="6" fill="#FF8800" opacity="0.5" />
+      </>
+    case 'coachs-secret-stash':
+      return <>
+        <rect x="6" y="8" width="20" height="16" rx="2" fill="#333" />
+        <rect x="8" y="6" width="16" height="4" fill="#444" />
+        <rect x="13" y="12" width="6" height="6" fill="#FFD700" />
+        <rect x="15" y="14" width="2" height="2" fill="#111" />
+        <rect x="6" y="24" width="20" height="2" fill="#555" />
+      </>
+    case 'bulk-protein-crate':
+      return <>
+        <rect x="4" y="8" width="24" height="18" rx="1" fill="#8B6914" />
+        <rect x="6" y="10" width="20" height="14" fill="#A07828" />
+        <rect x="4" y="8" width="24" height="3" fill="#9A7020" />
+        <rect x="12" y="14" width="8" height="6" fill="#FFD700" opacity="0.4" />
+        <rect x="14" y="16" width="4" height="2" fill="#FFFFFF" opacity="0.5" />
+      </>
+
     default:
       return <>
         <rect x="10" y="10" width="12" height="12" fill="#666" />
