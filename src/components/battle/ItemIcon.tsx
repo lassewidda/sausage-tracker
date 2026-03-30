@@ -388,15 +388,6 @@ function getItemPixels(itemKey: string, m: string, a: string): JSX.Element {
         <rect x="8" y="2" width="2" height="2" fill="#FF6600" opacity="0.2" />
       </>
 
-    default:
-      // Fallback: generic potion
-      return <>
-        <rect x="12" y="8" width="8" height="16" fill={m} />
-        <rect x="14" y="6" width="4" height="4" fill={m} opacity="0.7" />
-        <rect x="15" y="4" width="2" height="4" fill={a} />
-        <rect x="14" y="14" width="4" height="4" fill={a} opacity="0.4" />
-      </>
-
     // ── EXERCISE COMMON ──
     case 'protein_bar':
       return <>
