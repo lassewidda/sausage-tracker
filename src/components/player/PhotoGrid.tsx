@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
+
 interface Photo {
   id: string
   imageUrl: string
@@ -73,7 +75,7 @@ export function PhotoGrid({ photos }: Props) {
             padding: '16px',
           }}
         >
-          {lightbox.exerciseType && (
+          {IS_EXERCISE && lightbox.exerciseType && (
             <div style={{
               fontFamily: 'var(--font-pixel)',
               fontSize: '10px',
@@ -125,7 +127,7 @@ export function PhotoGrid({ photos }: Props) {
         padding: '8px',
       }}>
         {visible.map(photo => {
-          const badge = photo.exerciseType ? TYPE_BADGES[photo.exerciseType] : null
+          const badge = IS_EXERCISE && photo.exerciseType ? TYPE_BADGES[photo.exerciseType] : null
           return (
             <div
               key={photo.id}
