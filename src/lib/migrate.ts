@@ -302,6 +302,25 @@ async function migrate() {
   // Battle tactics: cooldown tracking (last move name used by this card)
   await sql`ALTER TABLE battle_decks ADD COLUMN IF NOT EXISTS last_move_used TEXT`
 
+  // Enable Row Level Security on all tables with permissive policies
+  // (no auth in this app — all access is via server-side API routes)
+  const tables = [
+    'meals', 'weekly_summaries', 'hero_cards', 'battles', 'battle_decks',
+    'battle_turns', 'battle_stats', 'battle_taunts', 'battle_effects',
+    'player_items', 'player_wallets', 'shop_transactions',
+    'weekly_challenges', 'challenge_photos', 'app_config',
+  ]
+  for (const table of tables) {
+    await sql`SELECT set_config('app.current_table', ${table}, true)`
+    await sql.unsafe(`ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY`)
+    await sql.unsafe(`
+      DO $$ BEGIN
+        CREATE POLICY "allow_all_${table}" ON ${table} FOR ALL USING (true) WITH CHECK (true);
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $$
+    `)
+  }
+
   await sql.end()
   console.log('Migration complete.')
 }
