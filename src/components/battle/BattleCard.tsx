@@ -29,15 +29,40 @@ export function BattleCard({ deckCard, isAttacking, isHit, isKo, side }: Props) 
 
   return (
     <div style={{
-      background: `linear-gradient(135deg, ${frameColor}, #F0E68C, ${frameColor}, ${frameDark})`,
+      background: deckCard.isKnockedOut
+        ? 'linear-gradient(135deg, #555, #666, #555, #444)'
+        : `linear-gradient(135deg, ${frameColor}, #F0E68C, ${frameColor}, ${frameDark})`,
       borderRadius: '10px',
       padding: '4px',
       width: '170px',
-      opacity: deckCard.isKnockedOut ? 0.4 : 1,
+      opacity: deckCard.isKnockedOut ? 0.6 : 1,
+      filter: deckCard.isKnockedOut ? 'grayscale(0.7)' : 'none',
       animation,
       transition: 'opacity 0.3s',
       boxShadow: deckCard.isKnockedOut ? 'none' : `0 2px 12px rgba(0,0,0,0.5), 0 0 8px ${theme.glow}`,
+      position: 'relative',
     }}>
+      {deckCard.isKnockedOut && !isKo && (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10,
+          pointerEvents: 'none',
+        }}>
+          <span style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '32px',
+            color: '#FF2222',
+            textShadow: '0 0 10px rgba(255, 0, 0, 0.6), 2px 2px 0 #000',
+            letterSpacing: '4px',
+          }}>
+            K.O.
+          </span>
+        </div>
+      )}
       <div style={{
         background: '#1a1a2e',
         borderRadius: '7px',
