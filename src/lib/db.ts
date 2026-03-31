@@ -1441,8 +1441,13 @@ export async function switchCard(battleId: string, playerName: string, deckCardI
   if (battleRows.length === 0) { await sql.end(); throw new Error('Battle not found') }
   const battle = rowToBattle(battleRows[0])
 
-  if (battle.status !== 'awaiting_switch') { await sql.end(); throw new Error('Not awaiting card switch') }
-  if (battle.switchPlayer !== playerName) { await sql.end(); throw new Error('Not your turn to switch') }
+  const isVoluntarySwitch = battle.status === 'battling' && battle.turnPlayer === playerName
+  const isPostKoSwitch = battle.status === 'awaiting_switch' && battle.switchPlayer === playerName
+
+  if (!isVoluntarySwitch && !isPostKoSwitch) {
+    await sql.end()
+    throw new Error('Cannot switch right now')
+  }
 
   // Validate the card belongs to this player, is in this battle, and is alive + not active
   const cardRows = await sql`
@@ -1452,14 +1457,46 @@ export async function switchCard(battleId: string, playerName: string, deckCardI
   `
   if (cardRows.length === 0) { await sql.end(); throw new Error('Invalid card selection') }
 
+  // Deactivate current active card (for voluntary switch)
+  if (isVoluntarySwitch) {
+    await sql`UPDATE battle_decks SET is_active = false WHERE battle_id = ${battleId} AND player_name = ${playerName} AND is_active = true`
+
+    // Get opponent's active card for the turn record
+    const opponentName = playerName === battle.challenger ? battle.opponent : battle.challenger
+    const defenderDeckRows = await sql`
+      SELECT card_id, current_hp FROM battle_decks
+      WHERE battle_id = ${battleId} AND player_name = ${opponentName} AND is_active = true
+      LIMIT 1
+    `
+    const defenderCardId = defenderDeckRows[0]?.card_id ?? deckCardId
+    const defenderHp = (defenderDeckRows[0]?.current_hp as number) ?? 0
+
+    // Record the switch as a turn
+    await sql`
+      INSERT INTO battle_turns (battle_id, turn_number, attacker, attacker_card_id, defender_card_id, move_used, move_damage, type_multiplier, damage_dealt, defender_hp_after, is_knockout, is_critical, is_miss, is_guard)
+      VALUES (${battleId}, ${battle.currentTurn + 1}, ${playerName}, ${deckCardId}, ${defenderCardId}, ${'SWITCH'}, ${0}, ${1.0}, ${0}, ${defenderHp}, ${false}, ${false}, ${false}, ${false})
+    `
+  }
+
   // Activate the chosen card
   await sql`UPDATE battle_decks SET is_active = true WHERE id = ${deckCardId}`
+  // Reset cooldown for the new card
+  await sql`UPDATE battle_decks SET last_move_used = NULL WHERE id = ${deckCardId}`
 
-  // Resume battle — attacker keeps turn (they got the KO)
-  await sql`
-    UPDATE battles SET status = 'battling', switch_player = NULL, updated_at = NOW()
-    WHERE id = ${battleId}
-  `
+  if (isVoluntarySwitch) {
+    // Voluntary switch costs your turn — opponent goes next
+    const opponentName = playerName === battle.challenger ? battle.opponent : battle.challenger
+    await sql`
+      UPDATE battles SET current_turn = current_turn + 1, turn_player = ${opponentName}, updated_at = NOW()
+      WHERE id = ${battleId}
+    `
+  } else {
+    // Post-KO switch — resume battle, attacker keeps turn
+    await sql`
+      UPDATE battles SET status = 'battling', switch_player = NULL, updated_at = NOW()
+      WHERE id = ${battleId}
+    `
+  }
 
   await sql.end()
 }

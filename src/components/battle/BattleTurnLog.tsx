@@ -39,7 +39,9 @@ export function BattleTurnLog({ turns }: Props) {
       {turns.map((turn) => (
         <div key={turn.id} style={{ color: 'var(--amiga-white)' }}>
           <span style={{ color: 'var(--crt-amber)' }}>{turn.attacker}</span>
-          {turn.itemUsed ? (
+          {turn.moveUsed === 'SWITCH' ? (
+            <span style={{ color: '#FFDD00' }}> switched cards!</span>
+          ) : turn.itemUsed ? (
             <>
               {' used '}
               <span style={{ color: '#44DDFF' }}>{turn.itemUsed.replace(/_/g, ' ')}</span>

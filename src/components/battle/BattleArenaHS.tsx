@@ -145,7 +145,7 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
       </div>
 
       {/* Opponent bench */}
-      <BenchStrip deckCards={theirDeck} onInspect={setInspectedCard} />
+      <BenchStrip deckCards={theirDeck} onInspect={setInspectedCard} opponentCard={myActive?.card} />
 
       <div className="battle-divider" />
 
@@ -294,6 +294,7 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
         onSwitch={isMySwitchTurn || showSwitchFromGrid ? handleSwitch : undefined}
         onInspect={!(isMySwitchTurn || showSwitchFromGrid) ? setInspectedCard : undefined}
         isSelecting={isMySwitchTurn || showSwitchFromGrid}
+        opponentCard={theirActive?.card}
       />
 
       {/* Post-KO switch prompt */}

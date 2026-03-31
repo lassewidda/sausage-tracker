@@ -29,7 +29,7 @@ interface Props {
 
 export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, inventory }: Props) {
   const [submitting, setSubmitting] = useState(false)
-  const [activeTab, setActiveTab] = useState<'moves' | 'items'>('moves')
+  const [activeTab, setActiveTab] = useState<'moves' | 'items' | 'switch'>('moves')
   const [inspectedCard, setInspectedCard] = useState<HeroCard | null>(null)
   const { battle, challengerDeck, opponentDeck, turns, taunts, effects } = state
 
@@ -199,8 +199,8 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
         justifyContent: 'space-between',
         gap: '8px',
       }}>
-        <DeckStatusBar deck={myDeck} align="left" />
-        <DeckStatusBar deck={theirDeck} align="right" />
+        <DeckStatusBar deck={myDeck} align="left" opponentCard={theirActive?.card} />
+        <DeckStatusBar deck={theirDeck} align="right" opponentCard={myActive?.card} />
       </div>
 
       {/* Effect badges */}
@@ -320,6 +320,13 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
               MOVES
             </button>
             <button
+              className={`amiga-btn${activeTab === 'switch' ? ' amiga-btn--primary' : ''}`}
+              onClick={() => setActiveTab('switch')}
+              style={{ fontSize: '8px', flex: 1 }}
+            >
+              SWITCH
+            </button>
+            <button
               className={`amiga-btn${activeTab === 'items' ? ' amiga-btn--primary' : ''}`}
               onClick={() => setActiveTab('items')}
               style={{ fontSize: '8px', flex: 1 }}
@@ -383,6 +390,81 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
               </button>
             </>
           )}
+
+          {activeTab === 'switch' && (() => {
+            const switchable = myDeck.filter(c => !c.isKnockedOut && !c.isActive)
+            return switchable.length === 0 ? (
+              <div style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '8px',
+                color: '#666',
+                textAlign: 'center',
+                padding: '12px',
+              }}>
+                NO OTHER CARDS AVAILABLE
+              </div>
+            ) : (
+              <>
+                <div style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: '8px',
+                  color: 'var(--amiga-orange)',
+                }}>
+                  SWITCH CARD (COSTS YOUR TURN):
+                </div>
+                {switchable.map(c => {
+                  const matchup = theirActive?.card && c.card
+                    ? getTypeMatchupMultiplier(c.card.heroType, theirActive.card.heroType)
+                    : 1
+                  const matchupColor = matchup >= 1.5 ? '#44FF44' : matchup > 1.0 ? '#88CC44' : matchup < 0.75 ? '#FF4444' : matchup < 1.0 ? '#FF8844' : '#888'
+                  const matchupLabel = matchup >= 1.5 ? 'STRONG' : matchup > 1.0 ? 'ADVANTAGE' : matchup < 0.75 ? 'WEAK' : matchup < 1.0 ? 'DISADVANTAGE' : 'NEUTRAL'
+
+                  return (
+                    <button
+                      key={c.id}
+                      className="amiga-btn"
+                      disabled={submitting}
+                      onClick={() => {
+                        if (submitting) return
+                        setSubmitting(true)
+                        onSwitch(c.id)
+                        setActiveTab('moves')
+                        setTimeout(() => setSubmitting(false), 500)
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        padding: '8px 10px',
+                        fontSize: '8px',
+                        gap: '4px',
+                        width: '100%',
+                      }}
+                    >
+                      <span style={{ fontFamily: 'var(--font-pixel)', display: 'flex', gap: '8px', alignItems: 'center', width: '100%' }}>
+                        <span>{c.card?.heroTitle ?? 'Unknown'}</span>
+                        <span style={{ marginLeft: 'auto', color: matchupColor, fontSize: '7px' }}>
+                          {matchupLabel} ({matchup.toFixed(2)}x)
+                        </span>
+                      </span>
+                      <span style={{
+                        fontFamily: 'var(--font-pixel)',
+                        display: 'flex',
+                        gap: '6px',
+                        fontSize: '7px',
+                        flexWrap: 'wrap',
+                      }}>
+                        <span style={{ color: '#888' }}>{c.card?.heroType}</span>
+                        <span style={{ color: '#44CC44' }}>HP {c.currentHp}/{c.card?.hp}</span>
+                        <span style={{ color: '#FF8800' }}>ATK {c.card?.attack}</span>
+                        <span style={{ color: '#4488FF' }}>DEF {c.card?.defense}</span>
+                      </span>
+                    </button>
+                  )
+                })}
+              </>
+            )
+          })()}
 
           {activeTab === 'items' && (
             <>
