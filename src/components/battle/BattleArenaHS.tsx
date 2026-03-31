@@ -46,6 +46,9 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
   const myActive = myDeck.find(c => c.isActive)
   const theirActive = theirDeck.find(c => c.isActive)
 
+  const myLastKod = !myActive ? [...myDeck].filter(c => c.isKnockedOut).pop() : null
+  const theirLastKod = !theirActive ? [...theirDeck].filter(c => c.isKnockedOut).pop() : null
+
   const lastTurn = turns[turns.length - 1]
   const isLastAttacker = lastTurn?.attacker === playerName
   const isLastDefender = lastTurn && !isLastAttacker
@@ -159,6 +162,13 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
               isHit={isLastAttacker && turns.length > 0}
               effects={theirActiveEffects}
             />
+          ) : theirLastKod ? (
+            <BattleCardHS
+              deckCard={theirLastKod}
+              side="top"
+              isKo
+              effects={[]}
+            />
           ) : (
             <div style={{ padding: '10px', display: 'flex', justifyContent: 'center' }}>
               <DeckStatusBar deck={theirDeck} align="right" />
@@ -261,6 +271,13 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
             isAttacking={isLastAttacker && turns.length > 0}
             isHit={isLastDefender && turns.length > 0}
             effects={myActiveEffects}
+          />
+        ) : myLastKod ? (
+          <BattleCardHS
+            deckCard={myLastKod}
+            side="bottom"
+            isKo
+            effects={[]}
           />
         ) : (
           <div style={{ padding: '10px', display: 'flex', justifyContent: 'center' }}>

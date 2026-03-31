@@ -43,6 +43,10 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
   const myActive = myDeck.find(c => c.isActive)
   const theirActive = theirDeck.find(c => c.isActive)
 
+  // Find the last KO'd card for each side (to display as "dead" when no active card)
+  const myLastKod = !myActive ? [...myDeck].filter(c => c.isKnockedOut).pop() : null
+  const theirLastKod = !theirActive ? [...theirDeck].filter(c => c.isKnockedOut).pop() : null
+
   const lastTurn = turns[turns.length - 1]
   const isLastAttacker = lastTurn?.attacker === playerName
   const isLastDefender = lastTurn && !isLastAttacker
@@ -156,6 +160,12 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
               isAttacking={isLastAttacker && turns.length > 0}
               isHit={isLastDefender && turns.length > 0}
             />
+          ) : myLastKod ? (
+            <BattleCard
+              deckCard={myLastKod}
+              side="left"
+              isKo
+            />
           ) : (
             <DeckStatusBar deck={myDeck} align="left" />
           )}
@@ -170,6 +180,12 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
               side="right"
               isAttacking={!isLastAttacker && turns.length > 0}
               isHit={isLastAttacker && turns.length > 0}
+            />
+          ) : theirLastKod ? (
+            <BattleCard
+              deckCard={theirLastKod}
+              side="right"
+              isKo
             />
           ) : (
             <DeckStatusBar deck={theirDeck} align="right" />
