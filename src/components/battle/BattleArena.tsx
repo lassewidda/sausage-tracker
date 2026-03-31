@@ -164,7 +164,6 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
             <BattleCard
               deckCard={myLastKod}
               side="left"
-              isKo
             />
           ) : (
             <DeckStatusBar deck={myDeck} align="left" />
@@ -185,7 +184,6 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
             <BattleCard
               deckCard={theirLastKod}
               side="right"
-              isKo
             />
           ) : (
             <DeckStatusBar deck={theirDeck} align="right" />

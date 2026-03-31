@@ -166,7 +166,6 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
             <BattleCardHS
               deckCard={theirLastKod}
               side="top"
-              isKo
               effects={[]}
             />
           ) : (
@@ -276,7 +275,6 @@ export function BattleArenaHS({ state, playerName, onMove, onUseItem, onSwitch, 
           <BattleCardHS
             deckCard={myLastKod}
             side="bottom"
-            isKo
             effects={[]}
           />
         ) : (
