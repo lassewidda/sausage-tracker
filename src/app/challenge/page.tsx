@@ -6,6 +6,7 @@ import { Window } from '@/components/amiga/Window'
 import { Button } from '@/components/amiga/Button'
 import { useName } from '@/lib/useName'
 import { processImage, isHeic, MAX_RAW_SIZE } from '@/lib/imageProcess'
+import { ChallengeReveal } from '@/components/challenge/ChallengeReveal'
 import type { ChallengeView, ChallengeLeaderboardEntry, GroupLeaderboardEntry, ChallengeParticipant, WeeklyChallenge, TeamProgress } from '@/types'
 
 const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
@@ -78,6 +79,7 @@ export default function ChallengePage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedBingoItem, setSelectedBingoItem] = useState<string | null>(null)
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
+  const [showReveal, setShowReveal] = useState(false)
   const [lightboxLabel, setLightboxLabel] = useState<string>('')
 
   const fetchChallengeList = useCallback(async () => {
@@ -123,6 +125,39 @@ export default function ChallengePage() {
     const interval = setInterval(fetchData, 5000)
     return () => clearInterval(interval)
   }, [fetchData])
+
+  // Check if current challenge is new (unseen) — only for current week tab
+  useEffect(() => {
+    if (!view?.challenge || selectedWeek !== null) return
+    const weekKey = view.challenge.weekKey
+    try {
+      const raw = localStorage.getItem('powerup_seen_challenges')
+      const seen: string[] = raw ? JSON.parse(raw) : []
+      if (!seen.includes(weekKey)) {
+        setShowReveal(true)
+      }
+    } catch {
+      // corrupted localStorage — treat as unseen
+      setShowReveal(true)
+    }
+  }, [view?.challenge, selectedWeek])
+
+  const handleRevealDismiss = () => {
+    if (view?.challenge) {
+      const weekKey = view.challenge.weekKey
+      try {
+        const raw = localStorage.getItem('powerup_seen_challenges')
+        const seen: string[] = raw ? JSON.parse(raw) : []
+        if (!seen.includes(weekKey)) {
+          seen.push(weekKey)
+          localStorage.setItem('powerup_seen_challenges', JSON.stringify(seen))
+        }
+      } catch {
+        localStorage.setItem('powerup_seen_challenges', JSON.stringify([weekKey]))
+      }
+    }
+    setShowReveal(false)
+  }
 
   const handleUploadClick = (bingoItem: string) => {
     setSelectedBingoItem(bingoItem)
@@ -215,6 +250,9 @@ export default function ChallengePage() {
 
   return (
     <div className="stack" style={{ gap: '12px' }}>
+      {showReveal && challenge && (
+        <ChallengeReveal challenge={challenge} onDismiss={handleRevealDismiss} />
+      )}
       <input
         ref={fileInputRef}
         type="file"
