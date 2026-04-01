@@ -10,6 +10,7 @@ interface Props {
 export function CriticalHitOverlay({ turns }: Props) {
   const [visible, setVisible] = useState(false)
   const [attacker, setAttacker] = useState('')
+  const [animKey, setAnimKey] = useState(0)
   const seenCount = useRef(0)
 
   useEffect(() => {
@@ -20,6 +21,7 @@ export function CriticalHitOverlay({ turns }: Props) {
       const critTurn = newTurns.find(t => t.isCritical)
       if (critTurn) {
         setAttacker(critTurn.attacker)
+        setAnimKey(k => k + 1)
         setVisible(true)
         const timer = setTimeout(() => setVisible(false), 1500)
         return () => clearTimeout(timer)
@@ -30,7 +32,7 @@ export function CriticalHitOverlay({ turns }: Props) {
   if (!visible) return null
 
   return (
-    <div style={{
+    <div key={animKey} style={{
       position: 'fixed',
       inset: 0,
       zIndex: 50,
