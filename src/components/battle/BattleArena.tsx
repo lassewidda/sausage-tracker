@@ -43,11 +43,18 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
   const myActive = myDeck.find(c => c.isActive)
   const theirActive = theirDeck.find(c => c.isActive)
 
-  // Find the last KO'd card for each side (to display as "dead" when no active card)
-  const myLastKod = !myActive ? [...myDeck].filter(c => c.isKnockedOut).pop() : null
-  const theirLastKod = !theirActive ? [...theirDeck].filter(c => c.isKnockedOut).pop() : null
-
   const lastTurn = turns[turns.length - 1]
+  const lastTurnWasSwitch = lastTurn?.moveUsed === 'SWITCH'
+
+  // Show KO'd card only when awaiting_switch (a card just died), not during voluntary switches
+  // Find the card that was KO'd in the most recent KO turn
+  const lastKoTurn = [...turns].reverse().find(t => t.isKnockout)
+  const myLastKod = !myActive && isAwaitingSwitch && lastKoTurn
+    ? myDeck.find(c => c.isKnockedOut && c.cardId === lastKoTurn.defenderCardId) ?? null
+    : null
+  const theirLastKod = !theirActive && isAwaitingSwitch && lastKoTurn
+    ? theirDeck.find(c => c.isKnockedOut && c.cardId === lastKoTurn.defenderCardId) ?? null
+    : null
   const isLastAttacker = lastTurn?.attacker === playerName
   const isLastDefender = lastTurn && !isLastAttacker
 
@@ -166,7 +173,19 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
               side="left"
             />
           ) : (
-            <DeckStatusBar deck={myDeck} align="left" />
+            <div style={{
+              width: '170px',
+              height: '200px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '9px',
+              color: 'var(--crt-amber)',
+              animation: 'amiga-blink 1s steps(1) infinite',
+            }}>
+              SWITCHING...
+            </div>
           )}
         </div>
 
@@ -186,7 +205,19 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
               side="right"
             />
           ) : (
-            <DeckStatusBar deck={theirDeck} align="right" />
+            <div style={{
+              width: '170px',
+              height: '200px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '9px',
+              color: 'var(--crt-amber)',
+              animation: 'amiga-blink 1s steps(1) infinite',
+            }}>
+              SWITCHING...
+            </div>
           )}
         </div>
       </div>
