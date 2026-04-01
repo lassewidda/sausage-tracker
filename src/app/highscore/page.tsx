@@ -1,20 +1,27 @@
-import { getLeaderboard, getChains } from '@/lib/db'
+import { getLeaderboard, getChains, getGoalStreaks } from '@/lib/db'
 import { Leaderboard } from '@/components/highscore/Leaderboard'
 import { ItemChain } from '@/components/highscore/ItemChain'
 import { Window } from '@/components/amiga/Window'
 import Link from 'next/link'
 import { Button } from '@/components/amiga/Button'
-import type { Leaderboard as ILeaderboard, ChainEntry } from '@/types'
+import type { Leaderboard as ILeaderboard, ChainEntry, GoalStreakEntry } from '@/types'
 import { formatWeekLabel } from '@/lib/db'
 import theme from '@/theme'
 
 export const dynamic = 'force-dynamic'
 
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
+
 export default async function HighscorePage() {
   let data: ILeaderboard = { allTime: [], thisWeek: [], weekKey: '' }
   let chains: ChainEntry[] = []
+  let goalStreaks: GoalStreakEntry[] = []
   try {
-    ;[data, chains] = await Promise.all([getLeaderboard(), getChains()])
+    if (IS_EXERCISE) {
+      ;[data, goalStreaks] = await Promise.all([getLeaderboard(), getGoalStreaks()])
+    } else {
+      ;[data, chains] = await Promise.all([getLeaderboard(), getChains()])
+    }
   } catch (err) {
     console.error('Highscore fetch error:', err)
   }
@@ -53,8 +60,12 @@ export default async function HighscorePage() {
             emptyMessage={theme.strings.noScoresYet}
           />
 
-          {/* Sausage chain */}
-          <ItemChain entries={chains} />
+          {/* Streak / Goal section */}
+          {IS_EXERCISE ? (
+            <ItemChain entries={chains} goalStreaks={goalStreaks} />
+          ) : (
+            <ItemChain entries={chains} />
+          )}
         </div>
       </Window>
     </main>

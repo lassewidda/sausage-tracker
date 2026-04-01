@@ -302,13 +302,22 @@ async function migrate() {
   // Battle tactics: cooldown tracking (last move name used by this card)
   await sql`ALTER TABLE battle_decks ADD COLUMN IF NOT EXISTS last_move_used TEXT`
 
+  // Player goals table (personal weekly targets)
+  await sql`
+    CREATE TABLE IF NOT EXISTS player_goals (
+      player_name TEXT PRIMARY KEY,
+      cardio_target INTEGER NOT NULL DEFAULT 0,
+      strength_target INTEGER NOT NULL DEFAULT 0
+    )
+  `
+
   // Enable Row Level Security on all tables with permissive policies
   // (no auth in this app — all access is via server-side API routes)
   const tables = [
     'meals', 'weekly_summaries', 'hero_cards', 'battles', 'battle_decks',
     'battle_turns', 'battle_stats', 'battle_taunts', 'battle_effects',
     'player_items', 'player_wallets', 'shop_transactions',
-    'weekly_challenges', 'challenge_photos', 'app_config',
+    'weekly_challenges', 'challenge_photos', 'app_config', 'player_goals',
   ]
   for (const table of tables) {
     await sql`SELECT set_config('app.current_table', ${table}, true)`

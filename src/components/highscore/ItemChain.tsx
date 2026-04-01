@@ -1,9 +1,10 @@
 import Link from 'next/link'
-import type { ChainEntry } from '@/types'
+import type { ChainEntry, GoalStreakEntry } from '@/types'
 import theme from '@/theme'
 
 interface Props {
   entries: ChainEntry[]
+  goalStreaks?: GoalStreakEntry[]
 }
 
 const MEDALS = ['\u{1F947}', '\u{1F948}', '\u{1F949}'] // gold, silver, bronze
@@ -71,6 +72,21 @@ function DumbbellLink({ index }: { index: number }) {
 }
 
 function ChainConnector() {
+  if (isExercise) {
+    // Simple metal rod connector for exercise theme
+    return (
+      <svg
+        width="10"
+        height="18"
+        viewBox="0 0 10 18"
+        style={{ display: 'block', imageRendering: 'pixelated' }}
+      >
+        <rect x="1" y="7" width="8" height="4" rx="2" fill="#888" />
+        <rect x="1" y="7" width="8" height="1.5" rx="1" fill="#AAA" opacity="0.5" />
+      </svg>
+    )
+  }
+
   return (
     <svg
       width="10"
@@ -160,7 +176,101 @@ function ChainViz({ weeks }: { weeks: number }) {
   )
 }
 
-export function ItemChain({ entries }: Props) {
+export function ItemChain({ entries, goalStreaks }: Props) {
+  // Exercise theme with goal streaks
+  if (isExercise && goalStreaks) {
+    return (
+      <div className="amiga-window">
+        <div className="amiga-window__titlebar">
+          <div className="amiga-window__gadget" />
+          <span className="amiga-window__title">GOAL STREAK</span>
+          <div className="amiga-window__gadget" />
+        </div>
+        <div className="amiga-window__body">
+          <div style={{ marginBottom: '10px' }}>
+            <div className="amiga-info">
+              Achieve your personal weekly goal to maintain your streak
+            </div>
+          </div>
+
+          {goalStreaks.length === 0 ? (
+            <div className="amiga-info" style={{ textAlign: 'center' }}>
+              No goals set yet. Visit your profile to set weekly targets!
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {goalStreaks.map((entry, i) => (
+                <div key={entry.playerName}>
+                  {/* Player header */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '6px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '16px', lineHeight: 1 }}>
+                        {MEDALS[i] ?? `#${i + 1}`}
+                      </span>
+                      <Link href={`/player/${encodeURIComponent(entry.playerName)}`} style={{
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: '10px',
+                        textTransform: 'uppercase',
+                        color: 'var(--amiga-black)',
+                        letterSpacing: '1px',
+                        textDecoration: 'none',
+                      }}>
+                        {entry.playerName}
+                      </Link>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {/* Goal badges */}
+                      {entry.cardioTarget > 0 && (
+                        <span style={{
+                          fontFamily: 'var(--font-pixel)',
+                          fontSize: '7px',
+                          background: '#FF4444',
+                          color: '#000',
+                          padding: '2px 4px',
+                        }}>
+                          {'\u{1F3C3}'}{entry.cardioTarget}
+                        </span>
+                      )}
+                      {entry.strengthTarget > 0 && (
+                        <span style={{
+                          fontFamily: 'var(--font-pixel)',
+                          fontSize: '7px',
+                          background: '#4488FF',
+                          color: '#000',
+                          padding: '2px 4px',
+                        }}>
+                          {'\u{1F4AA}'}{entry.strengthTarget}
+                        </span>
+                      )}
+                      <div style={{
+                        background: entry.streakWeeks > 0 ? 'var(--amiga-black)' : 'var(--amiga-dark-grey)',
+                        color: entry.streakWeeks > 0 ? 'var(--crt-amber)' : 'var(--amiga-grey)',
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: '9px',
+                        padding: '4px 8px',
+                        textShadow: entry.streakWeeks > 0 ? '0 0 4px var(--crt-amber)' : 'none',
+                      }}>
+                        {entry.streakWeeks}W {'\u{1F517}'} ({entry.totalGoalWeeks} total)
+                      </div>
+                    </div>
+                  </div>
+
+                  <ChainViz weeks={entry.streakWeeks} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Sausage theme: original behavior
   return (
     <div className="amiga-window">
       <div className="amiga-window__titlebar">

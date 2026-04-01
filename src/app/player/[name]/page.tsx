@@ -2,6 +2,7 @@ import { getHeroCard, insertHeroCard, getPlayerAllTimeStats, getPlayerProfileDat
 import { generateHeroCard } from '@/lib/claude'
 import { RegenerateButton } from '@/components/player/RegenerateButton'
 import { ChangeNameButton } from '@/components/player/ChangeNameButton'
+import { GoalEditor } from '@/components/player/GoalEditor'
 import { CardCollection } from '@/components/player/CardCollection'
 import { PhotoGrid } from '@/components/player/PhotoGrid'
 import { Window } from '@/components/amiga/Window'
@@ -195,6 +196,9 @@ export default async function PlayerPage({ params }: Props) {
         </div>
       </Window>
       <ChangeNameButton profileName={playerName} />
+
+      {/* Personal Goals (exercise theme only) */}
+      {IS_EXERCISE && <GoalEditor profileName={playerName} />}
 
       {/* Stats Grid */}
       <Window title="STATS">

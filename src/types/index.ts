@@ -257,6 +257,22 @@ export interface GroupLeaderboardEntry {
   completedChallenges: number
 }
 
+// ── Player Goals ──────────────────────────────────────────
+
+export interface PlayerGoal {
+  playerName: string
+  cardioTarget: number
+  strengthTarget: number
+}
+
+export interface GoalStreakEntry {
+  playerName: string
+  streakWeeks: number
+  totalGoalWeeks: number
+  cardioTarget: number
+  strengthTarget: number
+}
+
 export type UploadPhase =
   | 'idle'
   | 'uploading'

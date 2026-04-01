@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, ChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleTaunt, BattleStats, BattleState, PlayerItem, BattleEffect, ItemEffectType, WeeklyChallenge, ChallengePhoto, ChallengeParticipant, ChallengeView, ChallengeLeaderboardEntry, Team, TeamProgress, GroupLeaderboardEntry } from '@/types'
+import type { Meal, WeekGroup, Leaderboard, LeaderboardEntry, ChainEntry, WeeklySummary, HeroCard, Battle, BattleDeckCard, BattleTurn, BattleTaunt, BattleStats, BattleState, PlayerItem, BattleEffect, ItemEffectType, WeeklyChallenge, ChallengePhoto, ChallengeParticipant, ChallengeView, ChallengeLeaderboardEntry, Team, TeamProgress, GroupLeaderboardEntry, PlayerGoal, GoalStreakEntry } from '@/types'
 
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
@@ -244,6 +244,145 @@ export async function getChains(): Promise<ChainEntry[]> {
 
   // Sort by streak descending, then alphabetically
   entries.sort((a, b) => b.streakWeeks - a.streakWeeks || a.playerName.localeCompare(b.playerName))
+  return entries
+}
+
+// ── Player Goals ──────────────────────────────────────────
+
+export async function getPlayerGoal(playerName: string): Promise<PlayerGoal | null> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT player_name, cardio_target, strength_target
+    FROM player_goals
+    WHERE player_name = ${playerName}
+  `
+  await sql.end()
+  if (rows.length === 0) return null
+  return {
+    playerName: rows[0].player_name as string,
+    cardioTarget: rows[0].cardio_target as number,
+    strengthTarget: rows[0].strength_target as number,
+  }
+}
+
+export async function upsertPlayerGoal(playerName: string, cardioTarget: number, strengthTarget: number): Promise<PlayerGoal> {
+  const sql = getDb()
+  const rows = await sql`
+    INSERT INTO player_goals (player_name, cardio_target, strength_target)
+    VALUES (${playerName}, ${cardioTarget}, ${strengthTarget})
+    ON CONFLICT (player_name) DO UPDATE SET
+      cardio_target = ${cardioTarget},
+      strength_target = ${strengthTarget}
+    RETURNING player_name, cardio_target, strength_target
+  `
+  await sql.end()
+  return {
+    playerName: rows[0].player_name as string,
+    cardioTarget: rows[0].cardio_target as number,
+    strengthTarget: rows[0].strength_target as number,
+  }
+}
+
+export async function getAllPlayerGoals(): Promise<PlayerGoal[]> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT player_name, cardio_target, strength_target
+    FROM player_goals
+  `
+  await sql.end()
+  return rows.map(r => ({
+    playerName: r.player_name as string,
+    cardioTarget: r.cardio_target as number,
+    strengthTarget: r.strength_target as number,
+  }))
+}
+
+export async function getGoalStreaks(): Promise<GoalStreakEntry[]> {
+  const sql = getDb()
+
+  // Get all goals
+  const goalRows = await sql`
+    SELECT player_name, cardio_target, strength_target FROM player_goals
+  `
+
+  if (goalRows.length === 0) {
+    await sql.end()
+    return []
+  }
+
+  // Get all meals grouped by player, week, and exercise_type
+  const mealRows = await sql`
+    SELECT player_name, week_key, exercise_type, COUNT(*)::int AS cnt
+    FROM meals
+    GROUP BY player_name, week_key, exercise_type
+  `
+  await sql.end()
+
+  // Build map: player -> week -> { cardio, strength }
+  const weekCounts = new Map<string, Map<string, { cardio: number; strength: number }>>()
+  for (const row of mealRows) {
+    const name = row.player_name as string
+    const week = row.week_key as string
+    const exType = (row.exercise_type as string | null) || ''
+    const cnt = row.cnt as number
+
+    if (!weekCounts.has(name)) weekCounts.set(name, new Map())
+    const playerMap = weekCounts.get(name)!
+    if (!playerMap.has(week)) playerMap.set(week, { cardio: 0, strength: 0 })
+    const weekData = playerMap.get(week)!
+
+    if (exType === 'cardio') weekData.cardio += cnt
+    else if (exType === 'strength') weekData.strength += cnt
+  }
+
+  const currentWeek = getWeekKey()
+  const entries: GoalStreakEntry[] = []
+
+  for (const goalRow of goalRows) {
+    const playerName = goalRow.player_name as string
+    const cardioTarget = goalRow.cardio_target as number
+    const strengthTarget = goalRow.strength_target as number
+    const playerWeeks = weekCounts.get(playerName)
+
+    // Skip players with 0/0 targets (they can never meet the goal)
+    if (cardioTarget === 0 && strengthTarget === 0) continue
+
+    let streak = 0
+    let totalGoalWeeks = 0
+    let wk = currentWeek
+
+    // First pass: count total goal weeks across all weeks
+    if (playerWeeks) {
+      for (const [week, counts] of Array.from(playerWeeks.entries())) {
+        if (counts.cardio >= cardioTarget && counts.strength >= strengthTarget) {
+          totalGoalWeeks++
+        }
+      }
+    }
+
+    // Second pass: count consecutive streak walking backwards
+    for (let i = 0; i < 500; i++) {
+      const counts = playerWeeks?.get(wk) ?? { cardio: 0, strength: 0 }
+      const met = counts.cardio >= cardioTarget && counts.strength >= strengthTarget
+
+      if (met) {
+        streak++
+        wk = prevWeekKey(wk)
+      } else {
+        // Current week doesn't break streak — skip and check previous
+        if (i === 0) {
+          wk = prevWeekKey(wk)
+          continue
+        }
+        break
+      }
+    }
+
+    entries.push({ playerName, streakWeeks: streak, totalGoalWeeks, cardioTarget, strengthTarget })
+  }
+
+  // Sort by streak descending, then by total goal weeks, then alphabetically
+  entries.sort((a, b) => b.streakWeeks - a.streakWeeks || b.totalGoalWeeks - a.totalGoalWeeks || a.playerName.localeCompare(b.playerName))
   return entries
 }
 
