@@ -35,6 +35,16 @@ export default function ChallengeAdminPage() {
   const [teams, setTeams] = useState<Array<{ name: string; members: string[] }>>([])
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [allPlayers, setAllPlayers] = useState<string[]>([])
+
+  const fetchPlayers = useCallback(async () => {
+    try {
+      const res = await fetch('/api/players')
+      if (res.ok) setAllPlayers(await res.json())
+    } catch {
+      // silent
+    }
+  }, [])
 
   // Progress timeline config state
   const [progressStart, setProgressStart] = useState('')
@@ -89,7 +99,8 @@ export default function ChallengeAdminPage() {
   useEffect(() => {
     fetchChallenges()
     fetchProgressConfig()
-  }, [fetchChallenges, fetchProgressConfig])
+    fetchPlayers()
+  }, [fetchChallenges, fetchProgressConfig, fetchPlayers])
 
   const handleSave = async () => {
     const items = bingoItems.map(s => s.trim()).filter(Boolean)
@@ -453,28 +464,90 @@ export default function ChallengeAdminPage() {
                       </button>
                     </div>
                     <label style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: 'var(--amiga-dark-grey)', display: 'block', marginBottom: '4px' }}>
-                      MEMBERS (ONE PER LINE OR COMMA-SEPARATED)
+                      MEMBERS
                     </label>
-                    <textarea
-                      value={team.members.join('\n')}
-                      onChange={e => {
-                        const updated = [...teams]
-                        const raw = e.target.value
-                        updated[tidx] = {
-                          ...updated[tidx],
-                          members: raw.includes(',')
-                            ? raw.split(',').map(s => s.trim())
-                            : raw.split('\n').map(s => s.trim()),
-                        }
-                        setTeams(updated)
-                      }}
-                      rows={3}
-                      style={{
-                        ...inputStyle,
-                        resize: 'vertical',
-                        minHeight: '50px',
-                      }}
-                    />
+                    {/* Added member badges */}
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                      {team.members.filter(Boolean).map(member => (
+                        <span key={member} style={{
+                          fontFamily: 'var(--font-pixel)',
+                          fontSize: '7px',
+                          color: 'var(--crt-amber)',
+                          background: 'var(--amiga-black)',
+                          border: '1px solid var(--crt-amber)',
+                          padding: '3px 6px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}>
+                          {member.toUpperCase()}
+                          <button
+                            onClick={() => {
+                              const updated = [...teams]
+                              updated[tidx] = {
+                                ...updated[tidx],
+                                members: updated[tidx].members.filter(m => m !== member),
+                              }
+                              setTeams(updated)
+                            }}
+                            style={{
+                              fontFamily: 'var(--font-pixel)',
+                              fontSize: '7px',
+                              color: '#AA0000',
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: 0,
+                              lineHeight: 1,
+                            }}
+                          >
+                            X
+                          </button>
+                        </span>
+                      ))}
+                      {team.members.filter(Boolean).length === 0 && (
+                        <span style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: 'var(--amiga-dark-grey)' }}>
+                          NO MEMBERS YET
+                        </span>
+                      )}
+                    </div>
+                    {/* Available players to add */}
+                    {(() => {
+                      const assignedPlayers = new Set(teams.flatMap(t => t.members.map(m => m.toLowerCase())))
+                      const available = allPlayers.filter(p => !assignedPlayers.has(p.toLowerCase()))
+                      return available.length > 0 ? (
+                        <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap' }}>
+                          {available.map(player => (
+                            <button
+                              key={player}
+                              onClick={() => {
+                                const updated = [...teams]
+                                updated[tidx] = {
+                                  ...updated[tidx],
+                                  members: [...updated[tidx].members, player.toLowerCase()],
+                                }
+                                setTeams(updated)
+                              }}
+                              style={{
+                                fontFamily: 'var(--font-pixel)',
+                                fontSize: '6px',
+                                color: 'var(--amiga-dark-grey)',
+                                background: 'transparent',
+                                border: '1px solid var(--bevel-shadow)',
+                                padding: '3px 6px',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              + {player.toUpperCase()}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: 'var(--amiga-dark-grey)' }}>
+                          ALL PLAYERS ASSIGNED
+                        </div>
+                      )
+                    })()}
                   </div>
                 ))}
               </div>

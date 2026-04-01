@@ -81,6 +81,9 @@ export default function ChallengePage() {
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
   const [showReveal, setShowReveal] = useState(false)
   const [lightboxLabel, setLightboxLabel] = useState<string>('')
+  const [editingTeamName, setEditingTeamName] = useState(false)
+  const [teamNameDraft, setTeamNameDraft] = useState('')
+  const [teamNameSaving, setTeamNameSaving] = useState(false)
 
   const fetchChallengeList = useCallback(async () => {
     try {
@@ -515,8 +518,133 @@ export default function ChallengePage() {
                       color: 'var(--crt-amber)',
                       marginBottom: '8px',
                       textTransform: 'uppercase',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      flexWrap: 'wrap',
                     }}>
-                      YOUR TEAM&apos;S BINGO CARD — {myTeam.name.toUpperCase()}
+                      {editingTeamName ? (
+                        <>
+                          <span>YOUR TEAM&apos;S BINGO CARD —</span>
+                          <input
+                            type="text"
+                            value={teamNameDraft}
+                            onChange={e => setTeamNameDraft(e.target.value)}
+                            autoFocus
+                            style={{
+                              fontFamily: 'var(--font-pixel)',
+                              fontSize: '8px',
+                              textTransform: 'uppercase',
+                              background: 'var(--amiga-black)',
+                              color: 'var(--crt-amber)',
+                              border: '2px solid var(--crt-amber)',
+                              padding: '2px 6px',
+                              outline: 'none',
+                              width: '120px',
+                            }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                const doSave = async () => {
+                                  if (!teamNameDraft.trim() || !name || !challenge) return
+                                  setTeamNameSaving(true)
+                                  try {
+                                    const res = await fetch('/api/challenge/team-name', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        weekKey: challenge.weekKey,
+                                        oldName: myTeam.name,
+                                        newName: teamNameDraft.trim(),
+                                        playerName: name,
+                                      }),
+                                    })
+                                    if (res.ok) {
+                                      await fetchData()
+                                      setEditingTeamName(false)
+                                    }
+                                  } catch { /* silent */ }
+                                  finally { setTeamNameSaving(false) }
+                                }
+                                doSave()
+                              } else if (e.key === 'Escape') {
+                                setEditingTeamName(false)
+                              }
+                            }}
+                          />
+                          <button
+                            disabled={teamNameSaving}
+                            onClick={async () => {
+                              if (!teamNameDraft.trim() || !name || !challenge) return
+                              setTeamNameSaving(true)
+                              try {
+                                const res = await fetch('/api/challenge/team-name', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    weekKey: challenge.weekKey,
+                                    oldName: myTeam.name,
+                                    newName: teamNameDraft.trim(),
+                                    playerName: name,
+                                  }),
+                                })
+                                if (res.ok) {
+                                  await fetchData()
+                                  setEditingTeamName(false)
+                                }
+                              } catch { /* silent */ }
+                              finally { setTeamNameSaving(false) }
+                            }}
+                            style={{
+                              fontFamily: 'var(--font-pixel)',
+                              fontSize: '7px',
+                              color: '#00CC00',
+                              background: 'none',
+                              border: '1px solid #00CC00',
+                              cursor: teamNameSaving ? 'default' : 'pointer',
+                              padding: '2px 6px',
+                            }}
+                          >
+                            {teamNameSaving ? '...' : 'SAVE'}
+                          </button>
+                          <button
+                            onClick={() => setEditingTeamName(false)}
+                            style={{
+                              fontFamily: 'var(--font-pixel)',
+                              fontSize: '7px',
+                              color: '#AA0000',
+                              background: 'none',
+                              border: '1px solid #AA0000',
+                              cursor: 'pointer',
+                              padding: '2px 6px',
+                            }}
+                          >
+                            CANCEL
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          YOUR TEAM&apos;S BINGO CARD — {myTeam.name.toUpperCase()}
+                          <button
+                            onClick={() => {
+                              setTeamNameDraft(myTeam.name)
+                              setEditingTeamName(true)
+                            }}
+                            title="Rename team"
+                            style={{
+                              fontFamily: 'var(--font-pixel)',
+                              fontSize: '7px',
+                              color: 'var(--amiga-dark-grey)',
+                              background: 'none',
+                              border: '1px solid var(--bevel-shadow)',
+                              cursor: 'pointer',
+                              padding: '1px 4px',
+                            }}
+                          >
+                            {'\u270E'}
+                          </button>
+                        </>
+                      )}
                     </div>
                     <div style={{
                       display: 'grid',
