@@ -513,14 +513,21 @@ export default function ChallengeAdminPage() {
                     </div>
                     {/* Available players to add */}
                     {(() => {
-                      const assignedPlayers = new Set(teams.flatMap(t => t.members.map(m => m.toLowerCase())))
-                      const available = allPlayers.filter(p => !assignedPlayers.has(p.toLowerCase()))
-                      return available.length > 0 ? (
+                      const thisTeamMembers = new Set(team.members.map(m => m.toLowerCase()))
+                      const otherTeamMembers = new Set(
+                        teams.filter((_, i) => i !== tidx).flatMap(t => t.members.map(m => m.toLowerCase()))
+                      )
+                      const unassigned = allPlayers.filter(p => !thisTeamMembers.has(p.toLowerCase()))
+                      return unassigned.length > 0 ? (
                         <div style={{ display: 'flex', gap: '3px', flexWrap: 'wrap' }}>
-                          {available.map(player => (
+                          {unassigned.map(player => {
+                            const inOtherTeam = otherTeamMembers.has(player.toLowerCase())
+                            return (
                             <button
                               key={player}
+                              disabled={inOtherTeam}
                               onClick={() => {
+                                if (inOtherTeam) return
                                 const updated = [...teams]
                                 updated[tidx] = {
                                   ...updated[tidx],
@@ -531,16 +538,19 @@ export default function ChallengeAdminPage() {
                               style={{
                                 fontFamily: 'var(--font-pixel)',
                                 fontSize: '6px',
-                                color: 'var(--amiga-dark-grey)',
-                                background: 'transparent',
-                                border: '1px solid var(--bevel-shadow)',
+                                color: inOtherTeam ? '#555' : 'var(--amiga-dark-grey)',
+                                background: inOtherTeam ? '#1a1a1a' : 'transparent',
+                                border: inOtherTeam ? '1px solid #333' : '1px solid var(--bevel-shadow)',
                                 padding: '3px 6px',
-                                cursor: 'pointer',
+                                cursor: inOtherTeam ? 'not-allowed' : 'pointer',
+                                opacity: inOtherTeam ? 0.4 : 1,
+                                textDecoration: inOtherTeam ? 'line-through' : 'none',
                               }}
                             >
                               + {player.toUpperCase()}
                             </button>
-                          ))}
+                            )
+                          })}
                         </div>
                       ) : (
                         <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: 'var(--amiga-dark-grey)' }}>
