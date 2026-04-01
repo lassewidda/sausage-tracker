@@ -3,15 +3,12 @@ import Link from 'next/link'
 import { Button } from '@/components/amiga/Button'
 import theme from '@/theme'
 
-const SAUSAGE_TYPES = [
-  'BRATWURST', 'FRANKFURTER', 'CHORIZO', 'KIELBASA', 'ANDOUILLE',
-  'WEISSWURST', 'CURRYWURST', 'BLOOD_SAUSAGE', 'VEGGIE', 'MUSTARD',
-  'SAUERKRAUT', 'GRILLED',
-]
+// Get types from the theme's type chart instead of hardcoding
+const TYPES = Object.keys(theme.typeChart)
 
 function getEmoji(type: string): string {
   const t = theme.typeThemes[type]
-  return t?.particle ?? '🌭'
+  return t?.particle ?? '⚡'
 }
 
 function getColor(type: string): string {
@@ -20,14 +17,14 @@ function getColor(type: string): string {
 }
 
 function formatName(type: string): string {
-  return type.replace('_', ' ')
+  return type.replace(/_/g, ' ')
 }
 
 export default function TypeChartPage() {
   const chart = theme.typeChart
 
   // Build per-type strong/weak lists from the chart
-  const typeInfo = SAUSAGE_TYPES.map(type => {
+  const typeInfo = TYPES.map(type => {
     const strongAgainst: string[] = []
     const weakAgainst: string[] = []
     const resistedBy: string[] = []
@@ -35,13 +32,12 @@ export default function TypeChartPage() {
 
     const offenses = chart[type] ?? {}
     for (const [target, mult] of Object.entries(offenses)) {
-      if (!SAUSAGE_TYPES.includes(target)) continue
+      if (!TYPES.includes(target)) continue
       if (mult >= 1.5) strongAgainst.push(target)
       if (mult <= 0.66) weakAgainst.push(target)
     }
 
-    // Check what other types do against this type
-    for (const otherType of SAUSAGE_TYPES) {
+    for (const otherType of TYPES) {
       if (otherType === type) continue
       const otherOffenses = chart[otherType] ?? {}
       const mult = otherOffenses[type]
