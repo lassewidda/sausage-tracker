@@ -69,7 +69,7 @@ export default function TypeChartPage() {
           {typeInfo.map(({ type, strongAgainst, weakAgainst, crushedBy, resistedBy }) => (
             <div key={type} style={{
               border: `2px solid ${getColor(type)}`,
-              background: 'var(--amiga-black)',
+              background: '#0a0a1a',
               padding: '8px 10px',
               margin: '0 4px',
             }}>
