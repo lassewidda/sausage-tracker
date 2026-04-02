@@ -16,14 +16,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No Slack ID set for this player' }, { status: 404 })
   }
 
-  const success = await sendSlackDM(
+  const result = await sendSlackDM(
     slackId,
     `🍄 PowerUp test notification! If you see this, Slack notifications are working for ${playerName.toUpperCase()}. 💪`
   )
 
-  if (success) {
+  if (result.ok) {
     return NextResponse.json({ ok: true })
   } else {
-    return NextResponse.json({ error: 'Failed to send Slack message. Check your Slack ID and bot permissions.' }, { status: 500 })
+    return NextResponse.json({ error: result.error || 'Failed to send' }, { status: 500 })
   }
 }
