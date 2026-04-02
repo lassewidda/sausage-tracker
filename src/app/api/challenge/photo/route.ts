@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getChallengeByWeek, upsertChallengePhoto, deleteChallengePhoto, getWeekKey, insertMeal, deleteMealByBlobPath, getChallengeView } from '@/lib/db'
-import { sendSlackChannel } from '@/lib/slack'
+import { sendSlackChannel, sendSlackChannelWithImage } from '@/lib/slack'
 
 export const dynamic = 'force-dynamic'
 
@@ -53,7 +53,11 @@ export async function POST(req: NextRequest) {
 
   // Notify #powerup channel
   try {
-    sendSlackChannel(`📸 ${playerName.toUpperCase()} found "${bingoItem}" for the weekly challenge!`).catch(() => {})
+    sendSlackChannelWithImage(
+      `📸 ${playerName.toUpperCase()} found "${bingoItem}" for the weekly challenge!`,
+      imageUrl,
+      `${playerName} - ${bingoItem}`
+    ).catch(() => {})
 
     // Check if this completed the challenge for the player/team
     const view = await getChallengeView(wk)

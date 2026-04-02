@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { executeTurn, getBattleState, getSlackUserId } from '@/lib/db'
-import { sendSlackDM } from '@/lib/slack'
+import { sendSlackDM, sendSlackChannel } from '@/lib/slack'
 
 export async function POST(
   request: Request,
@@ -30,7 +30,18 @@ export async function POST(
       const baseUrl = host ? `https://${host}` : ''
       const battleState = await getBattleState(id)
       const nextPlayer = battleState.battle.turnPlayer
-      if (nextPlayer && nextPlayer !== playerName && battleState.battle.status === 'battling') {
+      if (battleState.battle.status === 'finished') {
+        // Battle just ended — notify channel
+        const winner = battleState.battle.winner
+        const { challenger, opponent } = battleState.battle
+        const battleUrl = `${baseUrl}/battle/${id}`
+        if (winner === 'draw') {
+          sendSlackChannel(`⚔️ Battle ended in a DRAW! ${challenger.toUpperCase()} vs ${opponent?.toUpperCase()} — ${battleUrl}`).catch(() => {})
+        } else if (winner) {
+          const loser = winner === challenger ? opponent : challenger
+          sendSlackChannel(`⚔️ ${winner.toUpperCase()} defeated ${loser?.toUpperCase()} in battle! 🏆 ${battleUrl}`).catch(() => {})
+        }
+      } else if (nextPlayer && nextPlayer !== playerName && battleState.battle.status === 'battling') {
         const slackUserId = await getSlackUserId(nextPlayer)
         if (slackUserId) {
           const battleUrl = `${baseUrl}/battle/${id}`
