@@ -132,11 +132,12 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
-        padding: '16px',
+        padding: '8px',
         background: 'rgba(0, 0, 0, 0.3)',
         borderRadius: '8px',
         minHeight: '200px',
         position: 'relative',
+        overflow: 'hidden',
       }}>
         {/* Taunt bubbles */}
         <TauntBubble

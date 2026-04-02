@@ -61,6 +61,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* =====================
@@ -556,6 +558,7 @@ body {
   gap: 16px;
   max-width: 900px;
   margin: 0 auto;
+  overflow-x: hidden;
   width: 100%;
 }
 

@@ -208,7 +208,7 @@ export default function BattleArenaPage({ params }: { params: { id: string } }) 
             )}
           </span>
         </div>
-        <div className="amiga-window__body">
+        <div className="amiga-window__body" style={{ overflow: 'hidden' }}>
           {/* Waiting for opponent */}
           {battle.status === 'waiting' && battle.challenger === name && (
             <div style={{ textAlign: 'center', padding: '32px' }}>

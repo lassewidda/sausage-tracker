@@ -34,7 +34,7 @@ export function BattleCard({ deckCard, isAttacking, isHit, isKo, side }: Props) 
         : `linear-gradient(135deg, ${frameColor}, #F0E68C, ${frameColor}, ${frameDark})`,
       borderRadius: '10px',
       padding: '4px',
-      width: '170px',
+      width: 'clamp(130px, 42vw, 170px)',
       opacity: deckCard.isKnockedOut ? 0.6 : 1,
       filter: deckCard.isKnockedOut ? 'grayscale(0.7)' : 'none',
       animation,
