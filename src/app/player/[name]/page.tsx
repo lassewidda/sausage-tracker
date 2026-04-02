@@ -5,6 +5,7 @@ import { ChangeNameButton } from '@/components/player/ChangeNameButton'
 import { GoalEditor } from '@/components/player/GoalEditor'
 import { CardCollection } from '@/components/player/CardCollection'
 import { PhotoGrid } from '@/components/player/PhotoGrid'
+import { SlackTestButton } from '@/components/player/SlackTestButton'
 import { Window } from '@/components/amiga/Window'
 import Link from 'next/link'
 import type { HeroCard } from '@/types'
@@ -213,6 +214,7 @@ export default async function PlayerPage({ params }: Props) {
                 }} />
               </span>
             )}
+            {IS_EXERCISE && <SlackTestButton profileName={playerName} hasSlack={hasSlack} />}
           </div>
           <div style={{
             fontFamily: 'var(--font-pixel)',

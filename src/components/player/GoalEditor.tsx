@@ -122,7 +122,6 @@ export function GoalEditor({ profileName }: Props) {
           gap: '8px',
           justifyContent: 'center',
           alignItems: 'center',
-          marginBottom: '6px',
         }}>
           {savedCardio > 0 && <GoalBadge icon={'\u{1F3C3}'} count={savedCardio} label="CARDIO" />}
           {savedStrength > 0 && <GoalBadge icon={'\u{1F4AA}'} count={savedStrength} label="STRENGTH" />}
@@ -139,94 +138,6 @@ export function GoalEditor({ profileName }: Props) {
           >
             ✎
           </button>
-        </div>
-        {/* Slack row */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '8px',
-        }}>
-          <button
-            onClick={() => setEditingSlack(true)}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px',
-              position: 'relative',
-            }}
-            title={savedSlackId ? 'Slack connected — click to edit' : 'Click to connect Slack'}
-          >
-            <span style={{ position: 'relative', display: 'inline-flex', opacity: savedSlackId ? 1 : 0.3 }}>
-              <svg width="16" height="16" viewBox="0 0 54 54">
-                <path d="M19.7 43.3a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h4.8v4.8zm2.4 0a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v12a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-12z" fill="#E01E5A"/>
-                <path d="M26.9 19.7a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v4.8h-4.8zm0 2.4a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-12a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h12z" fill="#36C5F0"/>
-                <path d="M34.3 26.9a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-4.8v-4.8zm-2.4 0a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-12a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v12z" fill="#2EB67D"/>
-                <path d="M26.9 34.3a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-4.8h4.8zm0-2.4a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h12a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-12z" fill="#ECB22E"/>
-              </svg>
-              {savedSlackId && (
-                <span style={{
-                  position: 'absolute',
-                  bottom: '-2px',
-                  right: '-3px',
-                  width: '7px',
-                  height: '7px',
-                  borderRadius: '50%',
-                  background: '#44CC44',
-                  border: '1.5px solid #000',
-                }} />
-              )}
-            </span>
-            <span style={{
-              fontFamily: 'var(--font-pixel)',
-              fontSize: '7px',
-              color: savedSlackId ? '#44CC44' : 'var(--amiga-dark-grey)',
-            }}>
-              {savedSlackId ? 'CONNECTED' : 'CONNECT SLACK'}
-            </span>
-          </button>
-          {savedSlackId && (
-            <button
-              onClick={async () => {
-                setTestingSlack(true)
-                setTestResult(null)
-                try {
-                  const res = await fetch('/api/slack-test', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ playerName: profileName }),
-                  })
-                  if (res.ok) {
-                    setTestResult('SENT!')
-                  } else {
-                    const data = await res.json()
-                    setTestResult(data.error || 'FAILED')
-                  }
-                } catch {
-                  setTestResult('FAILED')
-                } finally {
-                  setTestingSlack(false)
-                  setTimeout(() => setTestResult(null), 3000)
-                }
-              }}
-              disabled={testingSlack}
-              style={{
-                fontFamily: 'var(--font-pixel)',
-                fontSize: '6px',
-                background: '#0a0a0a',
-                color: testResult === 'SENT!' ? '#44CC44' : testResult ? '#FF4444' : 'var(--crt-amber)',
-                border: '1px solid var(--bevel-shadow)',
-                padding: '2px 6px',
-                cursor: testingSlack ? 'wait' : 'pointer',
-              }}
-            >
-              {testingSlack ? '...' : testResult || '📨 TEST'}
-            </button>
-          )}
         </div>
       </div>
     )
