@@ -373,6 +373,15 @@ export const exerciseItemCatalog: Record<string, ItemDefinition> = {
     effectValue: 50,
     flavorText: 'The mythical pass that never expires. They said it couldn\'t exist.',
   },
+  ep_premium_subscription: {
+    itemKey: 'ep_premium_subscription',
+    name: 'EP Premium Subscription',
+    description: 'Restores 55 HP. Unlocks full access to your body\'s recovery database.',
+    rarity: 'rare',
+    effectType: 'heal',
+    effectValue: 55,
+    flavorText: 'Advanced stats included. Now you can see your VO2 max, lactate threshold, and why your knees hurt.',
+  },
   personal_trainer: {
     itemKey: 'personal_trainer',
     name: 'Personal Trainer',

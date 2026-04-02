@@ -56,6 +56,15 @@ export const exerciseShopCatalog: ShopItem[] = [
     flavorText: 'Did Not Start beats Did Not Finish beats Dead Last. But showing up beats all three.',
     available: false,
   },
+  {
+    slug: 'scouted-by-ep-towel',
+    name: '"Scouted by EP" Gym Towel',
+    description: 'A premium gym towel with "SCOUTED" printed in the EliteProspects style.',
+    price: 350,
+    category: 'merch',
+    flavorText: 'Wipe your sweat like a first-round draft pick.',
+    available: false,
+  },
 
   // === CARD PACKS (3) ===
   {

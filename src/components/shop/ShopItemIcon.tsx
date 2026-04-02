@@ -323,6 +323,16 @@ function getShopPixels(slug: string): JSX.Element {
         <rect x="8" y="24" width="16" height="2" fill="#FFD700" opacity="0.3" />
       </>
 
+    case 'scouted-by-ep-towel':
+      return <>
+        <rect x="4" y="8" width="24" height="16" rx="2" fill="#FFFFFF" />
+        <rect x="4" y="8" width="24" height="4" fill="#003366" />
+        <rect x="4" y="20" width="24" height="4" fill="#003366" />
+        <rect x="8" y="12" width="16" height="4" fill="#FFD700" opacity="0.3" />
+        <rect x="10" y="13" width="4" height="2" fill="#003366" />
+        <rect x="15" y="13" width="4" height="2" fill="#003366" />
+      </>
+
     // ── EXERCISE ITEMS ──
     case 'mystery-supplement':
       return <>

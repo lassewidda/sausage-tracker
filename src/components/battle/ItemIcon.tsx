@@ -747,6 +747,16 @@ function getItemPixels(itemKey: string, m: string, a: string): JSX.Element {
         <rect x="26" y="12" width="4" height="8" fill="#FF0000" />
       </>
 
+    case 'ep_premium_subscription':
+      return <>
+        <rect x="6" y="6" width="20" height="20" rx="2" fill="#1A1A2E" />
+        <rect x="8" y="8" width="16" height="16" rx="1" fill="#003366" />
+        <rect x="10" y="10" width="4" height="6" fill="#FFD700" />
+        <rect x="15" y="10" width="4" height="6" fill="#FFD700" />
+        <rect x="10" y="18" width="12" height="2" fill="#FFD700" opacity="0.5" />
+        <rect x="6" y="4" width="8" height="3" fill="#FFD700" rx="1" />
+      </>
+
     // ── DEFAULT FALLBACK ──
     default:
       return <>
