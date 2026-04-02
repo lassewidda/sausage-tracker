@@ -272,6 +272,8 @@ export default function ChallengeAdminPage() {
         </div>
       </Window>
 
+      <SlackTestPanel />
+
       <Window title="CHALLENGE ADMIN">
         <div className="stack" style={{ gap: '12px' }}>
           {message && (
@@ -667,5 +669,78 @@ export default function ChallengeAdminPage() {
         </Window>
       )}
     </div>
+  )
+}
+
+function SlackTestPanel() {
+  const [results, setResults] = useState<Record<string, string>>({})
+  const [sending, setSending] = useState<string | null>(null)
+
+  const tests = [
+    { type: 'photo_bingo', label: '📸 PHOTO BINGO', desc: 'Latest bingo photo with image' },
+    { type: 'challenge_complete', label: '🏆 CHALLENGE COMPLETE', desc: 'Player completed challenge' },
+    { type: 'team_complete', label: '🏆 TEAM COMPLETE', desc: 'Team completed challenge' },
+    { type: 'goal_met', label: '✅ GOAL MET', desc: 'Player hit weekly goal' },
+    { type: 'battle_end', label: '⚔️ BATTLE END', desc: 'Battle result with link' },
+    { type: 'battle_draw', label: '🤝 BATTLE DRAW', desc: 'Battle draw result' },
+  ]
+
+  async function send(type: string) {
+    setSending(type)
+    setResults(r => ({ ...r, [type]: '' }))
+    try {
+      const res = await fetch('/api/slack-test-channel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type }),
+      })
+      const data = await res.json()
+      setResults(r => ({ ...r, [type]: res.ok ? '✓ SENT' : (data.error || '✗ FAILED') }))
+    } catch {
+      setResults(r => ({ ...r, [type]: '✗ ERROR' }))
+    } finally {
+      setSending(null)
+      setTimeout(() => setResults(r => ({ ...r, [type]: '' })), 4000)
+    }
+  }
+
+  return (
+    <Window title="SLACK CHANNEL TEST (#POWERUP)">
+      <div className="stack" style={{ gap: '6px' }}>
+        <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '7px', color: 'var(--amiga-dark-grey)', marginBottom: '4px' }}>
+          SEND TEST MESSAGES TO #POWERUP USING REAL DATA
+        </div>
+        {tests.map(t => (
+          <div key={t.type} style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '4px 0',
+            borderBottom: '1px solid var(--bevel-shadow)',
+          }}>
+            <button
+              onClick={() => send(t.type)}
+              disabled={sending === t.type}
+              style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '7px',
+                background: sending === t.type ? 'var(--amiga-dark-grey)' : '#0a0a0a',
+                color: results[t.type]?.includes('✓') ? '#44CC44' : results[t.type]?.includes('✗') ? '#FF4444' : 'var(--crt-amber)',
+                border: '1px solid var(--bevel-shadow)',
+                padding: '4px 8px',
+                cursor: sending === t.type ? 'wait' : 'pointer',
+                minWidth: '120px',
+                textAlign: 'left',
+              }}
+            >
+              {sending === t.type ? '...' : results[t.type] || t.label}
+            </button>
+            <span style={{ fontFamily: 'var(--font-pixel)', fontSize: '6px', color: 'var(--amiga-dark-grey)' }}>
+              {t.desc}
+            </span>
+          </div>
+        ))}
+      </div>
+    </Window>
   )
 }
