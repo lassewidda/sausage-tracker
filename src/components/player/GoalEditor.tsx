@@ -145,35 +145,50 @@ export function GoalEditor({ profileName }: Props) {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '6px',
+          gap: '8px',
         }}>
-          <span style={{
-            fontSize: '14px',
-            opacity: savedSlackId ? 1 : 0.3,
-            filter: savedSlackId ? 'none' : 'grayscale(1)',
-            position: 'relative',
-          }}>
-            💬
-            {savedSlackId && (
-              <span style={{
-                position: 'absolute',
-                bottom: '-1px',
-                right: '-3px',
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                background: '#44CC44',
-                border: '1.5px solid #000',
-              }} />
-            )}
-          </span>
-          <span style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: '7px',
-            color: savedSlackId ? '#44CC44' : 'var(--amiga-dark-grey)',
-          }}>
-            {savedSlackId ? 'SLACK CONNECTED' : 'SLACK NOT CONNECTED'}
-          </span>
+          <button
+            onClick={() => setEditingSlack(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px',
+              position: 'relative',
+            }}
+            title={savedSlackId ? 'Slack connected — click to edit' : 'Click to connect Slack'}
+          >
+            <span style={{ position: 'relative', display: 'inline-flex', opacity: savedSlackId ? 1 : 0.3 }}>
+              <svg width="16" height="16" viewBox="0 0 54 54">
+                <path d="M19.7 43.3a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h4.8v4.8zm2.4 0a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v12a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-12z" fill="#E01E5A"/>
+                <path d="M26.9 19.7a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v4.8h-4.8zm0 2.4a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-12a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h12z" fill="#36C5F0"/>
+                <path d="M34.3 26.9a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-4.8v-4.8zm-2.4 0a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-12a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v12z" fill="#2EB67D"/>
+                <path d="M26.9 34.3a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-4.8h4.8zm0-2.4a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h12a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-12z" fill="#ECB22E"/>
+              </svg>
+              {savedSlackId && (
+                <span style={{
+                  position: 'absolute',
+                  bottom: '-2px',
+                  right: '-3px',
+                  width: '7px',
+                  height: '7px',
+                  borderRadius: '50%',
+                  background: '#44CC44',
+                  border: '1.5px solid #000',
+                }} />
+              )}
+            </span>
+            <span style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '7px',
+              color: savedSlackId ? '#44CC44' : 'var(--amiga-dark-grey)',
+            }}>
+              {savedSlackId ? 'CONNECTED' : 'CONNECT SLACK'}
+            </span>
+          </button>
           {savedSlackId && (
             <button
               onClick={async () => {
@@ -212,19 +227,6 @@ export function GoalEditor({ profileName }: Props) {
               {testingSlack ? '...' : testResult || '📨 TEST'}
             </button>
           )}
-          <button
-            onClick={() => setEditingSlack(true)}
-            style={{
-              fontFamily: 'var(--font-pixel)',
-              fontSize: '7px',
-              background: 'transparent',
-              color: 'var(--amiga-dark-grey)',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            ✎
-          </button>
         </div>
       </div>
     )
@@ -246,7 +248,7 @@ export function GoalEditor({ profileName }: Props) {
           marginBottom: '12px',
           textAlign: 'center',
         }}>
-          💬 CONNECT SLACK
+          CONNECT SLACK
         </div>
         <div style={{ textAlign: 'center', marginBottom: '8px' }}>
           <input

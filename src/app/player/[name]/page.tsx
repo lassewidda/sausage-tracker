@@ -193,26 +193,24 @@ export default async function PlayerPage({ params }: Props) {
             }}>
               {playerName.toUpperCase()}
             </span>
-            {IS_EXERCISE && (
-              <span title={hasSlack ? 'Slack connected' : 'Slack not connected'} style={{
-                fontSize: '20px',
-                position: 'relative',
-                opacity: hasSlack ? 1 : 0.3,
-                filter: hasSlack ? 'none' : 'grayscale(1)',
-              }}>
-                💬
-                {hasSlack && (
-                  <span style={{
-                    position: 'absolute',
-                    bottom: '-2px',
-                    right: '-4px',
-                    width: '10px',
-                    height: '10px',
-                    borderRadius: '50%',
-                    background: '#44CC44',
-                    border: '2px solid #000',
-                  }} />
-                )}
+            {IS_EXERCISE && hasSlack && (
+              <span title="Slack connected" style={{ position: 'relative', display: 'inline-flex' }}>
+                <svg width="20" height="20" viewBox="0 0 54 54" style={{ display: 'block' }}>
+                  <path d="M19.7 43.3a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h4.8v4.8zm2.4 0a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v12a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-12z" fill="#E01E5A"/>
+                  <path d="M26.9 19.7a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v4.8h-4.8zm0 2.4a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-12a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h12z" fill="#36C5F0"/>
+                  <path d="M34.3 26.9a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-4.8v-4.8zm-2.4 0a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-12a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v12z" fill="#2EB67D"/>
+                  <path d="M26.9 34.3a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-4.8h4.8zm0-2.4a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h12a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-12z" fill="#ECB22E"/>
+                </svg>
+                <span style={{
+                  position: 'absolute',
+                  bottom: '-2px',
+                  right: '-4px',
+                  width: '9px',
+                  height: '9px',
+                  borderRadius: '50%',
+                  background: '#44CC44',
+                  border: '2px solid #000',
+                }} />
               </span>
             )}
           </div>
