@@ -15,18 +15,6 @@ export const TYPE_CHART: Record<string, Record<string, number>> = {
   MUSTARD:      { FRANKFURTER: 1.5, BLOOD_SAUSAGE: 1.5, SAUERKRAUT: 0.66, VEGGIE: 0.66 },
   SAUERKRAUT:   { MUSTARD: 1.5, CHORIZO: 1.5, CURRYWURST: 1.5, VEGGIE: 0.66, BRATWURST: 0.66 },
   GRILLED:      { WEISSWURST: 1.5, VEGGIE: 1.5, SAUERKRAUT: 0.66, MUSTARD: 0.66 },
-  // Legacy types still work with neutral multiplier
-  FIRE: { GRASS: 1.5, ICE: 1.5 },
-  WATER: { FIRE: 1.5 },
-  MEAT: {},
-  NORMAL: {},
-  DARK: {},
-  STEEL: {},
-  POISON: {},
-  ELECTRIC: {},
-  ICE: {},
-  GRASS: {},
-  SMOKED: {},
 }
 
 export const TYPE_THEMES: Record<string, TypeTheme> = {
