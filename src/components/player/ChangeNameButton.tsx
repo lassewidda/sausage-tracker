@@ -91,9 +91,10 @@ export function ChangeNameButton({ profileName }: Props) {
           fontFamily: 'var(--font-pixel)',
           fontSize: '7px',
           background: 'transparent',
-          border: 'none',
-          color: '#666',
+          border: '1px solid var(--bevel-shadow)',
+          color: 'var(--amiga-white)',
           cursor: 'pointer',
+          padding: '4px 10px',
         }}
       >
         ✎ CHANGE NAME

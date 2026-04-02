@@ -67,7 +67,7 @@ export function SlackConnector({ profileName }: Props) {
             fontFamily: 'var(--font-pixel)',
             fontSize: '7px',
             background: 'transparent',
-            color: 'var(--amiga-dark-grey)',
+            color: 'var(--amiga-white)',
             border: '1px solid var(--bevel-shadow)',
             padding: '4px 10px',
             cursor: 'pointer',
