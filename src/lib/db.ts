@@ -252,7 +252,7 @@ export async function getChains(): Promise<ChainEntry[]> {
 export async function getPlayerGoal(playerName: string): Promise<PlayerGoal | null> {
   const sql = getDb()
   const rows = await sql`
-    SELECT player_name, cardio_target, strength_target
+    SELECT player_name, cardio_target, strength_target, slack_user_id
     FROM player_goals
     WHERE player_name = ${playerName}
   `
@@ -262,25 +262,57 @@ export async function getPlayerGoal(playerName: string): Promise<PlayerGoal | nu
     playerName: rows[0].player_name as string,
     cardioTarget: rows[0].cardio_target as number,
     strengthTarget: rows[0].strength_target as number,
+    slackUserId: (rows[0].slack_user_id as string) || undefined,
   }
 }
 
-export async function upsertPlayerGoal(playerName: string, cardioTarget: number, strengthTarget: number): Promise<PlayerGoal> {
+export async function upsertPlayerGoal(playerName: string, cardioTarget: number, strengthTarget: number, slackUserId?: string): Promise<PlayerGoal> {
   const sql = getDb()
-  const rows = await sql`
-    INSERT INTO player_goals (player_name, cardio_target, strength_target)
-    VALUES (${playerName}, ${cardioTarget}, ${strengthTarget})
-    ON CONFLICT (player_name) DO UPDATE SET
-      cardio_target = ${cardioTarget},
-      strength_target = ${strengthTarget}
-    RETURNING player_name, cardio_target, strength_target
-  `
+  const rows = slackUserId !== undefined
+    ? await sql`
+        INSERT INTO player_goals (player_name, cardio_target, strength_target, slack_user_id)
+        VALUES (${playerName}, ${cardioTarget}, ${strengthTarget}, ${slackUserId})
+        ON CONFLICT (player_name) DO UPDATE SET
+          cardio_target = ${cardioTarget},
+          strength_target = ${strengthTarget},
+          slack_user_id = ${slackUserId}
+        RETURNING player_name, cardio_target, strength_target, slack_user_id
+      `
+    : await sql`
+        INSERT INTO player_goals (player_name, cardio_target, strength_target)
+        VALUES (${playerName}, ${cardioTarget}, ${strengthTarget})
+        ON CONFLICT (player_name) DO UPDATE SET
+          cardio_target = ${cardioTarget},
+          strength_target = ${strengthTarget}
+        RETURNING player_name, cardio_target, strength_target, slack_user_id
+      `
   await sql.end()
   return {
     playerName: rows[0].player_name as string,
     cardioTarget: rows[0].cardio_target as number,
     strengthTarget: rows[0].strength_target as number,
+    slackUserId: (rows[0].slack_user_id as string) || undefined,
   }
+}
+
+export async function getSlackUserId(playerName: string): Promise<string | null> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT slack_user_id FROM player_goals WHERE player_name = ${playerName}
+  `
+  await sql.end()
+  if (rows.length === 0 || !rows[0].slack_user_id) return null
+  return rows[0].slack_user_id as string
+}
+
+export async function setSlackUserId(playerName: string, slackUserId: string): Promise<void> {
+  const sql = getDb()
+  await sql`
+    INSERT INTO player_goals (player_name, cardio_target, strength_target, slack_user_id)
+    VALUES (${playerName}, 0, 0, ${slackUserId})
+    ON CONFLICT (player_name) DO UPDATE SET slack_user_id = ${slackUserId}
+  `
+  await sql.end()
 }
 
 export async function getAllPlayerGoals(): Promise<PlayerGoal[]> {

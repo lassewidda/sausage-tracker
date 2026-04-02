@@ -263,6 +263,7 @@ export interface PlayerGoal {
   playerName: string
   cardioTarget: number
   strengthTarget: number
+  slackUserId?: string
 }
 
 export interface GoalStreakEntry {

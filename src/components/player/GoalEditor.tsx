@@ -11,8 +11,10 @@ export function GoalEditor({ profileName }: Props) {
   const { name, loaded } = useName()
   const [cardioTarget, setCardioTarget] = useState(0)
   const [strengthTarget, setStrengthTarget] = useState(0)
+  const [slackId, setSlackId] = useState('')
   const [savedCardio, setSavedCardio] = useState(0)
   const [savedStrength, setSavedStrength] = useState(0)
+  const [savedSlackId, setSavedSlackId] = useState('')
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [hasGoal, setHasGoal] = useState(false)
@@ -27,8 +29,10 @@ export function GoalEditor({ profileName }: Props) {
         if (data) {
           setCardioTarget(data.cardioTarget)
           setStrengthTarget(data.strengthTarget)
+          setSlackId(data.slackUserId || '')
           setSavedCardio(data.cardioTarget)
           setSavedStrength(data.strengthTarget)
+          setSavedSlackId(data.slackUserId || '')
           setHasGoal(data.cardioTarget > 0 || data.strengthTarget > 0)
         }
         setFetchDone(true)
@@ -66,6 +70,7 @@ export function GoalEditor({ profileName }: Props) {
       }}>
         {savedCardio > 0 && <GoalBadge icon={'\u{1F3C3}'} count={savedCardio} label="CARDIO" />}
         {savedStrength > 0 && <GoalBadge icon={'\u{1F4AA}'} count={savedStrength} label="STRENGTH" />}
+        {savedSlackId && <SlackBadge />}
         <button
           onClick={() => setEditing(true)}
           style={{
@@ -94,11 +99,13 @@ export function GoalEditor({ profileName }: Props) {
           playerName: profileName,
           cardioTarget,
           strengthTarget,
+          slackUserId: slackId || '',
         }),
       })
       if (res.ok) {
         setSavedCardio(cardioTarget)
         setSavedStrength(strengthTarget)
+        setSavedSlackId(slackId)
         setHasGoal(cardioTarget > 0 || strengthTarget > 0)
         setEditing(false)
       }
@@ -185,6 +192,41 @@ export function GoalEditor({ profileName }: Props) {
         </div>
       </div>
 
+      <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+        <label style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '8px',
+          color: 'var(--amiga-black)',
+          display: 'block',
+          marginBottom: '4px',
+        }}>
+          SLACK ID {savedSlackId && '\u2713'}
+        </label>
+        <input
+          type="text"
+          placeholder="U0XXXXXXX"
+          value={slackId}
+          onChange={e => setSlackId(e.target.value.trim())}
+          style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '10px',
+            width: '140px',
+            textAlign: 'center',
+            padding: '4px',
+            border: '2px solid var(--bevel-shadow)',
+            background: 'var(--amiga-white)',
+          }}
+        />
+        <div style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '7px',
+          color: 'var(--amiga-dark-grey)',
+          marginTop: '4px',
+        }}>
+          Slack profile &rarr; &sdot;&sdot;&sdot; &rarr; Copy member ID
+        </div>
+      </div>
+
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
         <button
           onClick={handleSave}
@@ -207,6 +249,7 @@ export function GoalEditor({ profileName }: Props) {
             onClick={() => {
               setCardioTarget(savedCardio)
               setStrengthTarget(savedStrength)
+              setSlackId(savedSlackId)
               setEditing(false)
             }}
             style={{
@@ -224,6 +267,23 @@ export function GoalEditor({ profileName }: Props) {
         )}
       </div>
     </div>
+  )
+}
+
+function SlackBadge() {
+  return (
+    <span style={{
+      fontFamily: 'var(--font-pixel)',
+      fontSize: '9px',
+      background: 'var(--amiga-black)',
+      color: '#4A154B',
+      padding: '4px 8px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+    }}>
+      SLACK {'\u2713'}
+    </span>
   )
 }
 
