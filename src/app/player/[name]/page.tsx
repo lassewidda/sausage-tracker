@@ -1,4 +1,4 @@
-import { getHeroCard, insertHeroCard, getPlayerAllTimeStats, getPlayerProfileData, getWeekKey, getPlayerGoal } from '@/lib/db'
+import { getHeroCard, insertHeroCard, getPlayerAllTimeStats, getPlayerProfileData, getWeekKey } from '@/lib/db'
 import { generateHeroCard } from '@/lib/claude'
 import { RegenerateButton } from '@/components/player/RegenerateButton'
 import { ChangeNameButton } from '@/components/player/ChangeNameButton'
@@ -6,7 +6,7 @@ import { GoalEditor } from '@/components/player/GoalEditor'
 import { SlackConnector } from '@/components/player/SlackConnector'
 import { CardCollection } from '@/components/player/CardCollection'
 import { PhotoGrid } from '@/components/player/PhotoGrid'
-import { SlackTestButton } from '@/components/player/SlackTestButton'
+import { SlackStatus } from '@/components/player/SlackStatus'
 import { Window } from '@/components/amiga/Window'
 import Link from 'next/link'
 import type { HeroCard } from '@/types'
@@ -144,8 +144,6 @@ export default async function PlayerPage({ params }: Props) {
   // Fetch profile data
   const profile = await getPlayerProfileData(playerName)
   const subtitle = getSubtitle(stats)
-  const playerGoal = await getPlayerGoal(playerName)
-  const hasSlack = !!(playerGoal?.slackUserId)
 
   const statCards: { value: string; label: string; accent: string }[] = IS_EXERCISE
     ? [
@@ -195,27 +193,7 @@ export default async function PlayerPage({ params }: Props) {
             }}>
               {playerName.toUpperCase()}
             </span>
-            {hasSlack && (
-              <span title="Slack connected" style={{ position: 'relative', display: 'inline-flex' }}>
-                <svg width="20" height="20" viewBox="0 0 54 54" style={{ display: 'block' }}>
-                  <path d="M19.7 43.3a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h4.8v4.8zm2.4 0a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v12a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-12z" fill="#E01E5A"/>
-                  <path d="M26.9 19.7a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v4.8h-4.8zm0 2.4a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-12a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h12z" fill="#36C5F0"/>
-                  <path d="M34.3 26.9a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-4.8v-4.8zm-2.4 0a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-12a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v12z" fill="#2EB67D"/>
-                  <path d="M26.9 34.3a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-4.8h4.8zm0-2.4a4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h12a4.8 4.8 0 014.8 4.8 4.8 4.8 0 01-4.8 4.8h-12z" fill="#ECB22E"/>
-                </svg>
-                <span style={{
-                  position: 'absolute',
-                  bottom: '-2px',
-                  right: '-4px',
-                  width: '9px',
-                  height: '9px',
-                  borderRadius: '50%',
-                  background: '#44CC44',
-                  border: '2px solid #000',
-                }} />
-              </span>
-            )}
-            <SlackTestButton profileName={playerName} hasSlack={hasSlack} />
+            <SlackStatus profileName={playerName} />
           </div>
           <div style={{
             fontFamily: 'var(--font-pixel)',
