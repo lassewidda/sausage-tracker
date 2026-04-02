@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getChallengeByWeek, upsertChallengePhoto, deleteChallengePhoto, getWeekKey, insertMeal, deleteMealByBlobPath } from '@/lib/db'
+import { getChallengeByWeek, upsertChallengePhoto, deleteChallengePhoto, getWeekKey, insertMeal, deleteMealByBlobPath, getChallengeView } from '@/lib/db'
+import { sendSlackChannel } from '@/lib/slack'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,6 +50,26 @@ export async function POST(req: NextRequest) {
       exerciseType: 'photo',
     })
   } catch { /* ignore if duplicate */ }
+
+  // Notify #powerup channel
+  try {
+    sendSlackChannel(`📸 ${playerName.toUpperCase()} found "${bingoItem}" for the weekly challenge!`).catch(() => {})
+
+    // Check if this completed the challenge for the player/team
+    const view = await getChallengeView(wk)
+    if (challenge.challengeMode === 'group' && challenge.teams) {
+      const team = challenge.teams.find(t => t.members.includes(playerName.toLowerCase()))
+      const teamProgress = view.teamProgress?.find(tp => tp.team.name === team?.name)
+      if (teamProgress?.isComplete) {
+        sendSlackChannel(`🏆 Team ${team!.name} completed the weekly challenge!`).catch(() => {})
+      }
+    } else {
+      const participant = view.participants.find(p => p.playerName === playerName.toLowerCase())
+      if (participant?.isComplete) {
+        sendSlackChannel(`🏆 ${playerName.toUpperCase()} completed the weekly challenge!`).catch(() => {})
+      }
+    }
+  } catch { /* silent */ }
 
   return NextResponse.json(photo)
 }

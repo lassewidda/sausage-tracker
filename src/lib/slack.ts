@@ -1,7 +1,9 @@
-export async function sendSlackDM(slackUserId: string, message: string): Promise<{ ok: boolean; error?: string }> {
+const POWERUP_CHANNEL = 'C0AQ2VASTBR'
+
+async function sendSlackMessage(channel: string, message: string): Promise<{ ok: boolean; error?: string }> {
   const token = process.env.SLACK_BOT_TOKEN
   if (!token) return { ok: false, error: 'SLACK_BOT_TOKEN not set' }
-  if (!slackUserId) return { ok: false, error: 'No Slack user ID' }
+  if (!channel) return { ok: false, error: 'No channel' }
 
   try {
     const res = await fetch('https://slack.com/api/chat.postMessage', {
@@ -10,10 +12,7 @@ export async function sendSlackDM(slackUserId: string, message: string): Promise
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        channel: slackUserId,
-        text: message,
-      }),
+      body: JSON.stringify({ channel, text: message }),
     })
     const data = await res.json()
     if (data.ok) return { ok: true }
@@ -23,4 +22,12 @@ export async function sendSlackDM(slackUserId: string, message: string): Promise
     console.error('Slack fetch error:', err)
     return { ok: false, error: 'Network error' }
   }
+}
+
+export async function sendSlackDM(slackUserId: string, message: string): Promise<{ ok: boolean; error?: string }> {
+  return sendSlackMessage(slackUserId, message)
+}
+
+export async function sendSlackChannel(message: string): Promise<{ ok: boolean; error?: string }> {
+  return sendSlackMessage(POWERUP_CHANNEL, message)
 }

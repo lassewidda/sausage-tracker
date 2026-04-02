@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
-import { insertMeal, getAllMeals, groupByWeek, addPlayerItem } from '@/lib/db'
+import { insertMeal, getAllMeals, groupByWeek, addPlayerItem, getPlayerGoal, getWeekKey, getChallengeView } from '@/lib/db'
 import { rewriteDescriptionForCount } from '@/lib/claude'
 import { rollItemDrop } from '@/lib/itemCatalog'
+import { sendSlackChannel } from '@/lib/slack'
+import postgres from 'postgres'
 
 export async function GET(): Promise<NextResponse> {
   try {
@@ -93,6 +95,60 @@ export async function POST(request: Request): Promise<NextResponse> {
           flavorText: droppedItem.flavorText,
         }
       }
+    }
+
+    // Check if this workout just completed the player's weekly goal
+    if (normalizedName !== 'Anonymous' && exerciseType && exerciseType !== 'photo') {
+      try {
+        const goal = await getPlayerGoal(normalizedName.toLowerCase())
+        if (goal && (goal.cardioTarget > 0 || goal.strengthTarget > 0)) {
+          const weekKey = getWeekKey()
+          const sql = postgres(process.env.DATABASE_URL!, { ssl: { rejectUnauthorized: false } })
+          const counts = await sql`
+            SELECT
+              COUNT(*) FILTER (WHERE exercise_type = 'cardio')::int AS cardio,
+              COUNT(*) FILTER (WHERE exercise_type = 'strength')::int AS strength
+            FROM meals WHERE player_name = ${normalizedName.toLowerCase()} AND week_key = ${weekKey}
+          `
+          await sql.end()
+          const cardio = counts[0].cardio as number
+          const strength = counts[0].strength as number
+          const goalMet = cardio >= goal.cardioTarget && strength >= goal.strengthTarget
+          // Check if they JUST met it (previous count was below)
+          const prevCardio = exerciseType === 'cardio' ? cardio - 1 : cardio
+          const prevStrength = exerciseType === 'strength' ? strength - 1 : strength
+          const wasMet = prevCardio >= goal.cardioTarget && prevStrength >= goal.strengthTarget
+          if (goalMet && !wasMet) {
+            const parts = []
+            if (goal.cardioTarget > 0) parts.push(`${goal.cardioTarget} cardio`)
+            if (goal.strengthTarget > 0) parts.push(`${goal.strengthTarget} strength`)
+            sendSlackChannel(`✅ ${normalizedName.toUpperCase()} hit their weekly goal! (${parts.join(' + ')})`).catch(() => {})
+          }
+        }
+      } catch { /* silent */ }
+
+      // Check if this workout just completed the weekly challenge
+      try {
+        const weekKey = getWeekKey()
+        const view = await getChallengeView(weekKey)
+        if (view.challenge) {
+          const participant = view.participants.find(p => p.playerName === normalizedName.toLowerCase())
+          if (participant?.isComplete) {
+            // Only notify if they weren't complete before this workout
+            // (approximate: if exercise count equals the minimum exactly, they likely just completed it)
+            const ch = view.challenge
+            if (ch.exerciseRequirements) {
+              const typeCounts = participant.exerciseTypeCounts ?? {}
+              const justMet = Object.entries(ch.exerciseRequirements).some(
+                ([type, req]) => (typeCounts[type] ?? 0) === (req as number) && type === exerciseType
+              )
+              if (justMet) {
+                sendSlackChannel(`🏆 ${normalizedName.toUpperCase()} completed the weekly challenge!`).catch(() => {})
+              }
+            }
+          }
+        }
+      } catch { /* silent */ }
     }
 
     return NextResponse.json({ ...meal, itemDrop }, { status: 201 })
