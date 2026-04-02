@@ -3,6 +3,7 @@ import { generateHeroCard } from '@/lib/claude'
 import { RegenerateButton } from '@/components/player/RegenerateButton'
 import { ChangeNameButton } from '@/components/player/ChangeNameButton'
 import { GoalEditor } from '@/components/player/GoalEditor'
+import { SlackConnector } from '@/components/player/SlackConnector'
 import { CardCollection } from '@/components/player/CardCollection'
 import { PhotoGrid } from '@/components/player/PhotoGrid'
 import { SlackTestButton } from '@/components/player/SlackTestButton'
@@ -143,7 +144,7 @@ export default async function PlayerPage({ params }: Props) {
   // Fetch profile data
   const profile = await getPlayerProfileData(playerName)
   const subtitle = getSubtitle(stats)
-  const playerGoal = IS_EXERCISE ? await getPlayerGoal(playerName) : null
+  const playerGoal = await getPlayerGoal(playerName)
   const hasSlack = !!(playerGoal?.slackUserId)
 
   const statCards: { value: string; label: string; accent: string }[] = IS_EXERCISE
@@ -194,7 +195,7 @@ export default async function PlayerPage({ params }: Props) {
             }}>
               {playerName.toUpperCase()}
             </span>
-            {IS_EXERCISE && hasSlack && (
+            {hasSlack && (
               <span title="Slack connected" style={{ position: 'relative', display: 'inline-flex' }}>
                 <svg width="20" height="20" viewBox="0 0 54 54" style={{ display: 'block' }}>
                   <path d="M19.7 43.3a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8 4.8 4.8 0 014.8-4.8h4.8v4.8zm2.4 0a4.8 4.8 0 014.8-4.8 4.8 4.8 0 014.8 4.8v12a4.8 4.8 0 01-4.8 4.8 4.8 4.8 0 01-4.8-4.8v-12z" fill="#E01E5A"/>
@@ -214,7 +215,7 @@ export default async function PlayerPage({ params }: Props) {
                 }} />
               </span>
             )}
-            {IS_EXERCISE && <SlackTestButton profileName={playerName} hasSlack={hasSlack} />}
+            <SlackTestButton profileName={playerName} hasSlack={hasSlack} />
           </div>
           <div style={{
             fontFamily: 'var(--font-pixel)',
@@ -228,8 +229,8 @@ export default async function PlayerPage({ params }: Props) {
       </Window>
       <ChangeNameButton profileName={playerName} />
 
-      {/* Personal Goals (exercise theme only) */}
-      {IS_EXERCISE && <GoalEditor profileName={playerName} />}
+      {/* Personal Goals (exercise) / Slack connector (sausage) */}
+      {IS_EXERCISE ? <GoalEditor profileName={playerName} /> : <SlackConnector profileName={playerName} />}
 
       {/* Stats Grid */}
       <Window title="STATS">
