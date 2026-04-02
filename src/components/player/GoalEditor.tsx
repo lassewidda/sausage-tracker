@@ -16,7 +16,11 @@ export function GoalEditor({ profileName }: Props) {
   const [savedStrength, setSavedStrength] = useState(0)
   const [savedSlackId, setSavedSlackId] = useState('')
   const [editing, setEditing] = useState(false)
+  const [editingSlack, setEditingSlack] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [savingSlack, setSavingSlack] = useState(false)
+  const [testingSlack, setTestingSlack] = useState(false)
+  const [testResult, setTestResult] = useState<string | null>(null)
   const [hasGoal, setHasGoal] = useState(false)
   const [fetchDone, setFetchDone] = useState(false)
 
@@ -58,38 +62,7 @@ export function GoalEditor({ profileName }: Props) {
     )
   }
 
-  // Owner: show editor or badges
-  if (!editing && hasGoal) {
-    return (
-      <div style={{
-        display: 'flex',
-        gap: '8px',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '8px 0',
-      }}>
-        {savedCardio > 0 && <GoalBadge icon={'\u{1F3C3}'} count={savedCardio} label="CARDIO" />}
-        {savedStrength > 0 && <GoalBadge icon={'\u{1F4AA}'} count={savedStrength} label="STRENGTH" />}
-        {savedSlackId && <SlackBadge />}
-        <button
-          onClick={() => setEditing(true)}
-          style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: '8px',
-            background: 'var(--amiga-dark-grey)',
-            color: 'var(--amiga-white)',
-            border: '2px solid var(--bevel-shadow)',
-            padding: '4px 8px',
-            cursor: 'pointer',
-          }}
-        >
-          EDIT
-        </button>
-      </div>
-    )
-  }
-
-  async function handleSave() {
+  async function handleSaveGoal() {
     setSaving(true)
     try {
       const res = await fetch('/api/player-goal', {
@@ -99,13 +72,12 @@ export function GoalEditor({ profileName }: Props) {
           playerName: profileName,
           cardioTarget,
           strengthTarget,
-          slackUserId: slackId || '',
+          slackUserId: savedSlackId,
         }),
       })
       if (res.ok) {
         setSavedCardio(cardioTarget)
         setSavedStrength(strengthTarget)
-        setSavedSlackId(slackId)
         setHasGoal(cardioTarget > 0 || strengthTarget > 0)
         setEditing(false)
       }
@@ -116,6 +88,228 @@ export function GoalEditor({ profileName }: Props) {
     }
   }
 
+  async function handleSaveSlack() {
+    setSavingSlack(true)
+    try {
+      const res = await fetch('/api/player-goal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerName: profileName,
+          cardioTarget: savedCardio,
+          strengthTarget: savedStrength,
+          slackUserId: slackId,
+        }),
+      })
+      if (res.ok) {
+        setSavedSlackId(slackId)
+        setEditingSlack(false)
+      }
+    } catch (err) {
+      console.error('Failed to save slack ID:', err)
+    } finally {
+      setSavingSlack(false)
+    }
+  }
+
+  // Owner: show badges + edit buttons
+  if (!editing && !editingSlack && hasGoal) {
+    return (
+      <div style={{ padding: '8px 0' }}>
+        {/* Goal badges row */}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: '6px',
+        }}>
+          {savedCardio > 0 && <GoalBadge icon={'\u{1F3C3}'} count={savedCardio} label="CARDIO" />}
+          {savedStrength > 0 && <GoalBadge icon={'\u{1F4AA}'} count={savedStrength} label="STRENGTH" />}
+          <button
+            onClick={() => setEditing(true)}
+            style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '7px',
+              background: 'transparent',
+              color: 'var(--amiga-dark-grey)',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            ✎
+          </button>
+        </div>
+        {/* Slack row */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '6px',
+        }}>
+          <span style={{
+            fontSize: '14px',
+            opacity: savedSlackId ? 1 : 0.3,
+            filter: savedSlackId ? 'none' : 'grayscale(1)',
+            position: 'relative',
+          }}>
+            💬
+            {savedSlackId && (
+              <span style={{
+                position: 'absolute',
+                bottom: '-1px',
+                right: '-3px',
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: '#44CC44',
+                border: '1.5px solid #000',
+              }} />
+            )}
+          </span>
+          <span style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '7px',
+            color: savedSlackId ? '#44CC44' : 'var(--amiga-dark-grey)',
+          }}>
+            {savedSlackId ? 'SLACK CONNECTED' : 'SLACK NOT CONNECTED'}
+          </span>
+          {savedSlackId && (
+            <button
+              onClick={async () => {
+                setTestingSlack(true)
+                setTestResult(null)
+                try {
+                  const res = await fetch('/api/slack-test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playerName: profileName }),
+                  })
+                  if (res.ok) {
+                    setTestResult('SENT!')
+                  } else {
+                    const data = await res.json()
+                    setTestResult(data.error || 'FAILED')
+                  }
+                } catch {
+                  setTestResult('FAILED')
+                } finally {
+                  setTestingSlack(false)
+                  setTimeout(() => setTestResult(null), 3000)
+                }
+              }}
+              disabled={testingSlack}
+              style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '6px',
+                background: '#0a0a0a',
+                color: testResult === 'SENT!' ? '#44CC44' : testResult ? '#FF4444' : 'var(--crt-amber)',
+                border: '1px solid var(--bevel-shadow)',
+                padding: '2px 6px',
+                cursor: testingSlack ? 'wait' : 'pointer',
+              }}
+            >
+              {testingSlack ? '...' : testResult || '📨 TEST'}
+            </button>
+          )}
+          <button
+            onClick={() => setEditingSlack(true)}
+            style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '7px',
+              background: 'transparent',
+              color: 'var(--amiga-dark-grey)',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            ✎
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Slack ID editor (standalone)
+  if (editingSlack && !editing) {
+    return (
+      <div style={{
+        background: 'var(--amiga-grey)',
+        border: '2px solid var(--bevel-shadow)',
+        padding: '12px',
+        marginBottom: '4px',
+      }}>
+        <div style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '10px',
+          color: 'var(--amiga-black)',
+          marginBottom: '12px',
+          textAlign: 'center',
+        }}>
+          💬 CONNECT SLACK
+        </div>
+        <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+          <input
+            type="text"
+            placeholder="U0XXXXXXX"
+            value={slackId}
+            onChange={e => setSlackId(e.target.value.trim())}
+            autoFocus
+            style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '10px',
+              width: '160px',
+              textAlign: 'center',
+              padding: '6px',
+              border: '2px solid var(--bevel-shadow)',
+              background: 'var(--amiga-white)',
+            }}
+          />
+          <div style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '6px',
+            color: 'var(--amiga-dark-grey)',
+            marginTop: '4px',
+          }}>
+            Slack profile → ⋮ → Copy member ID
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+          <button
+            onClick={handleSaveSlack}
+            disabled={savingSlack}
+            style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '9px',
+              background: savingSlack ? 'var(--amiga-dark-grey)' : 'var(--amiga-orange, #FF8800)',
+              color: '#000',
+              border: '2px solid var(--bevel-shadow)',
+              padding: '6px 16px',
+              cursor: savingSlack ? 'wait' : 'pointer',
+            }}
+          >
+            {savingSlack ? 'SAVING...' : 'SAVE SLACK ID'}
+          </button>
+          <button
+            onClick={() => { setSlackId(savedSlackId); setEditingSlack(false) }}
+            style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '9px',
+              background: 'var(--amiga-grey)',
+              color: 'var(--amiga-black)',
+              border: '2px solid var(--bevel-shadow)',
+              padding: '6px 12px',
+              cursor: 'pointer',
+            }}
+          >
+            CANCEL
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Goal editor (full form)
   return (
     <div style={{
       background: 'var(--amiga-grey)',
@@ -143,7 +337,7 @@ export function GoalEditor({ profileName }: Props) {
             display: 'block',
             marginBottom: '4px',
           }}>
-            CARDIO PER WEEK
+            🏃 CARDIO / WEEK
           </label>
           <input
             type="number"
@@ -171,7 +365,7 @@ export function GoalEditor({ profileName }: Props) {
             display: 'block',
             marginBottom: '4px',
           }}>
-            STRENGTH PER WEEK
+            💪 STRENGTH / WEEK
           </label>
           <input
             type="number"
@@ -192,44 +386,9 @@ export function GoalEditor({ profileName }: Props) {
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', marginBottom: '12px' }}>
-        <label style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '8px',
-          color: 'var(--amiga-black)',
-          display: 'block',
-          marginBottom: '4px',
-        }}>
-          SLACK ID {savedSlackId && '\u2713'}
-        </label>
-        <input
-          type="text"
-          placeholder="U0XXXXXXX"
-          value={slackId}
-          onChange={e => setSlackId(e.target.value.trim())}
-          style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: '10px',
-            width: '140px',
-            textAlign: 'center',
-            padding: '4px',
-            border: '2px solid var(--bevel-shadow)',
-            background: 'var(--amiga-white)',
-          }}
-        />
-        <div style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '7px',
-          color: 'var(--amiga-dark-grey)',
-          marginTop: '4px',
-        }}>
-          Slack profile &rarr; &sdot;&sdot;&sdot; &rarr; Copy member ID
-        </div>
-      </div>
-
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
         <button
-          onClick={handleSave}
+          onClick={handleSaveGoal}
           disabled={saving || (cardioTarget === 0 && strengthTarget === 0)}
           style={{
             fontFamily: 'var(--font-pixel)',
@@ -249,7 +408,6 @@ export function GoalEditor({ profileName }: Props) {
             onClick={() => {
               setCardioTarget(savedCardio)
               setStrengthTarget(savedStrength)
-              setSlackId(savedSlackId)
               setEditing(false)
             }}
             style={{
@@ -267,23 +425,6 @@ export function GoalEditor({ profileName }: Props) {
         )}
       </div>
     </div>
-  )
-}
-
-function SlackBadge() {
-  return (
-    <span style={{
-      fontFamily: 'var(--font-pixel)',
-      fontSize: '9px',
-      background: 'var(--amiga-black)',
-      color: '#4A154B',
-      padding: '4px 8px',
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '4px',
-    }}>
-      SLACK {'\u2713'}
-    </span>
   )
 }
 

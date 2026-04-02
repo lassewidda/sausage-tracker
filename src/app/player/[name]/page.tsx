@@ -1,4 +1,4 @@
-import { getHeroCard, insertHeroCard, getPlayerAllTimeStats, getPlayerProfileData, getWeekKey } from '@/lib/db'
+import { getHeroCard, insertHeroCard, getPlayerAllTimeStats, getPlayerProfileData, getWeekKey, getPlayerGoal } from '@/lib/db'
 import { generateHeroCard } from '@/lib/claude'
 import { RegenerateButton } from '@/components/player/RegenerateButton'
 import { ChangeNameButton } from '@/components/player/ChangeNameButton'
@@ -142,6 +142,8 @@ export default async function PlayerPage({ params }: Props) {
   // Fetch profile data
   const profile = await getPlayerProfileData(playerName)
   const subtitle = getSubtitle(stats)
+  const playerGoal = IS_EXERCISE ? await getPlayerGoal(playerName) : null
+  const hasSlack = !!(playerGoal?.slackUserId)
 
   const statCards: { value: string; label: string; accent: string }[] = IS_EXERCISE
     ? [
@@ -176,14 +178,43 @@ export default async function PlayerPage({ params }: Props) {
       <Window title={`PLAYER PROFILE: ${playerName.toUpperCase()}`}>
         <div style={{ textAlign: 'center', padding: '16px 8px' }}>
           <div style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: '20px',
-            color: 'var(--amiga-orange, #FF8800)',
-            textShadow: '2px 2px 0 #000',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
             marginBottom: '8px',
-            letterSpacing: '2px',
           }}>
-            {playerName.toUpperCase()}
+            <span style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '20px',
+              color: 'var(--amiga-orange, #FF8800)',
+              textShadow: '2px 2px 0 #000',
+              letterSpacing: '2px',
+            }}>
+              {playerName.toUpperCase()}
+            </span>
+            {IS_EXERCISE && (
+              <span title={hasSlack ? 'Slack connected' : 'Slack not connected'} style={{
+                fontSize: '20px',
+                position: 'relative',
+                opacity: hasSlack ? 1 : 0.3,
+                filter: hasSlack ? 'none' : 'grayscale(1)',
+              }}>
+                💬
+                {hasSlack && (
+                  <span style={{
+                    position: 'absolute',
+                    bottom: '-2px',
+                    right: '-4px',
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '50%',
+                    background: '#44CC44',
+                    border: '2px solid #000',
+                  }} />
+                )}
+              </span>
+            )}
           </div>
           <div style={{
             fontFamily: 'var(--font-pixel)',
