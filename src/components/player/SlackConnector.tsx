@@ -13,6 +13,8 @@ export function SlackConnector({ profileName }: Props) {
   const [savedSlackId, setSavedSlackId] = useState('')
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [testing, setTesting] = useState(false)
+  const [testResult, setTestResult] = useState<string | null>(null)
   const [fetchDone, setFetchDone] = useState(false)
 
   const isOwner = loaded && name === profileName.toLowerCase()
@@ -137,6 +139,39 @@ export function SlackConnector({ profileName }: Props) {
           }}
         >
           {saving ? 'SAVING...' : 'SAVE'}
+        </button>
+        <button
+          onClick={async () => {
+            if (!slackId) return
+            setTesting(true)
+            setTestResult(null)
+            try {
+              const res = await fetch('/api/slack-test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ playerName: profileName, slackUserId: slackId }),
+              })
+              setTestResult(res.ok ? '✓' : '✗')
+            } catch {
+              setTestResult('✗')
+            } finally {
+              setTesting(false)
+              setTimeout(() => setTestResult(null), 3000)
+            }
+          }}
+          disabled={testing || !slackId}
+          style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '9px',
+            background: '#0a0a0a',
+            color: testResult === '✓' ? '#44CC44' : testResult === '✗' ? '#FF4444' : 'var(--crt-amber)',
+            border: '1px solid #333',
+            padding: '6px 12px',
+            cursor: testing || !slackId ? 'not-allowed' : 'pointer',
+            opacity: !slackId ? 0.5 : 1,
+          }}
+        >
+          {testing ? '...' : testResult || 'TEST'}
         </button>
         <button
           onClick={() => { setSlackId(savedSlackId); setEditing(false) }}

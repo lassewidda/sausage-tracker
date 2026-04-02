@@ -106,6 +106,39 @@ export function SlackStatus({ profileName }: Props) {
           {saving ? '...' : 'SAVE'}
         </button>
         <button
+          onClick={async () => {
+            if (!slackId) return
+            setTesting(true)
+            setTestResult(null)
+            try {
+              const res = await fetch('/api/slack-test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ playerName: profileName, slackUserId: slackId }),
+              })
+              setTestResult(res.ok ? '✓' : '✗')
+            } catch { setTestResult('✗') }
+            finally {
+              setTesting(false)
+              setTimeout(() => setTestResult(null), 3000)
+            }
+          }}
+          disabled={testing || !slackId}
+          title="Send test notification to this Slack ID"
+          style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '7px',
+            background: '#0a0a0a',
+            color: testResult === '✓' ? '#44CC44' : testResult === '✗' ? '#FF4444' : 'var(--crt-amber)',
+            border: '1px solid #333',
+            padding: '3px 6px',
+            cursor: testing || !slackId ? 'not-allowed' : 'pointer',
+            borderRadius: '3px',
+          }}
+        >
+          {testing ? '...' : testResult || '📨'}
+        </button>
+        <button
           onClick={() => { setSlackId(savedSlackId); setEditing(false) }}
           style={{
             fontFamily: 'var(--font-pixel)',
@@ -123,51 +156,30 @@ export function SlackStatus({ profileName }: Props) {
     )
   }
 
-  // Owner display: clickable icon + test button
+  // Owner display: clickable icon
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-      <button
-        onClick={() => setEditing(true)}
-        title={hasSlack ? 'Click to edit Slack ID' : 'Click to connect Slack'}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          position: 'relative',
-          display: 'inline-flex',
-          padding: '2px',
-          opacity: hasSlack ? 1 : 0.3,
-        }}
-      >
-        {SLACK_SVG}
-        {hasSlack && (
-          <span style={{
-            position: 'absolute', bottom: '0', right: '-2px',
-            width: '9px', height: '9px', borderRadius: '50%',
-            background: '#44CC44', border: '2px solid #000',
-          }} />
-        )}
-      </button>
+    <button
+      onClick={() => setEditing(true)}
+      title={hasSlack ? 'Click to edit Slack ID' : 'Click to connect Slack'}
+      style={{
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        position: 'relative',
+        display: 'inline-flex',
+        padding: '2px',
+        opacity: hasSlack ? 1 : 0.3,
+      }}
+    >
+      {SLACK_SVG}
       {hasSlack && (
-        <button
-          onClick={handleTest}
-          disabled={testing}
-          title="Send test Slack notification"
-          style={{
-            fontFamily: 'var(--font-pixel)',
-            fontSize: '7px',
-            background: '#0a0a0a',
-            color: testResult === '✓' ? '#44CC44' : testResult ? '#FF4444' : 'var(--crt-amber)',
-            border: '1px solid #333',
-            padding: '2px 6px',
-            cursor: testing ? 'wait' : 'pointer',
-            borderRadius: '3px',
-          }}
-        >
-          {testing ? '...' : testResult || '📨 TEST'}
-        </button>
+        <span style={{
+          position: 'absolute', bottom: '0', right: '-2px',
+          width: '9px', height: '9px', borderRadius: '50%',
+          background: '#44CC44', border: '2px solid #000',
+        }} />
       )}
-    </div>
+    </button>
   )
 
   async function handleSave() {
@@ -194,20 +206,4 @@ export function SlackStatus({ profileName }: Props) {
     finally { setSaving(false) }
   }
 
-  async function handleTest() {
-    setTesting(true)
-    setTestResult(null)
-    try {
-      const res = await fetch('/api/slack-test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerName: profileName }),
-      })
-      setTestResult(res.ok ? '✓' : '✗')
-    } catch { setTestResult('✗') }
-    finally {
-      setTesting(false)
-      setTimeout(() => setTestResult(null), 3000)
-    }
-  }
 }
