@@ -70,21 +70,53 @@ export default async function PlayerPage({ params }: Props) {
   if (stats.mealCount === 0) {
     return (
       <main className="container">
-        <Link href="/highscore" style={{
-          fontFamily: 'var(--font-pixel)',
-          fontSize: '10px',
-          color: 'var(--amiga-black)',
-          textDecoration: 'underline',
-          display: 'inline-block',
-          marginBottom: '16px',
-        }}>
-          ← BACK TO HIGHSCORE
-        </Link>
-        <Window title="PLAYER NOT FOUND">
-          <div className="amiga-info" style={{ textAlign: 'center' }}>
-            NO {IS_EXERCISE ? 'EXERCISE' : 'SAUSAGE'} DATA FOR &quot;{playerName.toUpperCase()}&quot;
+        <Window title={`WELCOME, ${playerName.toUpperCase()}!`}>
+          <div style={{ textAlign: 'center', padding: '24px 16px' }}>
+            <div style={{
+              fontSize: '40px',
+              marginBottom: '12px',
+            }}>
+              🍄
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '18px',
+              color: 'var(--amiga-orange, #FF8800)',
+              textShadow: '2px 2px 0 #000',
+              marginBottom: '8px',
+              letterSpacing: '2px',
+            }}>
+              {playerName.toUpperCase()}
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '9px',
+              color: 'var(--amiga-dark-grey)',
+              marginBottom: '4px',
+            }}>
+              {IS_EXERCISE ? 'FRESH RECRUIT' : 'SAUSAGE APPRENTICE'}
+            </div>
           </div>
         </Window>
+
+        {IS_EXERCISE && (
+          <Window title="GET READY">
+            <div style={{ padding: '16px', fontFamily: 'var(--font-pixel)', fontSize: '8px', lineHeight: '2.2', color: 'var(--amiga-black)' }}>
+              <div style={{ marginBottom: '12px', textAlign: 'center', fontSize: '9px', color: 'var(--crt-amber)' }}>
+                WHILE YOU WAIT, SET UP YOUR PROFILE:
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                <div>1. SET YOUR WEEKLY GOAL BELOW</div>
+                <div>2. CONNECT YOUR SLACK ID FOR NOTIFICATIONS</div>
+                <div>3. WHEN THE CHALLENGE STARTS, LOG YOUR FIRST WORKOUT!</div>
+              </div>
+            </div>
+          </Window>
+        )}
+
+        <GoalEditor profileName={playerName} />
+        <ChangeNameButton profileName={playerName} />
+        {IS_EXERCISE && <SlackStatus profileName={playerName} />}
       </main>
     )
   }
