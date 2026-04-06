@@ -190,6 +190,7 @@ export default function InvitePage() {
   const [draft, setDraft] = useState('')
   const [checked, setChecked] = useState(false)
   const [error, setError] = useState('')
+  const [justJoined, setJustJoined] = useState(false)
 
   if (loaded && name) {
     return (
@@ -259,8 +260,6 @@ export default function InvitePage() {
       </div>
     )
   }
-
-  const [justJoined, setJustJoined] = useState(false)
 
   const handleJoin = () => {
     const trimmed = draft.trim()
