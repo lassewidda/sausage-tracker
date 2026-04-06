@@ -200,42 +200,74 @@ export default function InvitePage() {
         padding: '16px',
       }}>
         <InviteBanner />
+
+        {justJoined && (
+          <div style={{
+            fontFamily: "'Press Start 2P', 'Courier New', monospace",
+            fontSize: 'clamp(11px, 3vw, 16px)',
+            color: '#44CC44',
+            marginTop: '24px',
+            textAlign: 'center',
+            letterSpacing: '2px',
+            textShadow: '0 0 10px rgba(68, 204, 68, 0.4)',
+          }}>
+            🎉 YOU&apos;RE IN, {name.toUpperCase()}!
+          </div>
+        )}
+
+        {!justJoined && (
+          <div style={{
+            fontFamily: "'Press Start 2P', 'Courier New', monospace",
+            fontSize: 'clamp(10px, 3vw, 14px)',
+            color: 'var(--crt-amber)',
+            marginTop: '24px',
+            textAlign: 'center',
+          }}>
+            WELCOME BACK, {name.toUpperCase()}!
+          </div>
+        )}
+
         <div style={{
           fontFamily: "'Press Start 2P', 'Courier New', monospace",
-          fontSize: 'clamp(10px, 3vw, 14px)',
-          color: 'var(--crt-amber)',
-          marginTop: '24px',
+          fontSize: 'clamp(8px, 2vw, 10px)',
+          color: 'var(--amiga-dark-grey)',
+          marginTop: '8px',
           textAlign: 'center',
+          lineHeight: '2',
         }}>
-          WELCOME BACK, {name.toUpperCase()}!
+          {justJoined ? 'SET UP YOUR PROFILE TO GET READY' : 'SET YOUR GOALS AND CONNECT SLACK'}
         </div>
+
         <button
-          onClick={() => router.push('/')}
+          onClick={() => router.push(`/player/${encodeURIComponent(name)}`)}
           style={{
             fontFamily: "'Press Start 2P', 'Courier New', monospace",
-            fontSize: 'clamp(11px, 3vw, 14px)',
-            marginTop: '16px',
-            padding: '16px 32px',
+            fontSize: 'clamp(12px, 3.5vw, 16px)',
+            marginTop: '20px',
+            padding: '18px 40px',
             background: ACCENT,
             color: '#FFFFFF',
             border: 'none',
             borderRadius: '25px',
             cursor: 'pointer',
-            letterSpacing: '2px',
+            letterSpacing: '3px',
+            boxShadow: `0 0 20px ${ACCENT}66`,
           }}
         >
-          {CTA_RETURN}
+          GO TO MY PROFILE
         </button>
       </div>
     )
   }
+
+  const [justJoined, setJustJoined] = useState(false)
 
   const handleJoin = () => {
     const trimmed = draft.trim()
     if (!trimmed) { setError('ENTER YOUR NAME!'); return }
     if (!checked) { setError('YOU MUST CHECK THE BOX!'); return }
     setName(trimmed)
-    router.push('/')
+    setJustJoined(true)
   }
 
   return (
