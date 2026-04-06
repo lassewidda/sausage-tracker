@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { PreLaunchLock } from './CountdownBanner'
 
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
 const LAUNCH_DATE = new Date('2026-04-13T00:00:00')
 
 // Pages that are allowed before launch
@@ -32,8 +33,9 @@ export function PreLaunchWrapper({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval)
   }, [])
 
+  // Sausage theme is never locked
   // After launch or on allowed pages — render normally
-  if (launched || isAllowed(pathname)) {
+  if (!IS_EXERCISE || launched || isAllowed(pathname)) {
     return <>{children}</>
   }
 

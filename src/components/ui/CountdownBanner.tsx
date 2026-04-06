@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 
+const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
 const LAUNCH_DATE = new Date('2026-04-13T00:00:00')
 
 function getTimeLeft() {
@@ -29,7 +30,7 @@ export function CountdownBanner() {
     return () => clearInterval(interval)
   }, [])
 
-  if (!time) return null
+  if (!time || !IS_EXERCISE) return null
 
   return (
     <div style={{
@@ -110,7 +111,7 @@ export function PreLaunchLock() {
     return () => clearInterval(interval)
   }, [])
 
-  if (!time) return null
+  if (!time || !IS_EXERCISE) return null
 
   return (
     <div style={{
