@@ -7,6 +7,8 @@ import { ChallengeNavLink } from '@/components/ui/ChallengeNavLink'
 import { MobileMenu } from '@/components/ui/MobileMenu'
 import { ActivityTicker } from '@/components/ui/ActivityTicker'
 import { BattleNavLink } from '@/components/ui/BattleNavLink'
+import { CountdownBanner } from '@/components/ui/CountdownBanner'
+import { PreLaunchWrapper } from '@/components/ui/PreLaunchWrapper'
 import theme from '@/theme'
 import './globals.css'
 
@@ -55,7 +57,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <NameSetter />
             <ActivityTicker />
           </div>
-          {children}
+          <CountdownBanner />
+          <PreLaunchWrapper>
+            {children}
+          </PreLaunchWrapper>
         </div>
       </body>
     </html>
