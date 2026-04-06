@@ -115,8 +115,27 @@ export default async function PlayerPage({ params }: Props) {
         )}
 
         <GoalEditor profileName={playerName} />
+
+        {IS_EXERCISE && (
+          <Window title="CONNECT SLACK">
+            <div style={{ padding: '16px', textAlign: 'center' }}>
+              <div style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '8px',
+                color: 'var(--amiga-black)',
+                marginBottom: '12px',
+                lineHeight: '2',
+              }}>
+                GET NOTIFIED WHEN IT&apos;S YOUR TURN IN BATTLE
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <SlackStatus profileName={playerName} />
+              </div>
+            </div>
+          </Window>
+        )}
+
         <ChangeNameButton profileName={playerName} />
-        {IS_EXERCISE && <SlackStatus profileName={playerName} />}
       </main>
     )
   }
