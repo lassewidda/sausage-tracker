@@ -38,6 +38,8 @@ export function CountdownBanner() {
       padding: '12px 16px',
       textAlign: 'center',
       fontFamily: "'Press Start 2P', 'Courier New', monospace",
+      overflow: 'hidden',
+      maxWidth: '100vw',
     }}>
       <div style={{
         fontSize: 'clamp(10px, 3vw, 16px)',

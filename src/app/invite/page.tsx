@@ -102,6 +102,8 @@ function InviteBanner() {
         borderRadius: '12px',
         padding: '24px 16px',
         textAlign: 'center',
+        overflow: 'hidden',
+        maxWidth: '100%',
       }}>
         <h1 style={{
           fontFamily: "'Press Start 2P', 'Courier New', monospace",
@@ -199,6 +201,8 @@ export default function InvitePage() {
         flexDirection: 'column',
         alignItems: 'center',
         padding: '16px',
+        overflow: 'hidden',
+        maxWidth: '100vw',
       }}>
         <InviteBanner />
 
