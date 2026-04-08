@@ -156,29 +156,39 @@ export function SlackStatus({ profileName }: Props) {
     )
   }
 
-  // Owner display: clickable icon
+  // Owner display: clickable button with label
   return (
     <button
       onClick={() => setEditing(true)}
       title={hasSlack ? 'Click to edit Slack ID' : 'Click to connect Slack'}
       style={{
-        background: 'none',
-        border: 'none',
+        background: '#0a0a0a',
+        border: hasSlack ? '1px solid #44CC44' : '1px solid var(--crt-amber)',
         cursor: 'pointer',
-        position: 'relative',
         display: 'inline-flex',
-        padding: '2px',
-        opacity: hasSlack ? 1 : 0.3,
+        alignItems: 'center',
+        gap: '8px',
+        padding: '6px 12px',
+        borderRadius: '4px',
       }}
     >
-      {SLACK_SVG}
-      {hasSlack && (
-        <span style={{
-          position: 'absolute', bottom: '0', right: '-2px',
-          width: '9px', height: '9px', borderRadius: '50%',
-          background: '#44CC44', border: '2px solid #000',
-        }} />
-      )}
+      <span style={{ position: 'relative', display: 'inline-flex' }}>
+        {SLACK_SVG}
+        {hasSlack && (
+          <span style={{
+            position: 'absolute', bottom: '-1px', right: '-3px',
+            width: '8px', height: '8px', borderRadius: '50%',
+            background: '#44CC44', border: '1.5px solid #000',
+          }} />
+        )}
+      </span>
+      <span style={{
+        fontFamily: 'var(--font-pixel)',
+        fontSize: '8px',
+        color: hasSlack ? '#44CC44' : 'var(--crt-amber)',
+      }}>
+        {hasSlack ? 'SLACK CONNECTED' : 'CONNECT SLACK'}
+      </span>
     </button>
   )
 

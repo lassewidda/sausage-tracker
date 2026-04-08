@@ -129,14 +129,16 @@ export function GoalEditor({ profileName }: Props) {
             onClick={() => setEditing(true)}
             style={{
               fontFamily: 'var(--font-pixel)',
-              fontSize: '7px',
-              background: 'transparent',
-              color: 'var(--amiga-dark-grey)',
-              border: 'none',
+              fontSize: '9px',
+              background: '#0a0a0a',
+              color: 'var(--crt-amber)',
+              border: '1px solid var(--bevel-shadow)',
               cursor: 'pointer',
+              padding: '4px 10px',
+              borderRadius: '3px',
             }}
           >
-            ✎
+            ✎ EDIT GOAL
           </button>
         </div>
       </div>
@@ -256,8 +258,8 @@ export function GoalEditor({ profileName }: Props) {
             type="number"
             min={0}
             max={50}
-            value={cardioTarget}
-            onChange={e => setCardioTarget(Math.max(0, parseInt(e.target.value) || 0))}
+            value={cardioTarget || ''}
+            onChange={e => setCardioTarget(e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value) || 0))}
             style={{
               fontFamily: 'var(--font-pixel)',
               fontSize: '14px',
@@ -284,8 +286,8 @@ export function GoalEditor({ profileName }: Props) {
             type="number"
             min={0}
             max={50}
-            value={strengthTarget}
-            onChange={e => setStrengthTarget(Math.max(0, parseInt(e.target.value) || 0))}
+            value={strengthTarget || ''}
+            onChange={e => setStrengthTarget(e.target.value === '' ? 0 : Math.max(0, parseInt(e.target.value) || 0))}
             style={{
               fontFamily: 'var(--font-pixel)',
               fontSize: '14px',
