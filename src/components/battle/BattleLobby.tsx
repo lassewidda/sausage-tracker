@@ -538,14 +538,19 @@ export function BattleLobby() {
                   {players.map((p) => (
                     <button
                       key={p}
-                      className="amiga-btn"
                       onClick={() => createChallenge(p)}
                       disabled={loading}
                       style={{
                         width: '100%',
                         textAlign: 'left',
+                        fontFamily: 'var(--font-pixel)',
                         fontSize: '9px',
                         padding: '6px 10px',
+                        background: 'var(--amiga-dark-grey)',
+                        color: 'var(--crt-amber)',
+                        border: '1px solid var(--bevel-shadow)',
+                        cursor: 'pointer',
+                        borderRadius: '2px',
                       }}
                     >
                       ⚔️ {p.toUpperCase()}
