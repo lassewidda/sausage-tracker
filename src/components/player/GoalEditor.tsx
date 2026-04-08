@@ -360,13 +360,13 @@ function GoalBadge({ icon, count, label }: { icon: string; count: number; label:
     <span style={{
       fontFamily: 'var(--font-pixel)',
       fontSize: '9px',
-      background: 'var(--amiga-black)',
-      color: 'var(--crt-amber)',
+      background: '#0a0a0a',
+      color: '#FFFFFF',
       padding: '4px 8px',
       display: 'inline-flex',
       alignItems: 'center',
       gap: '4px',
-      textShadow: '0 0 4px var(--crt-amber)',
+      border: '1px solid var(--bevel-shadow)',
     }}>
       {icon} {count}/WEEK {label}
     </span>
