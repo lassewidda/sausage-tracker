@@ -20,6 +20,8 @@ export interface LeaderboardEntry {
   cardioCount?: number
   strengthCount?: number
   challengesCompleted?: number
+  goalWeeks?: number
+  hasGoal?: boolean
 }
 
 export interface Leaderboard {

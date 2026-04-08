@@ -30,6 +30,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Targets must be non-negative' }, { status: 400 })
     }
 
+    if (cardioTarget + strengthTarget < 3) {
+      return NextResponse.json({ error: 'Minimum 3 activities per week required (any mix of cardio + strength)' }, { status: 400 })
+    }
+
     const goal = await upsertPlayerGoal(
       playerName.toLowerCase(),
       cardioTarget,

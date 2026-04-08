@@ -299,10 +299,22 @@ export function GoalEditor({ profileName }: Props) {
         </div>
       </div>
 
+      {cardioTarget + strengthTarget < 3 && (cardioTarget > 0 || strengthTarget > 0) && (
+        <div style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '7px',
+          color: '#FF4444',
+          textAlign: 'center',
+          marginBottom: '8px',
+        }}>
+          MINIMUM 3 ACTIVITIES PER WEEK (ANY MIX)
+        </div>
+      )}
+
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
         <button
           onClick={handleSaveGoal}
-          disabled={saving || (cardioTarget === 0 && strengthTarget === 0)}
+          disabled={saving || cardioTarget + strengthTarget < 3}
           style={{
             fontFamily: 'var(--font-pixel)',
             fontSize: '9px',
@@ -311,7 +323,7 @@ export function GoalEditor({ profileName }: Props) {
             border: '2px solid var(--bevel-shadow)',
             padding: '6px 16px',
             cursor: saving ? 'wait' : 'pointer',
-            opacity: (cardioTarget === 0 && strengthTarget === 0) ? 0.5 : 1,
+            opacity: cardioTarget + strengthTarget < 3 ? 0.5 : 1,
           }}
         >
           {saving ? 'SAVING...' : 'SAVE GOAL'}

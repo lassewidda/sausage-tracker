@@ -164,18 +164,43 @@ export async function getLeaderboard(): Promise<Leaderboard> {
     }
   } catch { /* challenges table may not exist yet */ }
 
+  // Get goal streak data
+  let goalMap = new Map<string, { totalGoalWeeks: number; hasGoal: boolean }>()
+  try {
+    const goalStreaks = await getGoalStreaks()
+    for (const g of goalStreaks) {
+      goalMap.set(g.playerName, { totalGoalWeeks: g.totalGoalWeeks, hasGoal: true })
+    }
+  } catch { /* goal table may not exist yet */ }
+
+  // Also check who has goals set but maybe 0 goal weeks
+  try {
+    const allGoals = await getAllPlayerGoals()
+    for (const g of allGoals) {
+      if (!goalMap.has(g.playerName)) {
+        goalMap.set(g.playerName, { totalGoalWeeks: 0, hasGoal: true })
+      }
+    }
+  } catch { /* silent */ }
+
   await sql.end()
 
   const toEntries = (rows: typeof allTimeRows): LeaderboardEntry[] =>
-    rows.map((r, i) => ({
-      playerName: r.player_name as string,
-      totalItems: r.total as number,
-      totalGrams: r.total_grams as number,
-      cardioCount: r.cardio_count as number,
-      strengthCount: r.strength_count as number,
-      challengesCompleted: challengeMap.get(r.player_name as string) ?? 0,
-      rank: i + 1,
-    }))
+    rows.map((r, i) => {
+      const playerName = r.player_name as string
+      const goalData = goalMap.get(playerName)
+      return {
+        playerName,
+        totalItems: r.total as number,
+        totalGrams: r.total_grams as number,
+        cardioCount: r.cardio_count as number,
+        strengthCount: r.strength_count as number,
+        challengesCompleted: challengeMap.get(playerName) ?? 0,
+        goalWeeks: goalData?.totalGoalWeeks ?? 0,
+        hasGoal: goalData?.hasGoal ?? false,
+        rank: i + 1,
+      }
+    })
 
   return {
     allTime: toEntries(allTimeRows),

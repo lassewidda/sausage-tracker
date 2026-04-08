@@ -12,9 +12,10 @@ interface LeaderboardProps {
   emptyMessage?: string
 }
 
-type SortKey = 'total' | 'cardio' | 'strength' | 'challenges'
+type SortKey = 'goals' | 'total' | 'cardio' | 'strength' | 'challenges'
 
 const SORT_OPTIONS: { key: SortKey; label: string; color: string }[] = [
+  { key: 'goals', label: '🎯 GOALS', color: '#44FF44' },
   { key: 'total', label: 'TOTAL', color: 'var(--crt-amber)' },
   { key: 'cardio', label: '🏃 CARDIO', color: '#FF4444' },
   { key: 'strength', label: '💪 STRENGTH', color: '#4488FF' },
@@ -26,6 +27,7 @@ const BAR_COLORS = ['#FF8800', '#AAAAAA', '#CC7700']
 
 function getSortValue(entry: LeaderboardEntry, key: SortKey): number {
   switch (key) {
+    case 'goals': return entry.goalWeeks ?? 0
     case 'total': return entry.totalItems
     case 'cardio': return entry.cardioCount ?? 0
     case 'strength': return entry.strengthCount ?? 0
@@ -34,7 +36,7 @@ function getSortValue(entry: LeaderboardEntry, key: SortKey): number {
 }
 
 export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: LeaderboardProps) {
-  const [sortKey, setSortKey] = useState<SortKey>('total')
+  const [sortKey, setSortKey] = useState<SortKey>('goals')
 
   const sorted = IS_EXERCISE
     ? [...entries].sort((a, b) => getSortValue(b, sortKey) - getSortValue(a, sortKey))
@@ -115,6 +117,29 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       {IS_EXERCISE ? (
                         <>
+                          {entry.hasGoal ? (
+                            <span style={{
+                              fontFamily: 'var(--font-pixel)',
+                              fontSize: '7px',
+                              color: (entry.goalWeeks ?? 0) > 0 ? '#44FF44' : 'var(--amiga-dark-grey)',
+                              background: (entry.goalWeeks ?? 0) > 0 ? 'rgba(68, 255, 68, 0.1)' : 'transparent',
+                              padding: '2px 4px',
+                              border: (entry.goalWeeks ?? 0) > 0 ? '1px solid rgba(68, 255, 68, 0.3)' : '1px solid var(--bevel-shadow)',
+                            }}>
+                              🎯{entry.goalWeeks ?? 0}
+                            </span>
+                          ) : (
+                            <span style={{
+                              fontFamily: 'var(--font-pixel)',
+                              fontSize: '6px',
+                              color: '#FF8844',
+                              background: 'rgba(255, 136, 68, 0.1)',
+                              padding: '2px 4px',
+                              border: '1px solid rgba(255, 136, 68, 0.3)',
+                            }}>
+                              ⚠️ NO GOAL
+                            </span>
+                          )}
                           <span style={{
                             fontFamily: 'var(--font-pixel)',
                             fontSize: '7px',
