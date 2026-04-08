@@ -103,19 +103,35 @@ export function BattleLobby() {
     return () => clearInterval(interval)
   }, [initialLoading])
 
-  const createChallenge = async () => {
+  const [showOpponentPicker, setShowOpponentPicker] = useState(false)
+  const [players, setPlayers] = useState<string[]>([])
+  const [loadingPlayers, setLoadingPlayers] = useState(false)
+
+  const createChallenge = async (targetOpponent?: string) => {
     if (!name || loading) return
     setLoading(true)
+    setShowOpponentPicker(false)
     try {
       const res = await fetch('/api/battle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerName: name }),
+        body: JSON.stringify({ playerName: name, targetOpponent }),
       })
       const battle = await res.json()
       router.push(`/battle/${battle.id}`)
     } catch { /* ignore */ }
     setLoading(false)
+  }
+
+  const openOpponentPicker = async () => {
+    setShowOpponentPicker(true)
+    setLoadingPlayers(true)
+    try {
+      const res = await fetch('/api/players')
+      const data = await res.json()
+      setPlayers((data as string[]).filter((p: string) => p !== name))
+    } catch { /* ignore */ }
+    setLoadingPlayers(false)
   }
 
   const joinChallenge = async (battleId: string) => {
@@ -484,14 +500,62 @@ export function BattleLobby() {
       </div>
 
       {/* Create challenge */}
-      <div style={{ textAlign: 'center' }}>
-        <button
-          className="amiga-btn amiga-btn--primary amiga-btn--large"
-          onClick={createChallenge}
-          disabled={loading}
-        >
-          CREATE CHALLENGE
-        </button>
+      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            className="amiga-btn amiga-btn--primary amiga-btn--large"
+            onClick={() => createChallenge()}
+            disabled={loading}
+          >
+            OPEN CHALLENGE
+          </button>
+          <button
+            className="amiga-btn amiga-btn--large"
+            onClick={openOpponentPicker}
+            disabled={loading}
+            style={{ background: '#0a0a0a', color: 'var(--crt-amber)', border: '1px solid var(--crt-amber)' }}
+          >
+            ⚔️ CHALLENGE PLAYER
+          </button>
+        </div>
+        {showOpponentPicker && (
+          <div className="amiga-window" style={{ width: '100%', maxWidth: '400px' }}>
+            <div className="amiga-window__titlebar">
+              <span className="amiga-window__gadget" style={{ cursor: 'pointer' }} onClick={() => setShowOpponentPicker(false)}>&#9632;</span>
+              <span className="amiga-window__title">CHOOSE OPPONENT</span>
+            </div>
+            <div className="amiga-window__body" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+              {loadingPlayers ? (
+                <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '9px', color: 'var(--amiga-grey)', textAlign: 'center', padding: '12px' }}>
+                  LOADING...
+                </div>
+              ) : players.length === 0 ? (
+                <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '9px', color: 'var(--amiga-grey)', textAlign: 'center', padding: '12px' }}>
+                  NO OTHER PLAYERS FOUND
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {players.map((p) => (
+                    <button
+                      key={p}
+                      className="amiga-btn"
+                      onClick={() => createChallenge(p)}
+                      disabled={loading}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        fontSize: '9px',
+                        padding: '6px 10px',
+                      }}
+                    >
+                      ⚔️ {p.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Active battles */}
@@ -561,6 +625,7 @@ export function BattleLobby() {
                   alignItems: 'center',
                   padding: '6px',
                   background: 'var(--amiga-dark-grey)',
+                  border: b.targetOpponent === name ? '1px solid var(--crt-amber)' : 'none',
                 }}>
                   <span style={{
                     fontFamily: 'var(--font-pixel)',
@@ -568,6 +633,9 @@ export function BattleLobby() {
                     color: 'var(--crt-amber)',
                   }}>
                     {b.challenger.toUpperCase()} WANTS TO BATTLE!
+                    {b.targetOpponent === name && (
+                      <span style={{ color: '#FF4444', marginLeft: '6px' }}>⚔️ FOR YOU</span>
+                    )}
                   </span>
                   {b.challenger !== name && (
                     <button

@@ -902,6 +902,7 @@ function rowToBattle(row: any): Battle {
     id: row.id,
     challenger: row.challenger,
     opponent: row.opponent,
+    targetOpponent: row.target_opponent ?? null,
     status: row.status,
     challengerReady: row.challenger_ready,
     opponentReady: row.opponent_ready,
@@ -1000,23 +1001,25 @@ function rowToBattleStats(row: any): BattleStats {
   }
 }
 
-export async function createBattle(challenger: string): Promise<Battle> {
+export async function createBattle(challenger: string, targetOpponent?: string): Promise<Battle> {
   const sql = getDb()
   // Clean up stale waiting battles older than 1 hour
   await sql`DELETE FROM battles WHERE status = 'waiting' AND created_at < NOW() - INTERVAL '1 hour'`
   const rows = await sql`
-    INSERT INTO battles (challenger) VALUES (${challenger}) RETURNING *
+    INSERT INTO battles (challenger, target_opponent) VALUES (${challenger}, ${targetOpponent ?? null}) RETURNING *
   `
   await sql.end()
   return rowToBattle(rows[0])
 }
 
-export async function getOpenBattles(): Promise<Battle[]> {
+export async function getOpenBattles(playerName?: string): Promise<Battle[]> {
   const sql = getDb()
   // Clean up stale
   await sql`DELETE FROM battles WHERE status = 'waiting' AND created_at < NOW() - INTERVAL '1 hour'`
   const rows = await sql`
-    SELECT * FROM battles WHERE status = 'waiting' ORDER BY created_at DESC
+    SELECT * FROM battles WHERE status = 'waiting'
+      AND (target_opponent IS NULL OR target_opponent = ${playerName ?? ''} OR challenger = ${playerName ?? ''})
+    ORDER BY created_at DESC
   `
   await sql.end()
   return rows.map(rowToBattle)

@@ -314,6 +314,9 @@ async function migrate() {
   // Add slack_user_id to player_goals for DM notifications
   await sql`ALTER TABLE player_goals ADD COLUMN IF NOT EXISTS slack_user_id TEXT`
 
+  // Add target_opponent to battles for direct challenges
+  await sql`ALTER TABLE battles ADD COLUMN IF NOT EXISTS target_opponent TEXT`
+
   // Enable Row Level Security on all tables with permissive policies
   // (no auth in this app — all access is via server-side API routes)
   const tables = [

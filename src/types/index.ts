@@ -81,6 +81,7 @@ export interface Battle {
   id: string
   challenger: string
   opponent: string | null
+  targetOpponent: string | null
   status: BattleStatus
   challengerReady: boolean
   opponentReady: boolean
