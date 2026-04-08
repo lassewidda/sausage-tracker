@@ -15,7 +15,12 @@ function getDb() {
 export async function GET() {
   const sql = getDb()
   const rows = await sql`
-    SELECT DISTINCT player_name FROM meals ORDER BY player_name
+    SELECT DISTINCT player_name FROM (
+      SELECT player_name FROM meals
+      UNION
+      SELECT player_name FROM player_goals
+    ) combined
+    ORDER BY player_name
   `
   await sql.end()
   return NextResponse.json(rows.map(r => r.player_name))
