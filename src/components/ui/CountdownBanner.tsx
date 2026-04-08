@@ -18,19 +18,27 @@ function getTimeLeft() {
   return { days, hours, mins, secs }
 }
 
+export function isLaunchOverridden(): boolean {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem('admin_launch_override') === 'true'
+}
+
 export function isBeforeLaunch(): boolean {
+  if (isLaunchOverridden()) return false
   return Date.now() < LAUNCH_DATE.getTime()
 }
 
 export function CountdownBanner() {
   const [time, setTime] = useState(getTimeLeft)
+  const [overridden, setOverridden] = useState(false)
 
   useEffect(() => {
+    setOverridden(isLaunchOverridden())
     const interval = setInterval(() => setTime(getTimeLeft()), 1000)
     return () => clearInterval(interval)
   }, [])
 
-  if (!time || !IS_EXERCISE) return null
+  if (!time || !IS_EXERCISE || overridden) return null
 
   return (
     <div style={{
@@ -107,13 +115,15 @@ function Separator() {
 
 export function PreLaunchLock() {
   const [time, setTime] = useState(getTimeLeft)
+  const [overridden, setOverridden] = useState(false)
 
   useEffect(() => {
+    setOverridden(isLaunchOverridden())
     const interval = setInterval(() => setTime(getTimeLeft()), 1000)
     return () => clearInterval(interval)
   }, [])
 
-  if (!time || !IS_EXERCISE) return null
+  if (!time || !IS_EXERCISE || overridden) return null
 
   return (
     <div style={{

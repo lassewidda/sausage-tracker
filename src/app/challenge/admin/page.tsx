@@ -272,6 +272,8 @@ export default function ChallengeAdminPage() {
         </div>
       </Window>
 
+      <LaunchOverrideToggle />
+
       <SlackTestPanel />
 
       <Window title="CHALLENGE ADMIN">
@@ -669,6 +671,54 @@ export default function ChallengeAdminPage() {
         </Window>
       )}
     </div>
+  )
+}
+
+function LaunchOverrideToggle() {
+  const [active, setActive] = useState(false)
+
+  useEffect(() => {
+    setActive(localStorage.getItem('admin_launch_override') === 'true')
+  }, [])
+
+  const toggle = () => {
+    const next = !active
+    if (next) {
+      localStorage.setItem('admin_launch_override', 'true')
+    } else {
+      localStorage.removeItem('admin_launch_override')
+    }
+    setActive(next)
+    window.location.reload()
+  }
+
+  return (
+    <Window title="LAUNCH OVERRIDE">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+        <button
+          onClick={toggle}
+          style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '9px',
+            background: active ? '#006600' : '#0a0a0a',
+            color: active ? '#44FF44' : 'var(--crt-amber)',
+            border: active ? '1px solid #44CC44' : '1px solid var(--bevel-shadow)',
+            padding: '6px 14px',
+            cursor: 'pointer',
+            borderRadius: '3px',
+          }}
+        >
+          {active ? '✓ LAUNCHED (OVERRIDE ON)' : 'SIMULATE LAUNCH'}
+        </button>
+        <span style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '7px',
+          color: active ? '#44CC44' : 'var(--amiga-dark-grey)',
+        }}>
+          {active ? 'Countdown hidden, all pages unlocked. Click to restore.' : 'Temporarily skip countdown and unlock all pages.'}
+        </span>
+      </div>
+    </Window>
   )
 }
 

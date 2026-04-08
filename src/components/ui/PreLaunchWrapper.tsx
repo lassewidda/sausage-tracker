@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { PreLaunchLock } from './CountdownBanner'
+import { PreLaunchLock, isLaunchOverridden } from './CountdownBanner'
 
 const IS_EXERCISE = process.env.NEXT_PUBLIC_THEME === 'exercise'
 const LAUNCH_DATE = new Date('2026-04-13T00:00:00')
@@ -23,9 +23,9 @@ export function PreLaunchWrapper({ children }: { children: React.ReactNode }) {
   const [launched, setLaunched] = useState(true) // default to true to avoid flash
 
   useEffect(() => {
-    setLaunched(Date.now() >= LAUNCH_DATE.getTime())
+    setLaunched(Date.now() >= LAUNCH_DATE.getTime() || isLaunchOverridden())
     const interval = setInterval(() => {
-      if (Date.now() >= LAUNCH_DATE.getTime()) {
+      if (Date.now() >= LAUNCH_DATE.getTime() || isLaunchOverridden()) {
         setLaunched(true)
         clearInterval(interval)
       }
