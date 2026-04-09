@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createBattle, getOpenBattles, getPlayerBattles, ensureStarterCards, ensureStarterItem, getSlackUserId } from '@/lib/db'
 import { sendSlackDM } from '@/lib/slack'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const playerName = (searchParams.get('playerName') || '').toLowerCase()

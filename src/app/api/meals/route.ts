@@ -5,6 +5,8 @@ import { rollItemDrop } from '@/lib/itemCatalog'
 import { sendSlackChannel } from '@/lib/slack'
 import postgres from 'postgres'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(): Promise<NextResponse> {
   try {
     const meals = await getAllMeals()

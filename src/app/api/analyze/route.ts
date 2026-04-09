@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { analyzeImage } from '@/lib/claude'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: Request): Promise<NextResponse> {
   let imageUrl: string
 

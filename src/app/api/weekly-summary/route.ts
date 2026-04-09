@@ -11,6 +11,8 @@ import {
 } from '@/lib/db'
 import { generateWeeklySummary } from '@/lib/claude'
 
+export const dynamic = 'force-dynamic'
+
 // GET: fetch summaries, optionally auto-generate for past weeks
 export async function GET(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url)

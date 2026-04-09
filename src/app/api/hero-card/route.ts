@@ -3,6 +3,8 @@ import { getHeroCard, getPlayerDeck, insertHeroCard, getPlayerAllTimeStats, getW
 import { generateHeroCard } from '@/lib/claude'
 import theme from '@/theme'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const playerName = (searchParams.get('playerName') || '').toLowerCase()
