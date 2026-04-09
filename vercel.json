@@ -16,7 +16,7 @@
   "crons": [
     {
       "path": "/api/cron/channel-summary",
-      "schedule": "0 17 * * 1,3,5"
+      "schedule": "* * * * *"
     }
   ]
 }

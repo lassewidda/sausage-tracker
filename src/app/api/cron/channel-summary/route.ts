@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getLeaderboard, getAllPlayerGoals, getGoalStreaks, getWeekKey } from '@/lib/db'
 import { generateChannelSummary } from '@/lib/claude'
-import { sendSlackChannel } from '@/lib/slack'
+import { sendSlackDM } from '@/lib/slack'
+
+// TEST: post to #pucktest2 instead of main channel — remove after testing
+const TARGET_CHANNEL = 'C09MHASR7RN'
 
 export const dynamic = 'force-dynamic'
 
@@ -80,7 +83,7 @@ export async function GET(request: Request) {
       topStreak: topStreak ? { player: topStreak.playerName, weeks: topStreak.totalGoalWeeks } : null,
     })
 
-    await sendSlackChannel(message)
+    await sendSlackDM(TARGET_CHANNEL, message)
 
     return NextResponse.json({ ok: true, message, weekKey })
   } catch (error) {
