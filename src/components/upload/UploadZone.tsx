@@ -18,6 +18,7 @@ export function UploadZone() {
   const [nameInput, setNameInput] = useState('')
   const [state, setState] = useState<UploadState>({ phase: 'idle' })
   const [isDragging, setIsDragging] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
   const [itemDrop, setItemDrop] = useState<ItemDefinition | null>(null)
 
   const processFile = useCallback(async (file: File) => {
@@ -102,6 +103,10 @@ export function UploadZone() {
     },
     [processFile]
   )
+
+  useEffect(() => {
+    setIsDesktop(!('ontouchstart' in window))
+  }, [])
 
   // Listen for clipboard paste (Cmd+V / Ctrl+V)
   useEffect(() => {
@@ -368,7 +373,7 @@ export function UploadZone() {
         <div style={{ fontSize: '32px' }}>{theme.strings.uploadDropzoneEmoji}</div>
         <div>{theme.strings.uploadDropzoneLabel}</div>
         <div style={{ color: 'var(--amiga-grey)', fontSize: '7px' }}>
-          CLICK TO SELECT, OR PASTE FROM CLIPBOARD
+          {isDesktop ? 'CLICK TO SELECT, OR PASTE FROM CLIPBOARD' : 'TAP TO SELECT'}
         </div>
         <div style={{ color: 'var(--amiga-dark-grey)', fontSize: '6px' }}>
           JPEG / PNG / HEIC / WEBP &mdash; MAX 25MB
