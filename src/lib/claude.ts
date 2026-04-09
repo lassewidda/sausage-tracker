@@ -338,14 +338,14 @@ export async function generateMilestoneMessage(data: {
     ? `\nTheir latest workout was: "${data.workoutDescription}"`
     : ''
 
-  const prompt = `You are a fun, motivational fitness coach for a workplace exercise challenge called PowerUp.
+  const prompt = `You are a fun, motivational fitness coach for a workplace exercise challenge called PowerUp. All participants work at EliteProspects.com (ice hockey database), so feel free to use hockey references when they fit naturally.
 
 ${data.playerName.toUpperCase()} just hit a milestone: ${data.context}${descContext}
 
 Write a short Slack DM (1-2 sentences max). Requirements:
 - Celebrate this specific milestone
 ${data.workoutDescription ? '- Weave in a reference to their actual workout (e.g. if it was a trail run, mention it naturally)' : ''}
-- Keep it casual, encouraging, and personal
+- Keep it casual, encouraging, and personal — hockey analogies welcome but not forced
 - Use 1 emoji max
 - Do NOT use markdown formatting, just plain text`
 
@@ -380,7 +380,7 @@ export async function generateChannelSummary(data: {
     ? `\nRecent workout snapshots from participants:\n${data.recentWorkouts.map(w => `- ${w}`).join('\n')}`
     : ''
 
-  const prompt = `You are a motivational fitness coach posting a ${data.dayLabel} update to a workplace Slack channel for the PowerUp exercise challenge.
+  const prompt = `You are a motivational fitness coach posting a ${data.dayLabel} update to a workplace Slack channel for the PowerUp exercise challenge. All participants work at EliteProspects.com (ice hockey database), so hockey references and analogies are welcome when they fit naturally.
 
 Stats this week:
 - ${data.totalActivities} total workouts logged
