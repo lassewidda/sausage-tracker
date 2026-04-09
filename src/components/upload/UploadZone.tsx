@@ -104,9 +104,34 @@ export function UploadZone() {
     [processFile]
   )
 
+  const [canPaste, setCanPaste] = useState(false)
+
   useEffect(() => {
     setIsDesktop(!('ontouchstart' in window))
+    // Check if clipboard.read() is available (iOS 16.4+, modern browsers)
+    setCanPaste(typeof navigator?.clipboard?.read === 'function')
   }, [])
+
+  const handlePasteButton = useCallback(async () => {
+    if (state.phase !== 'idle') return
+    try {
+      const clipboardItems = await navigator.clipboard.read()
+      for (const item of clipboardItems) {
+        const imageType = item.types.find(t => t.startsWith('image/'))
+        if (imageType) {
+          const blob = await item.getType(imageType)
+          const file = new File([blob], `clipboard-${Date.now()}.${imageType.split('/')[1] || 'png'}`, { type: imageType })
+          processFile(file)
+          return
+        }
+      }
+      setState(s => ({ ...s, error: 'NO IMAGE FOUND IN CLIPBOARD' }))
+      setTimeout(() => setState(s => ({ ...s, error: undefined })), 3000)
+    } catch {
+      setState(s => ({ ...s, error: 'CLIPBOARD ACCESS DENIED — TRY FILE SELECT INSTEAD' }))
+      setTimeout(() => setState(s => ({ ...s, error: undefined })), 3000)
+    }
+  }, [processFile, state.phase])
 
   // Listen for clipboard paste (Cmd+V / Ctrl+V)
   useEffect(() => {
@@ -379,6 +404,24 @@ export function UploadZone() {
           JPEG / PNG / HEIC / WEBP &mdash; MAX 25MB
         </div>
       </label>
+      {canPaste && (
+        <button
+          onClick={handlePasteButton}
+          style={{
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '9px',
+            background: '#0a0a0a',
+            color: 'var(--crt-amber)',
+            border: '1px solid var(--crt-amber)',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            borderRadius: '3px',
+            width: '100%',
+          }}
+        >
+          📋 PASTE SCREENSHOT
+        </button>
+      )}
     </div>
   )
 }
