@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       const baseUrl = host ? `https://${host}` : ''
       const slackId = await getSlackUserId(targetOpponent)
       if (slackId) {
-        const battleUrl = `${baseUrl}/battle`
+        const battleUrl = `${baseUrl}/battle/${battle.id}`
         sendSlackDM(slackId, `⚔️ ${playerName.toUpperCase()} has challenged YOU to a battle! Go to ${battleUrl}`).catch(() => {})
       }
     } catch {
