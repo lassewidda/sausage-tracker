@@ -3,6 +3,7 @@ import { insertMeal, getAllMeals, groupByWeek, addPlayerItem, getPlayerGoal, get
 import { rewriteDescriptionForCount, generateFirstWorkoutMessage } from '@/lib/claude'
 import { rollItemDrop } from '@/lib/itemCatalog'
 import { sendSlackChannel, sendSlackDM } from '@/lib/slack'
+import { checkMilestones } from '@/lib/milestones'
 import postgres from 'postgres'
 
 export const dynamic = 'force-dynamic'
@@ -170,6 +171,9 @@ export async function POST(request: Request): Promise<NextResponse> {
           }
         }
       } catch { /* silent */ }
+
+      // Check for milestone DMs (non-blocking, sends at most one DM)
+      checkMilestones({ playerName: normalizedName, exerciseType }).catch(() => {})
     }
 
     return NextResponse.json({ ...meal, itemDrop }, { status: 201 })
