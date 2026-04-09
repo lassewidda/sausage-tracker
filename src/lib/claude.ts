@@ -409,3 +409,58 @@ Write a short Slack channel post (4-6 lines max). Requirements:
   if (!block || block.type !== 'text') return `💪 PowerUp ${data.dayLabel} update: ${data.totalActivities} workouts logged by ${data.activePlayers} players this week!`
   return block.text.trim()
 }
+
+export async function generateWeeklyRecapDM(data: {
+  playerName: string
+  cardio: number
+  strength: number
+  total: number
+  cardioTarget: number
+  strengthTarget: number
+  goalMet: boolean
+  streakWeeks: number
+  rank: number
+  totalPlayers: number
+  recentDescriptions: string[]
+}): Promise<string> {
+  const client = getClient()
+
+  const goalParts = []
+  if (data.cardioTarget > 0) goalParts.push(`${data.cardio}/${data.cardioTarget} cardio`)
+  if (data.strengthTarget > 0) goalParts.push(`${data.strength}/${data.strengthTarget} strength`)
+
+  const workoutList = data.recentDescriptions.length > 0
+    ? `\nWorkouts logged this week:\n${data.recentDescriptions.map(d => `- ${d}`).join('\n')}`
+    : ''
+
+  const prompt = `You are Puck, a fun fitness coach for the PowerUp workplace exercise challenge at EliteProspects.com (ice hockey database). Old-school hockey humor is welcome.
+
+Write a personal weekly recap DM for ${data.playerName.toUpperCase()}. Here are their stats:
+
+This week: ${data.total} workouts (${goalParts.join(', ')})
+Goal status: ${data.goalMet ? 'GOAL MET!' : 'Goal not met this week'}
+Goal streak: ${data.streakWeeks > 0 ? `${data.streakWeeks} consecutive weeks` : 'No active streak'}
+Leaderboard rank: #${data.rank} of ${data.totalPlayers}${workoutList}
+
+Write 3-4 sentences. Requirements:
+- If goal was met: celebrate it, mention the streak if > 1 week
+- If goal was NOT met: be encouraging, not guilt-tripping. Note how close they were or highlight what they did accomplish
+- Reference specific workouts from their descriptions if available (makes it personal)
+- End with a forward-looking line about next week
+- Keep it casual and warm, plain text only, 1-2 emojis max
+- Do NOT use markdown formatting`
+
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 250,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  const block = message.content.find((b) => b.type === 'text')
+  if (!block || block.type !== 'text') {
+    return data.goalMet
+      ? `💪 Great week, ${data.playerName.toUpperCase()}! You hit your goal with ${data.total} workouts. Keep it up next week!`
+      : `Hey ${data.playerName.toUpperCase()}, you logged ${data.total} workouts this week. Every session counts — let's go harder next week! 💪`
+  }
+  return block.text.trim()
+}

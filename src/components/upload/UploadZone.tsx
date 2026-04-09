@@ -105,11 +105,12 @@ export function UploadZone() {
   )
 
   const [canPaste, setCanPaste] = useState(false)
+  const [socialProof, setSocialProof] = useState<{ todayPlayers: number; weekTotal: number; weekPlayers: number } | null>(null)
 
   useEffect(() => {
     setIsDesktop(!('ontouchstart' in window))
-    // Check if clipboard.read() is available (iOS 16.4+, modern browsers)
     setCanPaste(typeof navigator?.clipboard?.read === 'function')
+    fetch('/api/social-proof').then(r => r.json()).then(setSocialProof).catch(() => {})
   }, [])
 
   const handlePasteButton = useCallback(async () => {
@@ -421,6 +422,23 @@ export function UploadZone() {
         >
           📋 PASTE SCREENSHOT
         </button>
+      )}
+      {socialProof && (socialProof.todayPlayers > 0 || socialProof.weekTotal > 0) && (
+        <div style={{
+          fontFamily: 'var(--font-pixel)',
+          fontSize: '7px',
+          color: 'var(--amiga-grey)',
+          textAlign: 'center',
+          padding: '8px 0',
+        }}>
+          {socialProof.todayPlayers > 0 && (
+            <span>{socialProof.todayPlayers} {socialProof.todayPlayers === 1 ? 'PERSON' : 'PEOPLE'} LOGGED TODAY</span>
+          )}
+          {socialProof.todayPlayers > 0 && socialProof.weekTotal > 0 && <span> &bull; </span>}
+          {socialProof.weekTotal > 0 && (
+            <span>{socialProof.weekTotal} WORKOUTS THIS WEEK</span>
+          )}
+        </div>
       )}
     </div>
   )

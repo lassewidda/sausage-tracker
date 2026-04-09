@@ -14,12 +14,19 @@
     },
     "src/app/api/slack-bot/route.ts": {
       "maxDuration": 15
+    },
+    "src/app/api/cron/weekly-recap/route.ts": {
+      "maxDuration": 120
     }
   },
   "crons": [
     {
       "path": "/api/cron/channel-summary",
       "schedule": "0 17 * * 1,3,5"
+    },
+    {
+      "path": "/api/cron/weekly-recap",
+      "schedule": "0 17 * * 0"
     }
   ]
 }
