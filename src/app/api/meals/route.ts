@@ -100,11 +100,13 @@ export async function POST(request: Request): Promise<NextResponse> {
       }
     }
 
-    // Send personalized DM on first-ever workout (non-blocking)
+    // Send personalized DM on first-ever workout, or check milestones for subsequent ones
+    let isFirstWorkout = false
     if (normalizedName !== 'Anonymous' && exerciseType) {
       try {
         const mealCount = await getPlayerMealCount(normalizedName.toLowerCase())
-        if (mealCount === 1) {
+        isFirstWorkout = mealCount === 1
+        if (isFirstWorkout) {
           const slackId = await getSlackUserId(normalizedName.toLowerCase())
           const goal = await getPlayerGoal(normalizedName.toLowerCase())
           if (slackId && goal) {
@@ -172,8 +174,10 @@ export async function POST(request: Request): Promise<NextResponse> {
         }
       } catch { /* silent */ }
 
-      // Check for milestone DMs (non-blocking, sends at most one DM)
-      checkMilestones({ playerName: normalizedName, exerciseType }).catch(() => {})
+      // Check for milestone DMs (non-blocking, sends at most one DM) — skip on first workout
+      if (!isFirstWorkout) {
+        checkMilestones({ playerName: normalizedName, exerciseType }).catch(() => {})
+      }
     }
 
     return NextResponse.json({ ...meal, itemDrop }, { status: 201 })
