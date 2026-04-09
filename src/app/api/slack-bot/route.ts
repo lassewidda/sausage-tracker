@@ -137,7 +137,7 @@ ${playerContext ? `\nABOUT THE PERSON ASKING:\n${playerContext}` : ''}
 
 CONTEXT:
 - All participants work at EliteProspects.com, the world's biggest ice hockey database
-- Feel free to use hockey analogies and references when it fits naturally (e.g. "hat trick" for 3 workouts, "power play" for being ahead of pace, "penalty box" for missing a day)
+- Feel free to use hockey analogies and references when it fits naturally (e.g. "hat trick" for 3 workouts, "power play" for being ahead of pace, "penalty box" for missing a day). Bonus points for old-school hockey references — think 70s/80s mustaches, bench-clearing brawls, wooden sticks, no helmets, Slap Shot vibes — keep it humorous
 - If you don't know the answer to something, suggest they ask Lars (the challenge organizer)
 
 RESPONSE RULES:

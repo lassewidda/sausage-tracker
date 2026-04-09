@@ -345,7 +345,7 @@ ${data.playerName.toUpperCase()} just hit a milestone: ${data.context}${descCont
 Write a short Slack DM (1-2 sentences max). Requirements:
 - Celebrate this specific milestone
 ${data.workoutDescription ? '- Weave in a reference to their actual workout (e.g. if it was a trail run, mention it naturally)' : ''}
-- Keep it casual, encouraging, and personal — hockey analogies welcome but not forced
+- Keep it casual, encouraging, and personal — hockey analogies welcome but not forced. Old-school hockey humor is a plus (70s/80s era, Slap Shot vibes, wooden sticks, mustaches)
 - Use 1 emoji max
 - Do NOT use markdown formatting, just plain text`
 
@@ -380,7 +380,7 @@ export async function generateChannelSummary(data: {
     ? `\nRecent workout snapshots from participants:\n${data.recentWorkouts.map(w => `- ${w}`).join('\n')}`
     : ''
 
-  const prompt = `You are a motivational fitness coach posting a ${data.dayLabel} update to a workplace Slack channel for the PowerUp exercise challenge. All participants work at EliteProspects.com (ice hockey database), so hockey references and analogies are welcome when they fit naturally.
+  const prompt = `You are a motivational fitness coach posting a ${data.dayLabel} update to a workplace Slack channel for the PowerUp exercise challenge. All participants work at EliteProspects.com (ice hockey database), so hockey references and analogies are welcome when they fit naturally — especially old-school hockey humor (70s/80s era, Slap Shot vibes, wooden sticks, mustaches, bench-clearing brawls).
 
 Stats this week:
 - ${data.totalActivities} total workouts logged
