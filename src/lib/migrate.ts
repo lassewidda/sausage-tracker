@@ -317,10 +317,22 @@ async function migrate() {
   // Add target_opponent to battles for direct challenges
   await sql`ALTER TABLE battles ADD COLUMN IF NOT EXISTS target_opponent TEXT`
 
+  // Bot message log for tracking user questions
+  await sql`
+    CREATE TABLE IF NOT EXISTS bot_messages (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      slack_user_id TEXT NOT NULL,
+      question TEXT NOT NULL,
+      reply TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+  await sql`CREATE INDEX IF NOT EXISTS idx_bot_messages_created ON bot_messages(created_at DESC)`
+
   // Enable Row Level Security on all tables with permissive policies
   // (no auth in this app — all access is via server-side API routes)
   const tables = [
-    'meals', 'weekly_summaries', 'hero_cards', 'battles', 'battle_decks',
+    'meals', 'weekly_summaries', 'hero_cards', 'battles', 'battle_decks', 'bot_messages',
     'battle_turns', 'battle_stats', 'battle_taunts', 'battle_effects',
     'player_items', 'player_wallets', 'shop_transactions',
     'weekly_challenges', 'challenge_photos', 'app_config', 'player_goals',

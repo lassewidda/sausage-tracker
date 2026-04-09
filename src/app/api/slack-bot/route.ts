@@ -201,8 +201,23 @@ RESPONSE RULES:
     const reply = block?.type === 'text' ? block.text.trim() : "Sorry, I couldn't process that. Try asking again!"
 
     await sendSlackReply(channel, thread_ts || ts, reply)
+
+    // Log the interaction
+    logBotMessage(slackUserId, question, reply).catch(() => {})
   } catch (err) {
     console.error('Claude API error in bot:', err)
     await sendSlackReply(channel, thread_ts || ts, "Oops, something went wrong on my end. Try again in a moment!")
+  }
+}
+
+async function logBotMessage(slackUserId: string, question: string, reply: string) {
+  const sql = getDb()
+  try {
+    await sql`
+      INSERT INTO bot_messages (slack_user_id, question, reply)
+      VALUES (${slackUserId}, ${question}, ${reply})
+    `
+  } finally {
+    await sql.end()
   }
 }
