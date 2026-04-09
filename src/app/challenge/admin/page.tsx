@@ -214,7 +214,7 @@ export default function ChallengeAdminPage() {
     )
   }
 
-  if (name?.toLowerCase() !== 'lars') {
+  if (!['lars', 'lars2'].includes(name?.toLowerCase() ?? '')) {
     return (
       <Window title="ADMIN">
         <div style={{ textAlign: 'center', padding: '32px', fontFamily: 'var(--font-pixel)', fontSize: '10px', color: '#AA0000' }}>
