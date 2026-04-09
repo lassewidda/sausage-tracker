@@ -38,6 +38,13 @@ export function formatWeekLabel(weekKey: string): string {
   })}`
 }
 
+export async function getPlayerMealCount(playerName: string): Promise<number> {
+  const sql = getDb()
+  const rows = await sql`SELECT COUNT(*)::int AS count FROM meals WHERE player_name = ${playerName.toLowerCase()}`
+  await sql.end()
+  return rows[0].count as number
+}
+
 export async function insertMeal(data: {
   imageUrl: string
   blobPath: string

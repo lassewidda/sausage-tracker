@@ -283,3 +283,84 @@ export async function analyzeImage(imageUrl: string): Promise<AnalysisResult> {
     weightPerItem: Math.max(0, Math.round(Number(parsed.grams_per_sausage) || 0)),
   }
 }
+
+export async function generateFirstWorkoutMessage(data: {
+  playerName: string
+  cardioTarget: number
+  strengthTarget: number
+  exerciseType: string
+}): Promise<string> {
+  const client = getClient()
+
+  const total = data.cardioTarget + data.strengthTarget
+  const goalDescription = []
+  if (data.cardioTarget > 0) goalDescription.push(`${data.cardioTarget} cardio`)
+  if (data.strengthTarget > 0) goalDescription.push(`${data.strengthTarget} strength`)
+
+  const prompt = `You are a fun, motivational fitness coach for a workplace exercise challenge called PowerUp.
+
+${data.playerName.toUpperCase()} just logged their FIRST workout ever in the challenge! It was a ${data.exerciseType} session.
+
+Their personal weekly goal is: ${goalDescription.join(' + ')} sessions per week (${total} total).
+
+Write a short, personalized Slack DM (2-3 sentences max). Requirements:
+- Congratulate them on their first workout
+- Make a fun comment about their specific goal split (e.g. if heavy on strength, joke about becoming the next Arnold; if all cardio, mention marathon dreams; if balanced, praise the well-rounded approach)
+- Remind them they can log workouts by screenshotting their training app or taking photos when exercising outdoors
+- Keep it casual and encouraging, use 1-2 emojis max
+- Do NOT use markdown formatting, just plain text`
+
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 200,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  const block = message.content.find((b) => b.type === 'text')
+  if (!block || block.type !== 'text') return `💪 Welcome to PowerUp, ${data.playerName}! Your first workout is logged. Keep going!`
+  return block.text.trim()
+}
+
+export async function generateChannelSummary(data: {
+  dayLabel: string
+  totalActivities: number
+  activePlayers: number
+  totalPlayers: number
+  playerHighlights: string[]
+  goalCompletions: number
+  topStreak: { player: string; weeks: number } | null
+}): Promise<string> {
+  const client = getClient()
+
+  const highlights = data.playerHighlights.length > 0
+    ? `Notable highlights:\n${data.playerHighlights.map(h => `- ${h}`).join('\n')}`
+    : 'No specific highlights yet.'
+
+  const prompt = `You are a motivational fitness coach posting a ${data.dayLabel} update to a workplace Slack channel for the PowerUp exercise challenge.
+
+Stats this week:
+- ${data.totalActivities} total workouts logged
+- ${data.activePlayers} of ${data.totalPlayers} players have logged at least one workout
+- ${data.goalCompletions} players have already completed their weekly goal
+${data.topStreak ? `- Longest streak: ${data.topStreak.player} with ${data.topStreak.weeks} consecutive goal weeks` : ''}
+
+${highlights}
+
+Write a short Slack channel post (4-6 lines max). Requirements:
+- Start with a relevant emoji
+- Be motivational and positive
+- Highlight standout achievements from the highlights
+- Gently encourage those who haven't logged yet (without shaming)
+- If it's Monday: energize for the new week. If Wednesday: mid-week push. If Friday: last chance to hit goals before week ends
+- Keep it casual and fun, plain text only (no markdown)`
+
+  const message = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 300,
+    messages: [{ role: 'user', content: prompt }],
+  })
+
+  const block = message.content.find((b) => b.type === 'text')
+  if (!block || block.type !== 'text') return `💪 PowerUp ${data.dayLabel} update: ${data.totalActivities} workouts logged by ${data.activePlayers} players this week!`
+  return block.text.trim()
+}

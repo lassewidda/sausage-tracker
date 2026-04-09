@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { insertMeal, getAllMeals, groupByWeek, addPlayerItem, getPlayerGoal, getWeekKey, getChallengeView } from '@/lib/db'
-import { rewriteDescriptionForCount } from '@/lib/claude'
+import { insertMeal, getAllMeals, groupByWeek, addPlayerItem, getPlayerGoal, getWeekKey, getChallengeView, getPlayerMealCount, getSlackUserId } from '@/lib/db'
+import { rewriteDescriptionForCount, generateFirstWorkoutMessage } from '@/lib/claude'
 import { rollItemDrop } from '@/lib/itemCatalog'
-import { sendSlackChannel } from '@/lib/slack'
+import { sendSlackChannel, sendSlackDM } from '@/lib/slack'
 import postgres from 'postgres'
 
 export const dynamic = 'force-dynamic'
@@ -97,6 +97,25 @@ export async function POST(request: Request): Promise<NextResponse> {
           flavorText: droppedItem.flavorText,
         }
       }
+    }
+
+    // Send personalized DM on first-ever workout (non-blocking)
+    if (normalizedName !== 'Anonymous' && exerciseType) {
+      try {
+        const mealCount = await getPlayerMealCount(normalizedName.toLowerCase())
+        if (mealCount === 1) {
+          const slackId = await getSlackUserId(normalizedName.toLowerCase())
+          const goal = await getPlayerGoal(normalizedName.toLowerCase())
+          if (slackId && goal) {
+            generateFirstWorkoutMessage({
+              playerName: normalizedName,
+              cardioTarget: goal.cardioTarget,
+              strengthTarget: goal.strengthTarget,
+              exerciseType,
+            }).then(msg => sendSlackDM(slackId, msg)).catch(() => {})
+          }
+        }
+      } catch { /* silent */ }
     }
 
     // Check if this workout just completed the player's weekly goal
