@@ -115,6 +115,7 @@ export async function POST(request: Request): Promise<NextResponse> {
               cardioTarget: goal.cardioTarget,
               strengthTarget: goal.strengthTarget,
               exerciseType,
+              workoutDescription: finalDescription,
             }).then(msg => sendSlackDM(slackId, msg)).catch(() => {})
           }
         }
@@ -176,7 +177,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
       // Check for milestone DMs (non-blocking, sends at most one DM) — skip on first workout
       if (!isFirstWorkout) {
-        checkMilestones({ playerName: normalizedName, exerciseType }).catch(() => {})
+        checkMilestones({ playerName: normalizedName, exerciseType, workoutDescription: finalDescription }).catch(() => {})
       }
     }
 

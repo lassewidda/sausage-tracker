@@ -2,8 +2,18 @@ import { NextResponse } from 'next/server'
 import { getLeaderboard, getAllPlayerGoals, getGoalStreaks, getWeekKey } from '@/lib/db'
 import { generateChannelSummary } from '@/lib/claude'
 import { sendSlackChannel } from '@/lib/slack'
+import postgres from 'postgres'
 
 export const dynamic = 'force-dynamic'
+
+function getDb() {
+  return postgres(process.env.DATABASE_URL!, {
+    max: 5,
+    ssl: { rejectUnauthorized: false },
+    idle_timeout: 20,
+    connect_timeout: 10,
+  })
+}
 
 export async function GET(request: Request) {
   // Verify cron secret (Vercel cron auth)
@@ -66,6 +76,26 @@ export async function GET(request: Request) {
       }
     }
 
+    // Fetch recent workout descriptions to add color to the summary
+    let recentWorkouts: string[] = []
+    try {
+      const sql = getDb()
+      const descRows = await sql`
+        SELECT DISTINCT ON (player_name) player_name, ai_description, exercise_type
+        FROM meals
+        WHERE week_key = ${weekKey}
+          AND ai_description IS NOT NULL
+          AND ai_description != ''
+          AND player_name NOT IN ('test3', 'lars2')
+        ORDER BY player_name, created_at DESC
+      `
+      await sql.end()
+      recentWorkouts = descRows
+        .filter(r => r.ai_description)
+        .map(r => `${(r.player_name as string).toUpperCase()}: ${r.ai_description} (${r.exercise_type})`)
+        .slice(0, 6)
+    } catch { /* silent */ }
+
     // Determine day label
     const dayOfWeek = new Date().getDay()
     const dayLabel = dayOfWeek === 1 ? 'Monday' : dayOfWeek === 3 ? 'Wednesday' : dayOfWeek === 5 ? 'Friday' : 'mid-week'
@@ -78,6 +108,7 @@ export async function GET(request: Request) {
       playerHighlights: highlights.slice(0, 6),
       goalCompletions,
       topStreak: topStreak ? { player: topStreak.playerName, weeks: topStreak.totalGoalWeeks } : null,
+      recentWorkouts,
     })
 
     await sendSlackChannel(message)
