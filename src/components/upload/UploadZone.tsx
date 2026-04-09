@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { upload } from '@vercel/blob/client'
 import type { UploadState, AnalysisResult as IAnalysisResult, ItemDefinition } from '@/types'
@@ -102,6 +102,25 @@ export function UploadZone() {
     },
     [processFile]
   )
+
+  // Listen for clipboard paste (Cmd+V / Ctrl+V)
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (state.phase !== 'idle') return
+      const items = e.clipboardData?.items
+      if (!items) return
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          e.preventDefault()
+          const blob = items[i].getAsFile()
+          if (blob) processFile(blob)
+          return
+        }
+      }
+    }
+    document.addEventListener('paste', handlePaste)
+    return () => document.removeEventListener('paste', handlePaste)
+  }, [processFile, state.phase])
 
   const handleConfirm = useCallback(
     async (confirmedCount: number, exerciseType?: string) => {
@@ -349,7 +368,7 @@ export function UploadZone() {
         <div style={{ fontSize: '32px' }}>{theme.strings.uploadDropzoneEmoji}</div>
         <div>{theme.strings.uploadDropzoneLabel}</div>
         <div style={{ color: 'var(--amiga-grey)', fontSize: '7px' }}>
-          OR CLICK TO SELECT FILE
+          CLICK TO SELECT, OR PASTE FROM CLIPBOARD
         </div>
         <div style={{ color: 'var(--amiga-dark-grey)', fontSize: '6px' }}>
           JPEG / PNG / HEIC / WEBP &mdash; MAX 25MB
