@@ -348,7 +348,7 @@ ${highlights}
 
 Write a short Slack channel post (4-6 lines max). Requirements:
 - Start with a relevant emoji
-- Be motivational and positive
+- Be motivational and positive — but do NOT start with a label like "Monday Motivation:", "Mid-week Update:", or the day name. Jump straight into the content about the players and their achievements.
 - Highlight standout achievements from the highlights
 - Gently encourage those who haven't logged yet (without shaming)
 - If it's Monday: energize for the new week. If Wednesday: mid-week push. If Friday: last chance to hit goals before week ends
