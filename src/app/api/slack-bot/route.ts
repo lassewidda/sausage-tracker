@@ -30,11 +30,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true })
   }
 
-  // Handle app_mention events
+  // Handle app_mention events — await fully before responding
+  // (Vercel kills serverless functions after response is sent)
+  // Slack may retry if we take >3s, but we ignore retries above
   if (body.event?.type === 'app_mention') {
-    // Respond immediately, process async
-    const event = body.event
-    handleMention(event).catch(err => console.error('Bot mention error:', err))
+    try {
+      await handleMention(body.event)
+    } catch (err) {
+      console.error('Bot mention error:', err)
+    }
     return NextResponse.json({ ok: true })
   }
 
