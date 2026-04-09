@@ -292,5 +292,6 @@ export interface UploadState {
   blobPath?: string
   analysis?: AnalysisResult
   confirmedCount?: number
+  exerciseType?: string
   error?: string
 }

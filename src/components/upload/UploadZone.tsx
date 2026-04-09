@@ -180,7 +180,7 @@ export function UploadZone() {
           setItemDrop(data.itemDrop)
         }
 
-        setState({ phase: 'success', confirmedCount })
+        setState({ phase: 'success', confirmedCount, exerciseType })
       } catch (err) {
         setState((s) => ({ ...s, phase: 'confirming', error: 'SAVE FAILED. TRY AGAIN.' }))
         console.error('Save error:', err)
@@ -199,7 +199,7 @@ export function UploadZone() {
   if (state.phase === 'success') {
     return (
       <div className="success-screen">
-        <VictorySprite />
+        <VictorySprite exerciseType={state.exerciseType} />
         <div className="amiga-gauge amiga-gauge--large">+{state.confirmedCount}</div>
         <div className="success-score">
           {theme.strings.successLabel(state.confirmedCount ?? 0)}

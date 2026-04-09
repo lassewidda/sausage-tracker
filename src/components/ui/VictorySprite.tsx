@@ -24,6 +24,12 @@ const BEL = '#CC6600' // belt
 const BOT = '#3C2010' // boots
 const SPK = '#FFE030' // sparkle
 
+// ── Cardio theme colors ─────────────────────────────────────────────
+const TUN_CD = '#2266CC' // running shirt (blue)
+const SHO = '#222222'    // shorts
+const SNK = '#DDDDDD'    // sneakers
+const SWE = '#66BBFF'    // sweat drops
+
 const SAUSAGE_PIXELS: [number, number, string][] = [
   // sparkles
   [0, 0, SPK], [11, 0, SPK], [5, 0, SPK], [6, 0, SPK],
@@ -76,7 +82,8 @@ const SAUSAGE_PIXELS: [number, number, string][] = [
   [2, 15, BOT], [3, 15, BOT], [4, 15, BOT], [7, 15, BOT], [8, 15, BOT], [9, 15, BOT],
 ]
 
-const EXERCISE_PIXELS: [number, number, string][] = [
+// Strength: character lifting barbell overhead (existing)
+const STRENGTH_PIXELS: [number, number, string][] = [
   // ── barbell overhead ──────────────────────────────────────────────
   // left plate
   [0, 0, PLD], [1, 0, PLT],
@@ -132,22 +139,85 @@ const EXERCISE_PIXELS: [number, number, string][] = [
   [3, 11, TUN_EX], [4, 11, TUN_EX], [5, 11, BEL], [6, 11, BEL], [7, 11, TUN_EX], [8, 11, TUN_EX],
 
   // ── shorts ────────────────────────────────────────────────────────
-  [3, 12, '#222222'], [4, 12, '#222222'], [5, 12, '#222222'], [6, 12, '#222222'], [7, 12, '#222222'], [8, 12, '#222222'],
+  [3, 12, SHO], [4, 12, SHO], [5, 12, SHO], [6, 12, SHO], [7, 12, SHO], [8, 12, SHO],
 
   // ── legs ──────────────────────────────────────────────────────────
   [3, 13, SKI], [4, 13, SKI], [7, 13, SKI], [8, 13, SKI],
 
   // ── sneakers ──────────────────────────────────────────────────────
-  [3, 14, '#DDDDDD'], [4, 14, '#DDDDDD'], [7, 14, '#DDDDDD'], [8, 14, '#DDDDDD'],
+  [3, 14, SNK], [4, 14, SNK], [7, 14, SNK], [8, 14, SNK],
 
   // ── feet ──────────────────────────────────────────────────────────
-  [2, 15, '#DDDDDD'], [3, 15, '#DDDDDD'], [4, 15, '#DDDDDD'], [7, 15, '#DDDDDD'], [8, 15, '#DDDDDD'], [9, 15, '#DDDDDD'],
+  [2, 15, SNK], [3, 15, SNK], [4, 15, SNK], [7, 15, SNK], [8, 15, SNK], [9, 15, SNK],
+]
+
+// Cardio: running character with arm swing and stride
+const CARDIO_PIXELS: [number, number, string][] = [
+  // ── sweat drops ───────────────────────────────────────────────────
+  [1, 2, SWE], [10, 3, SWE],
+
+  // ── sparkles ──────────────────────────────────────────────────────
+  [0, 0, SPK], [11, 1, SPK],
+
+  // ── head hair top ─────────────────────────────────────────────────
+  [5, 2, HAI], [6, 2, HAI], [7, 2, HAI], [8, 2, HAI],
+
+  // ── hair sides ────────────────────────────────────────────────────
+  [4, 3, HAI], [5, 3, HAI], [6, 3, HAI], [7, 3, HAI], [8, 3, HAI], [9, 3, HAI],
+
+  // ── face ──────────────────────────────────────────────────────────
+  [4, 4, HAI], [5, 4, SKI], [6, 4, SKI], [7, 4, SKI], [8, 4, SKI], [9, 4, HAI],
+
+  // ── eyes ──────────────────────────────────────────────────────────
+  [4, 5, HAI], [5, 5, EYE], [6, 5, SKI], [7, 5, SKI], [8, 5, EYE], [9, 5, HAI],
+
+  // ── mouth (grin) ──────────────────────────────────────────────────
+  [5, 6, SKI], [6, 6, MOU], [7, 6, MOU], [8, 6, SKI],
+
+  // ── neck ──────────────────────────────────────────────────────────
+  [6, 7, SKI], [7, 7, SKI],
+
+  // ── shoulders + front arm raised ──────────────────────────────────
+  [3, 8, TUN_CD], [4, 8, TUN_CD], [5, 8, TUN_CD], [6, 8, TUN_CD],
+  [7, 8, TUN_CD], [8, 8, TUN_CD], [9, 8, TUN_CD],
+
+  // ── torso + arms in running pose ──────────────────────────────────
+  [2, 9, SKI], [3, 9, SKI],  // front arm forward
+  [4, 9, TUN_CD], [5, 9, TUN_CD], [6, 9, TUN_CD], [7, 9, TUN_CD], [8, 9, TUN_CD],
+  [9, 9, SKI], [10, 9, SKI], // back arm back
+
+  // ── lower torso ───────────────────────────────────────────────────
+  [4, 10, TUN_CD], [5, 10, TUN_CD], [6, 10, TUN_CD], [7, 10, TUN_CD], [8, 10, TUN_CD],
+
+  // ── shorts ────────────────────────────────────────────────────────
+  [4, 11, SHO], [5, 11, SHO], [6, 11, SHO], [7, 11, SHO], [8, 11, SHO],
+
+  // ── legs in stride (front leg forward, back leg back) ─────────────
+  [3, 12, SKI], [4, 12, SKI],  // front thigh
+  [8, 12, SKI], [9, 12, SKI],  // back thigh
+  [2, 13, SKI], [3, 13, SKI],  // front shin
+  [9, 13, SKI], [10, 13, SKI], // back shin
+
+  // ── sneakers ──────────────────────────────────────────────────────
+  [1, 14, SNK], [2, 14, SNK], // front foot
+  [10, 14, SNK], [11, 14, SNK], // back foot (kicked up)
+
+  // ── ground dash lines ─────────────────────────────────────────────
+  [0, 15, '#666666'], [1, 15, '#666666'],
+  [4, 15, '#666666'], [5, 15, '#666666'],
+  [8, 15, '#666666'], [9, 15, '#666666'],
 ]
 
 const isExercise = process.env.NEXT_PUBLIC_THEME === 'exercise'
-const PIXELS = isExercise ? EXERCISE_PIXELS : SAUSAGE_PIXELS
 
-export function VictorySprite() {
+function getPixels(exerciseType?: string): [number, number, string][] {
+  if (!isExercise) return SAUSAGE_PIXELS
+  if (exerciseType === 'cardio') return CARDIO_PIXELS
+  return STRENGTH_PIXELS
+}
+
+export function VictorySprite({ exerciseType }: { exerciseType?: string } = {}) {
+  const PIXELS = getPixels(exerciseType)
   return (
     <svg
       viewBox="0 0 144 192"
