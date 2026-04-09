@@ -32,6 +32,10 @@ export async function sendSlackChannel(message: string): Promise<{ ok: boolean; 
   return postSlack(POWERUP_CHANNEL, { text: message })
 }
 
+export async function sendSlackReply(channel: string, threadTs: string, message: string): Promise<{ ok: boolean; error?: string }> {
+  return postSlack(channel, { text: message, thread_ts: threadTs })
+}
+
 export async function sendSlackChannelWithImage(message: string, imageUrl: string, altText: string): Promise<{ ok: boolean; error?: string }> {
   return postSlack(POWERUP_CHANNEL, {
     text: message,
