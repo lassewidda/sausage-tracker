@@ -11,6 +11,9 @@
     },
     "src/app/api/cron/channel-summary/route.ts": {
       "maxDuration": 30
+    },
+    "src/app/api/slack-bot/route.ts": {
+      "maxDuration": 15
     }
   },
   "crons": [
