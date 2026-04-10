@@ -37,7 +37,9 @@ export async function POST(request: Request) {
   const eventType = event?.type
   const isAppMention = eventType === 'app_mention'
   const isDM = eventType === 'message' && event?.channel_type === 'im' && !event?.bot_id
-  const isThreadReply = eventType === 'message' && event?.thread_ts && !event?.bot_id && event?.channel_type !== 'im'
+  const textLower = (event?.text || '').toLowerCase()
+  const mentionsPuck = textLower.includes('puck')
+  const isThreadReply = eventType === 'message' && event?.thread_ts && !event?.bot_id && event?.channel_type !== 'im' && mentionsPuck
 
   if (isAppMention || isDM || isThreadReply) {
     try {
