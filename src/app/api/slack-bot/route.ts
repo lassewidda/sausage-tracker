@@ -75,7 +75,7 @@ async function handleMention(event: {
 
     // Find player name from Slack ID
     const playerRows = await sql`
-      SELECT player_name, cardio_target, strength_target FROM player_goals WHERE slack_user_id = ${slackUserId}
+      SELECT player_name, cardio_target, strength_target, fun_fact FROM player_goals WHERE slack_user_id = ${slackUserId}
     `
 
     if (playerRows.length > 0) {
@@ -102,13 +102,15 @@ async function handleMention(event: {
       `
       const allTimeTotal = allTimeStats[0]?.total as number ?? 0
 
+      const funFact = playerRows[0].fun_fact as string | null
+
       playerContext = `
 The person asking is: ${playerName.toUpperCase()}
 Their weekly goal: ${cardioTarget} cardio + ${strengthTarget} strength sessions
 This week so far: ${cardio} cardio, ${strength} strength (${total} total)
 Cardio remaining: ${Math.max(0, cardioTarget - cardio)}, Strength remaining: ${Math.max(0, strengthTarget - strength)}
 Goal met this week: ${cardio >= cardioTarget && strength >= strengthTarget ? 'YES' : 'NOT YET'}
-All-time total workouts: ${allTimeTotal}`
+All-time total workouts: ${allTimeTotal}${funFact ? `\nFun fact: ${funFact}` : ''}`
     }
   } catch {
     // Continue without player context
@@ -129,7 +131,7 @@ All-time total workouts: ${allTimeTotal}`
       const sql2 = getDb()
       try {
         const weekKey = getWeekKey()
-        const [weekStats, allTimeStats] = await Promise.all([
+        const [weekStats, allTimeStats, funFactRows] = await Promise.all([
           sql2`
             SELECT
               COUNT(*) FILTER (WHERE exercise_type = 'cardio')::int AS cardio,
@@ -138,6 +140,7 @@ All-time total workouts: ${allTimeTotal}`
             FROM meals WHERE player_name = ${mentioned.playerName} AND week_key = ${weekKey}
           `,
           sql2`SELECT COUNT(*)::int AS total FROM meals WHERE player_name = ${mentioned.playerName}`,
+          sql2`SELECT fun_fact FROM player_goals WHERE player_name = ${mentioned.playerName}`,
         ])
         await sql2.end()
 
@@ -145,13 +148,14 @@ All-time total workouts: ${allTimeTotal}`
         const strength = weekStats[0]?.strength as number ?? 0
         const total = weekStats[0]?.total as number ?? 0
         const allTime = allTimeStats[0]?.total as number ?? 0
+        const funFact = funFactRows[0]?.fun_fact as string | null
 
         mentionedPlayerContext = `
 ABOUT THE MENTIONED PLAYER (${mentioned.playerName.toUpperCase()}):
 Weekly goal: ${mentioned.cardioTarget} cardio + ${mentioned.strengthTarget} strength sessions
 This week: ${cardio} cardio, ${strength} strength (${total} total)
 Goal met this week: ${cardio >= mentioned.cardioTarget && strength >= mentioned.strengthTarget ? 'YES' : 'NOT YET'}
-All-time total workouts: ${allTime}`
+All-time total workouts: ${allTime}${funFact ? `\nFun fact: ${funFact}` : ''}`
       } catch {
         await sql2.end().catch(() => {})
       }
@@ -234,7 +238,7 @@ RESPONSE RULES:
 - If someone asks "how does X work" for a complex feature like battles, you can go up to 4-5 sentences
 - Be friendly and casual
 - If they ask about their progress, reference their actual stats
-- If they ask about another player ("who is X", "how is X doing"), use the MENTIONED PLAYER data to describe that person's goals and progress in a fun way
+- If they ask about another player ("who is X", "how is X doing"), use the MENTIONED PLAYER data to describe that person's goals and progress in a fun way. If a fun fact is available, weave it into the response naturally (e.g. if they're a former hockey goalie, make a save joke)
 - If you don't know something specific, say so honestly — and point them to Lars
 - Do NOT use markdown formatting — just plain text
 - Use 1 emoji max per response`
