@@ -130,7 +130,7 @@ THE CHALLENGE:
 - Challenge starts April 13th, currently ${totalPlayers} participants
 - Each participant sets a personal weekly goal (mix of cardio + strength sessions, minimum 3 total per week)
 - The week resets every Monday
-- The <#C0AQ2VASTBR> Slack channel has group updates and shoutouts
+- The #powerup Slack channel has group updates and shoutouts
 
 LOGGING WORKOUTS:
 - Go to the PowerUp app homepage and upload a photo or screenshot (Strava, gym photo, outdoor run, Apple Watch, etc.)
@@ -203,7 +203,10 @@ RESPONSE RULES:
     })
 
     const block = message.content.find(b => b.type === 'text')
-    const reply = block?.type === 'text' ? block.text.trim() : "Sorry, I couldn't process that. Try asking again!"
+    let reply = block?.type === 'text' ? block.text.trim() : "Sorry, I couldn't process that. Try asking again!"
+
+    // Convert #powerup mentions to clickable Slack channel links
+    reply = reply.replace(/#powerup/gi, '<#C0AQ2VASTBR>')
 
     await sendSlackReply(channel, thread_ts || ts, reply)
 
