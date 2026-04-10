@@ -120,20 +120,58 @@ All-time total workouts: ${allTimeTotal}${funFact ? `\nFun fact: ${funFact}` : '
     await sql.end()
   }
 
-  // Look up mentioned player in the question
+  // Look up mentioned player in the question (supports full names, first names, and aliases from fun_fact)
   let mentionedPlayerContext = ''
   try {
-    const allGoals = await getAllPlayerGoals()
+    const sql3 = getDb()
+    const allPlayersWithFacts = await sql3`SELECT player_name, cardio_target, strength_target, fun_fact FROM player_goals`
+    await sql3.end()
+
     const questionLower = question.toLowerCase()
-    // Sort by name length descending so "johan ejermark" matches before "johan"
-    const sortedPlayers = [...allGoals].sort((a, b) => b.playerName.length - a.playerName.length)
-    const mentioned = sortedPlayers.find(g => questionLower.includes(g.playerName.toLowerCase()))
+
+    // Build match candidates: full name, first name, and "aka" aliases from fun_fact
+    type PlayerMatch = { name: string; playerName: string; cardioTarget: number; strengthTarget: number; funFact: string | null }
+    const candidates: PlayerMatch[] = []
+    for (const row of allPlayersWithFacts) {
+      const playerName = row.player_name as string
+      const base = { playerName, cardioTarget: row.cardio_target as number, strengthTarget: row.strength_target as number, funFact: row.fun_fact as string | null }
+
+      // Full name
+      candidates.push({ ...base, name: playerName })
+
+      // First name (only if multi-word name to avoid matching common words)
+      const firstName = playerName.split(' ')[0]
+      if (playerName.includes(' ')) {
+        candidates.push({ ...base, name: firstName })
+      }
+
+      // Extract "aka X" aliases from fun_fact
+      const funFact = row.fun_fact as string | null
+      if (funFact) {
+        const akaMatch = funFact.match(/[Aa]ka\s+([^,.]+)/g)
+        if (akaMatch) {
+          for (const m of akaMatch) {
+            const alias = m.replace(/[Aa]ka\s+/, '').trim()
+            if (alias.length >= 2) candidates.push({ ...base, name: alias.toLowerCase() })
+          }
+        }
+      }
+    }
+
+    // Sort by name length descending so longer names match first (e.g. "ed palumbo" before "ed")
+    candidates.sort((a, b) => b.name.length - a.name.length)
+
+    // Find first match as a whole word (avoid matching "ed" inside "logged")
+    const mentioned = candidates.find(c => {
+      const pattern = new RegExp(`\\b${c.name.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
+      return pattern.test(questionLower)
+    })
 
     if (mentioned) {
       const sql2 = getDb()
       try {
         const weekKey = getWeekKey()
-        const [weekStats, allTimeStats, funFactRows] = await Promise.all([
+        const [weekStats, allTimeStats] = await Promise.all([
           sql2`
             SELECT
               COUNT(*) FILTER (WHERE exercise_type = 'cardio')::int AS cardio,
@@ -142,7 +180,6 @@ All-time total workouts: ${allTimeTotal}${funFact ? `\nFun fact: ${funFact}` : '
             FROM meals WHERE player_name = ${mentioned.playerName} AND week_key = ${weekKey}
           `,
           sql2`SELECT COUNT(*)::int AS total FROM meals WHERE player_name = ${mentioned.playerName}`,
-          sql2`SELECT fun_fact FROM player_goals WHERE player_name = ${mentioned.playerName}`,
         ])
         await sql2.end()
 
@@ -150,14 +187,13 @@ All-time total workouts: ${allTimeTotal}${funFact ? `\nFun fact: ${funFact}` : '
         const strength = weekStats[0]?.strength as number ?? 0
         const total = weekStats[0]?.total as number ?? 0
         const allTime = allTimeStats[0]?.total as number ?? 0
-        const funFact = funFactRows[0]?.fun_fact as string | null
 
         mentionedPlayerContext = `
 ABOUT THE MENTIONED PLAYER (${mentioned.playerName.toUpperCase()}):
 Weekly goal: ${mentioned.cardioTarget} cardio + ${mentioned.strengthTarget} strength sessions
 This week: ${cardio} cardio, ${strength} strength (${total} total)
 Goal met this week: ${cardio >= mentioned.cardioTarget && strength >= mentioned.strengthTarget ? 'YES' : 'NOT YET'}
-All-time total workouts: ${allTime}${funFact ? `\nFun fact: ${funFact}` : ''}`
+All-time total workouts: ${allTime}${mentioned.funFact ? `\nFun fact: ${mentioned.funFact}` : ''}`
       } catch {
         await sql2.end().catch(() => {})
       }
