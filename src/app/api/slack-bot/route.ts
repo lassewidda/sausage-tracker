@@ -30,13 +30,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true })
   }
 
-  // Handle app_mention events and DMs
+  // Handle app_mention events, DMs, and thread replies
   // Await fully before responding (Vercel kills functions after response)
   // Slack may retry if we take >3s, but we ignore retries above
-  const eventType = body.event?.type
-  if (eventType === 'app_mention' || (eventType === 'message' && body.event?.channel_type === 'im' && !body.event?.bot_id)) {
+  const event = body.event
+  const eventType = event?.type
+  const isAppMention = eventType === 'app_mention'
+  const isDM = eventType === 'message' && event?.channel_type === 'im' && !event?.bot_id
+  const isThreadReply = eventType === 'message' && event?.thread_ts && !event?.bot_id && event?.channel_type !== 'im'
+
+  if (isAppMention || isDM || isThreadReply) {
     try {
-      await handleMention(body.event)
+      await handleMention(event)
     } catch (err) {
       console.error('Bot mention error:', err)
     }
