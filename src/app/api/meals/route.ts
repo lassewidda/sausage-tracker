@@ -152,28 +152,26 @@ export async function POST(request: Request): Promise<NextResponse> {
         }
       } catch { /* silent */ }
 
-      // Check if this workout just completed the weekly challenge
-      try {
-        const weekKey = getWeekKey()
-        const view = await getChallengeView(weekKey)
-        if (view.challenge) {
-          const participant = view.participants.find(p => p.playerName === normalizedName.toLowerCase())
-          if (participant?.isComplete) {
-            // Only notify if they weren't complete before this workout
-            // (approximate: if exercise count equals the minimum exactly, they likely just completed it)
-            const ch = view.challenge
-            if (ch.exerciseRequirements) {
-              const typeCounts = participant.exerciseTypeCounts ?? {}
-              const justMet = Object.entries(ch.exerciseRequirements).some(
-                ([type, req]) => (typeCounts[type] ?? 0) === (req as number) && type === exerciseType
-              )
-              if (justMet) {
-                sendSlackChannel(`🏆 ${normalizedName.toUpperCase()} completed the weekly challenge!`).catch(() => {})
-              }
-            }
-          }
-        }
-      } catch { /* silent */ }
+      // Weekly challenge completion channel notification — disabled for now
+      // try {
+      //   const weekKey = getWeekKey()
+      //   const view = await getChallengeView(weekKey)
+      //   if (view.challenge) {
+      //     const participant = view.participants.find(p => p.playerName === normalizedName.toLowerCase())
+      //     if (participant?.isComplete) {
+      //       const ch = view.challenge
+      //       if (ch.exerciseRequirements) {
+      //         const typeCounts = participant.exerciseTypeCounts ?? {}
+      //         const justMet = Object.entries(ch.exerciseRequirements).some(
+      //           ([type, req]) => (typeCounts[type] ?? 0) === (req as number) && type === exerciseType
+      //         )
+      //         if (justMet) {
+      //           sendSlackChannel(`🏆 ${normalizedName.toUpperCase()} completed the weekly challenge!`).catch(() => {})
+      //         }
+      //       }
+      //     }
+      //   }
+      // } catch { /* silent */ }
 
       // Check for milestone DMs (non-blocking, sends at most one DM) — skip on first workout
       if (!isFirstWorkout) {
