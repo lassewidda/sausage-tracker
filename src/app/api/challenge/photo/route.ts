@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || ''
     const baseUrl = host ? `https://${host}` : ''
     const thumbUrl = baseUrl
-      ? `${baseUrl}/_next/image?url=${encodeURIComponent(imageUrl)}&w=640&q=75`
+      ? `${baseUrl}/_next/image?url=${encodeURIComponent(imageUrl)}&w=320&q=75`
       : imageUrl
     sendSlackChannelWithImage(
       `📸 ${playerName.toUpperCase()} found "${bingoItem}" for the weekly challenge!`,
