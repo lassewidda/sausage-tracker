@@ -116,6 +116,48 @@ All-time total workouts: ${allTimeTotal}`
     await sql.end()
   }
 
+  // Look up mentioned player in the question
+  let mentionedPlayerContext = ''
+  try {
+    const allGoals = await getAllPlayerGoals()
+    const questionLower = question.toLowerCase()
+    // Sort by name length descending so "johan ejermark" matches before "johan"
+    const sortedPlayers = [...allGoals].sort((a, b) => b.playerName.length - a.playerName.length)
+    const mentioned = sortedPlayers.find(g => questionLower.includes(g.playerName.toLowerCase()))
+
+    if (mentioned) {
+      const sql2 = getDb()
+      try {
+        const weekKey = getWeekKey()
+        const [weekStats, allTimeStats] = await Promise.all([
+          sql2`
+            SELECT
+              COUNT(*) FILTER (WHERE exercise_type = 'cardio')::int AS cardio,
+              COUNT(*) FILTER (WHERE exercise_type = 'strength')::int AS strength,
+              COUNT(*)::int AS total
+            FROM meals WHERE player_name = ${mentioned.playerName} AND week_key = ${weekKey}
+          `,
+          sql2`SELECT COUNT(*)::int AS total FROM meals WHERE player_name = ${mentioned.playerName}`,
+        ])
+        await sql2.end()
+
+        const cardio = weekStats[0]?.cardio as number ?? 0
+        const strength = weekStats[0]?.strength as number ?? 0
+        const total = weekStats[0]?.total as number ?? 0
+        const allTime = allTimeStats[0]?.total as number ?? 0
+
+        mentionedPlayerContext = `
+ABOUT THE MENTIONED PLAYER (${mentioned.playerName.toUpperCase()}):
+Weekly goal: ${mentioned.cardioTarget} cardio + ${mentioned.strengthTarget} strength sessions
+This week: ${cardio} cardio, ${strength} strength (${total} total)
+Goal met this week: ${cardio >= mentioned.cardioTarget && strength >= mentioned.strengthTarget ? 'YES' : 'NOT YET'}
+All-time total workouts: ${allTime}`
+      } catch {
+        await sql2.end().catch(() => {})
+      }
+    }
+  } catch { /* silent */ }
+
   // Get total participant count
   let totalPlayers = 0
   try {
@@ -178,7 +220,7 @@ CHALLENGE PLAYER TO BATTLE:
 - They get a Slack DM notification with a direct link
 - Or create an "OPEN CHALLENGE" for anyone to join
 ${playerContext ? `\nABOUT THE PERSON ASKING:\n${playerContext}` : ''}
-
+${mentionedPlayerContext}
 CONTEXT:
 - All participants work at EliteProspects.com, the world's biggest ice hockey database
 - Feel free to use hockey analogies and references when it fits naturally (e.g. "hat trick" for 3 workouts, "power play" for being ahead of pace, "penalty box" for missing a day). Bonus points for old-school hockey references — think 70s/80s mustaches, bench-clearing brawls, wooden sticks, no helmets, Slap Shot vibes — keep it humorous
@@ -189,6 +231,7 @@ RESPONSE RULES:
 - If someone asks "how does X work" for a complex feature like battles, you can go up to 4-5 sentences
 - Be friendly and casual
 - If they ask about their progress, reference their actual stats
+- If they ask about another player ("who is X", "how is X doing"), use the MENTIONED PLAYER data to describe that person's goals and progress in a fun way
 - If you don't know something specific, say so honestly — and point them to Lars
 - Do NOT use markdown formatting — just plain text
 - Use 1 emoji max per response`
