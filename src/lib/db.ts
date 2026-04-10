@@ -2080,10 +2080,10 @@ export async function getChallengeView(weekKey: string): Promise<ChallengeView> 
   `
   const photos = photoRows.map(rowToChallengePhoto)
 
-  // Get exercise counts from meals for this week (total + per-type)
+  // Get exercise counts from meals for this week (total + per-type, excluding photos)
   const exerciseRows = await sql`
     SELECT player_name, COUNT(*)::int AS exercise_count
-    FROM meals WHERE week_key = ${weekKey}
+    FROM meals WHERE week_key = ${weekKey} AND (exercise_type IS NULL OR exercise_type != 'photo')
     GROUP BY player_name
   `
 
