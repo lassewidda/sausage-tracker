@@ -51,16 +51,11 @@ export async function POST(req: NextRequest) {
     })
   } catch { /* ignore if duplicate */ }
 
-  // Notify #powerup channel (use optimized thumbnail for Slack)
+  // Notify #powerup channel
   try {
-    const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || ''
-    const baseUrl = host ? `https://${host}` : ''
-    const thumbUrl = baseUrl
-      ? `${baseUrl}/_next/image?url=${encodeURIComponent(imageUrl)}&w=320&q=75`
-      : imageUrl
     sendSlackChannelWithImage(
       `📸 ${playerName.toUpperCase()} found "${bingoItem}" for the weekly challenge!`,
-      thumbUrl,
+      imageUrl,
       `${playerName} - ${bingoItem}`
     ).catch(() => {})
 
