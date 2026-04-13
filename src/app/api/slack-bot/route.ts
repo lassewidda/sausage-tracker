@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getPlayerGoal, getWeekKey, getGoalStreaks, getAllPlayerGoals } from '@/lib/db'
+import { getPlayerGoal, getWeekKey, getGoalStreaks, getAllPlayerGoals, getLeaderboard } from '@/lib/db'
 import { sendSlackReply } from '@/lib/slack'
 import Anthropic from '@anthropic-ai/sdk'
 import postgres from 'postgres'
@@ -208,6 +208,26 @@ All-time total workouts: ${allTime}${mentioned.funFact ? `\nFun fact: ${mentione
     totalPlayers = goals.filter(g => g.cardioTarget > 0 || g.strengthTarget > 0).length
   } catch { /* silent */ }
 
+  // Get leaderboard for standings context
+  let standingsContext = ''
+  try {
+    const leaderboard = await getLeaderboard()
+    if (leaderboard.allTime.length > 0) {
+      const lines = leaderboard.allTime.map(e =>
+        `#${e.rank} ${e.playerName.toUpperCase()} — ${e.totalItems} workouts (${e.cardioCount ?? 0} cardio, ${e.strengthCount ?? 0} strength)${e.goalWeeks ? `, ${e.goalWeeks} weekly goals hit` : ''}`
+      )
+      standingsContext = `\nCURRENT STANDINGS (all-time):\n${lines.join('\n')}`
+
+      // Add this-week standings
+      if (leaderboard.thisWeek.length > 0) {
+        const weekLines = leaderboard.thisWeek.map(e =>
+          `#${e.rank} ${e.playerName.toUpperCase()} — ${e.totalItems} workouts this week`
+        )
+        standingsContext += `\n\nTHIS WEEK'S STANDINGS:\n${weekLines.join('\n')}`
+      }
+    }
+  } catch { /* silent */ }
+
   const challengeStarted = Date.now() >= new Date('2026-04-13T00:00:00').getTime()
 
   const systemPrompt = `You are Puck, a friendly and knowledgeable bot for the PowerUp workplace exercise challenge. Answer questions helpfully and concisely.
@@ -266,7 +286,8 @@ CHALLENGE PLAYER TO BATTLE:
 - They get a Slack DM notification with a direct link
 - Or create an "OPEN CHALLENGE" for anyone to join
 ${playerContext ? `\nABOUT THE PERSON ASKING:\n${playerContext}` : ''}
-${mentionedPlayerContext}
+${mentionedPlayerContext}${standingsContext}
+
 RECENT APP UPDATES (from git history):
 ${CHANGELOG}
 
@@ -280,6 +301,7 @@ RESPONSE RULES:
 - If someone asks "how does X work" for a complex feature like battles, you can go up to 4-5 sentences
 - Be friendly and casual
 - If they ask about their progress, reference their actual stats
+- If someone asks about the highscore, leaderboard, or standings, use the CURRENT STANDINGS data. Personalize it — mention their rank, how close they are to the person above them, and motivate them to climb (e.g. "only 2 more workouts to overtake Johan in 5th!")
 - If they ask about another player ("who is X", "how is X doing"), use the MENTIONED PLAYER data to describe that person's goals and progress in a fun way. If a fun fact is available, weave it into the response naturally (e.g. if they're a former hockey goalie, make a save joke)
 - If someone asks "what's new", "what changed", or about recent updates, summarize the RECENT APP UPDATES in a user-friendly way
 - If you don't know something specific, say so honestly — and point them to Lars
