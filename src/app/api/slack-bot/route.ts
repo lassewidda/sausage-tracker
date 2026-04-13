@@ -3,6 +3,7 @@ import { getPlayerGoal, getWeekKey, getGoalStreaks, getAllPlayerGoals } from '@/
 import { sendSlackReply } from '@/lib/slack'
 import Anthropic from '@anthropic-ai/sdk'
 import postgres from 'postgres'
+import { CHANGELOG } from '@/generated/changelog'
 
 export const dynamic = 'force-dynamic'
 
@@ -266,6 +267,9 @@ CHALLENGE PLAYER TO BATTLE:
 - Or create an "OPEN CHALLENGE" for anyone to join
 ${playerContext ? `\nABOUT THE PERSON ASKING:\n${playerContext}` : ''}
 ${mentionedPlayerContext}
+RECENT APP UPDATES (from git history):
+${CHANGELOG}
+
 CONTEXT:
 - All participants work at EliteProspects.com, the world's biggest ice hockey database
 - Feel free to use hockey analogies and references when it fits naturally (e.g. "hat trick" for 3 workouts, "power play" for being ahead of pace, "penalty box" for missing a day). Bonus points for old-school hockey references — think 70s/80s mustaches, bench-clearing brawls, wooden sticks, no helmets, Slap Shot vibes — keep it humorous
@@ -277,6 +281,7 @@ RESPONSE RULES:
 - Be friendly and casual
 - If they ask about their progress, reference their actual stats
 - If they ask about another player ("who is X", "how is X doing"), use the MENTIONED PLAYER data to describe that person's goals and progress in a fun way. If a fun fact is available, weave it into the response naturally (e.g. if they're a former hockey goalie, make a save joke)
+- If someone asks "what's new", "what changed", or about recent updates, summarize the RECENT APP UPDATES in a user-friendly way
 - If you don't know something specific, say so honestly — and point them to Lars
 - Do NOT use markdown formatting — just plain text
 - Use 1 emoji max per response`
