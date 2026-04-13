@@ -501,11 +501,12 @@ export function BattleLobby() {
 
       {/* Create challenge */}
       <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', width: '100%', maxWidth: '400px' }}>
           <button
             className="amiga-btn amiga-btn--primary amiga-btn--large"
             onClick={() => createChallenge()}
             disabled={loading}
+            style={{ flex: 1, minWidth: 0 }}
           >
             OPEN CHALLENGE
           </button>
@@ -513,7 +514,7 @@ export function BattleLobby() {
             className="amiga-btn amiga-btn--large"
             onClick={openOpponentPicker}
             disabled={loading}
-            style={{ background: '#0a0a0a', color: 'var(--crt-amber)', border: '1px solid var(--crt-amber)' }}
+            style={{ flex: 1, minWidth: 0, background: '#0a0a0a', color: 'var(--crt-amber)', border: '1px solid var(--crt-amber)' }}
           >
             ⚔️ CHALLENGE PLAYER
           </button>

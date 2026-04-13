@@ -128,6 +128,17 @@ export async function deleteMeal(id: string, playerName: string): Promise<Meal |
   return rows.length > 0 ? rowToMeal(rows[0]) : null
 }
 
+export async function updateMealDescription(id: string, playerName: string, description: string): Promise<Meal | null> {
+  const sql = getDb()
+  const rows = await sql`
+    UPDATE meals SET ai_description = ${description}
+    WHERE id = ${id} AND player_name = ${playerName}
+    RETURNING id, image_url, blob_path, item_count, ai_suggested_count, ai_description, estimated_grams, created_at, week_key, player_name, exercise_type
+  `
+  await sql.end()
+  return rows.length > 0 ? rowToMeal(rows[0]) : null
+}
+
 export async function deleteMealByBlobPath(blobPath: string): Promise<void> {
   const sql = getDb()
   await sql`DELETE FROM meals WHERE blob_path = ${blobPath}`
