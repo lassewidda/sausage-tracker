@@ -33,7 +33,7 @@ export async function sendSlackChannel(message: string): Promise<{ ok: boolean; 
 }
 
 export async function sendSlackReply(channel: string, threadTs: string, message: string): Promise<{ ok: boolean; error?: string }> {
-  return postSlack(channel, { text: message, thread_ts: threadTs })
+  return postSlack(channel, { text: message, thread_ts: threadTs, unfurl_links: false, unfurl_media: false })
 }
 
 export async function sendSlackChannelWithImage(message: string, imageUrl: string, altText: string): Promise<{ ok: boolean; error?: string }> {
