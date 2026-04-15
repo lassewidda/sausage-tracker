@@ -84,14 +84,11 @@ export async function sendWorkoutToThread(playerName: string, description: strin
     // Pick emoji based on exercise type
     const emoji = exerciseType === 'strength' ? '🏋️' : '🏃'
 
-    // Shorten description to ~120 chars for the thread reply
-    const shortDesc = description && description.length > 120 ? description.slice(0, 117) + '...' : description
-
     // Format time in Stockholm timezone
     const time = new Date(createdAt || Date.now()).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Stockholm' })
 
     const feedUrl = `https://powerup.eliteprospects.com/player/${encodeURIComponent(playerName.toLowerCase())}`
-    const message = `${emoji} ${time} <${feedUrl}|${playerName.toUpperCase()}> — ${shortDesc || exerciseType} (${exerciseType})`
+    const message = `${emoji} ${time} <${feedUrl}|${playerName.toUpperCase()}> — ${description || exerciseType} (${exerciseType})`
 
     // Use blocks to include workout photo thumbnail
     const thumbUrl = imageUrl ? `${imageUrl}?w=320&q=75` : null
