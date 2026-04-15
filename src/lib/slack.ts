@@ -32,8 +32,8 @@ export async function sendSlackChannel(message: string): Promise<{ ok: boolean; 
   return postSlack(POWERUP_CHANNEL, { text: message })
 }
 
-export async function sendSlackReply(channel: string, threadTs: string, message: string): Promise<{ ok: boolean; error?: string }> {
-  return postSlack(channel, { text: message, thread_ts: threadTs, unfurl_links: false, unfurl_media: false })
+export async function sendSlackReply(channel: string, threadTs: string, message: string, extra?: Record<string, unknown>): Promise<{ ok: boolean; error?: string }> {
+  return postSlack(channel, { text: message, thread_ts: threadTs, unfurl_links: false, unfurl_media: false, ...extra })
 }
 
 export async function sendSlackChannelWithImage(message: string, imageUrl: string, altText: string): Promise<{ ok: boolean; error?: string }> {
@@ -53,7 +53,7 @@ export async function sendSlackChannelWithImage(message: string, imageUrl: strin
   })
 }
 
-export async function sendWorkoutToThread(playerName: string, description: string, exerciseType: string, mealId: string, createdAt?: string): Promise<void> {
+export async function sendWorkoutToThread(playerName: string, description: string, exerciseType: string, mealId: string, createdAt?: string, imageUrl?: string): Promise<void> {
   const postgres = (await import('postgres')).default
   const sql = postgres(process.env.DATABASE_URL!, { ssl: { rejectUnauthorized: false }, idle_timeout: 20, connect_timeout: 10 })
 
@@ -93,7 +93,16 @@ export async function sendWorkoutToThread(playerName: string, description: strin
     const feedUrl = `https://powerup.eliteprospects.com/player/${encodeURIComponent(playerName.toLowerCase())}`
     const message = `${emoji} ${time} <${feedUrl}|${playerName.toUpperCase()}> — ${shortDesc || exerciseType} (${exerciseType})`
 
-    await sendSlackReply(POWERUP_CHANNEL, threadTs, message)
+    // Use blocks to include workout photo thumbnail
+    const thumbUrl = imageUrl ? `${imageUrl}?w=320&q=75` : null
+    const blocks: Record<string, unknown>[] = [
+      { type: 'section', text: { type: 'mrkdwn', text: message } },
+    ]
+    if (thumbUrl) {
+      blocks.push({ type: 'image', image_url: thumbUrl, alt_text: `${playerName} workout` })
+    }
+
+    await sendSlackReply(POWERUP_CHANNEL, threadTs, message, { blocks })
   } catch (err) {
     console.error('Workout thread error:', err)
   } finally {
