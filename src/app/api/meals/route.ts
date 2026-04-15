@@ -181,7 +181,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     // Post workout to daily Slack thread (non-blocking)
     if (normalizedName !== 'Anonymous' && exerciseType && exerciseType !== 'photo') {
-      sendWorkoutToThread(normalizedName, finalDescription || '', exerciseType, meal.id).catch(() => {})
+      sendWorkoutToThread(normalizedName, finalDescription || '', exerciseType, meal.id, meal.createdAt).catch(() => {})
     }
 
     return NextResponse.json({ ...meal, itemDrop }, { status: 201 })

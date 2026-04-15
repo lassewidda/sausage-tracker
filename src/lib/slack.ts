@@ -53,7 +53,7 @@ export async function sendSlackChannelWithImage(message: string, imageUrl: strin
   })
 }
 
-export async function sendWorkoutToThread(playerName: string, description: string, exerciseType: string, mealId: string): Promise<void> {
+export async function sendWorkoutToThread(playerName: string, description: string, exerciseType: string, mealId: string, createdAt?: string): Promise<void> {
   const postgres = (await import('postgres')).default
   const sql = postgres(process.env.DATABASE_URL!, { ssl: { rejectUnauthorized: false }, idle_timeout: 20, connect_timeout: 10 })
 
@@ -87,8 +87,11 @@ export async function sendWorkoutToThread(playerName: string, description: strin
     // Shorten description to ~120 chars for the thread reply
     const shortDesc = description && description.length > 120 ? description.slice(0, 117) + '...' : description
 
+    // Format time in Stockholm timezone
+    const time = new Date(createdAt || Date.now()).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Stockholm' })
+
     const feedUrl = `https://powerup.eliteprospects.com/player/${encodeURIComponent(playerName.toLowerCase())}`
-    const message = `${emoji} <${feedUrl}|${playerName.toUpperCase()}> — ${shortDesc || exerciseType} (${exerciseType})`
+    const message = `${emoji} ${time} <${feedUrl}|${playerName.toUpperCase()}> — ${shortDesc || exerciseType} (${exerciseType})`
 
     await sendSlackReply(POWERUP_CHANNEL, threadTs, message)
   } catch (err) {
