@@ -45,6 +45,9 @@ export const exerciseStrings: ThemeStrings = {
     'One upload per workout session — no double-dipping',
     'Rest days are important but they don\'t count as workouts',
     'Be honest — fake gains are worse than no gains',
+    'Gentlemen\'s rule: intentional exercise sessions count',
+    'Rule of thumb: if you\'d wear exercise clothes, it counts',
+    'Aim for 20+ min — short walks to the store don\'t cut it',
   ],
 
   // Analysis

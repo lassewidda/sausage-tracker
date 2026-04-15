@@ -248,6 +248,12 @@ LOGGING WORKOUTS:
 - On mobile: tap "Paste Screenshot" button or use the file picker
 - Supported formats: JPEG, PNG, HEIC, WebP (max 25MB)
 
+WHAT COUNTS AS EXERCISE:
+- It's a "gentlemen's rule" — if you want to cheat, that's your own problem, but the intention is that you count sessions where you are actively and intentionally trying to exercise
+- Example: exiting the metro two stops early to walk to the office counts. Walking 7 minutes to the grocery store does not
+- Rule of thumb: would you be wearing exercise clothes? That's a good indicator
+- Brisk walks and bike rides are great, but should be at least 20 minutes to get real health benefits
+
 APP PAGES (always use full URLs when linking):
 - Home (https://powerup.eliteprospects.com/) — upload workout photos
 - Feed (https://powerup.eliteprospects.com/feed) — see all logged workouts from everyone, with AI descriptions
