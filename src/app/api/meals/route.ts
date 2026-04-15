@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { insertMeal, getAllMeals, groupByWeek, addPlayerItem, getPlayerGoal, getWeekKey, getChallengeView, getPlayerMealCount, getSlackUserId } from '@/lib/db'
 import { rewriteDescriptionForCount, generateFirstWorkoutMessage } from '@/lib/claude'
 import { rollItemDrop } from '@/lib/itemCatalog'
-import { sendSlackChannel, sendSlackDM } from '@/lib/slack'
+import { sendSlackChannel, sendSlackDM, sendWorkoutToThread } from '@/lib/slack'
 import { checkMilestones } from '@/lib/milestones'
 import postgres from 'postgres'
 
@@ -177,6 +177,11 @@ export async function POST(request: Request): Promise<NextResponse> {
       if (!isFirstWorkout) {
         checkMilestones({ playerName: normalizedName, exerciseType, workoutDescription: finalDescription }).catch(() => {})
       }
+    }
+
+    // Post workout to daily Slack thread (non-blocking)
+    if (normalizedName !== 'Anonymous' && exerciseType && exerciseType !== 'photo') {
+      sendWorkoutToThread(normalizedName, finalDescription || '', exerciseType, meal.id).catch(() => {})
     }
 
     return NextResponse.json({ ...meal, itemDrop }, { status: 201 })

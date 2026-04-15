@@ -396,7 +396,7 @@ Write a short Slack channel post (4-6 lines max). Requirements:
 - Highlight standout achievements from the highlights
 - If workout descriptions are provided, weave in specific details about what people are doing (e.g. "Emma crushed a 10km trail run" or "Marcus hit the gym for deadlifts") — this makes the post feel alive and personal
 - Gently encourage those who haven't logged yet (without shaming)
-- If it's Monday: energize for the new week. If Wednesday: mid-week push. If Friday: last chance to hit goals before week ends
+- The challenge week runs Monday to Sunday. If it's Monday: energize for the new week (7 days ahead). If Wednesday: mid-week push (5 days left including today). If Friday: weekend push — remind people that Saturday and Sunday still count, 3 days left to hit goals
 - Keep it casual and fun, plain text only (no markdown)`
 
   const message = await client.messages.create({
