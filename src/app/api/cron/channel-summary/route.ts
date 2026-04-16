@@ -110,7 +110,7 @@ export async function GET(request: Request) {
 
     // Determine day label
     const dayOfWeek = new Date().getDay()
-    const dayLabel = dayOfWeek === 1 ? 'Monday' : dayOfWeek === 3 ? 'Wednesday' : dayOfWeek === 5 ? 'Friday' : 'mid-week'
+    const dayLabel = dayOfWeek === 1 ? 'Monday' : dayOfWeek === 2 ? 'Tuesday' : dayOfWeek === 3 ? 'Wednesday' : dayOfWeek === 5 ? 'Friday' : 'mid-week'
 
     // On Fridays, identify players who already completed their goal (early completers)
     const earlyCompleters = dayLabel === 'Friday'
@@ -134,9 +134,14 @@ export async function GET(request: Request) {
       recentWorkouts,
       earlyCompleters,
       challengeInfo,
-      announcements: weekKey === '2026-W17' && dayLabel === 'Monday'
-        ? ['The Battle Arena is NOW OPEN! Challenge your colleagues to Pokemon-style card battles using hero cards earned from your workouts. Create a challenge at https://powerup.eliteprospects.com/battle — may the strongest cards win!']
-        : [],
+      announcements: (() => {
+        const a: string[] = []
+        if (weekKey === '2026-W17' && dayLabel === 'Monday') a.push('The Battle Arena is NOW OPEN! Challenge your colleagues to Pokemon-style card battles using hero cards earned from your workouts. Create a challenge at https://powerup.eliteprospects.com/battle — may the strongest cards win!')
+        // TODO: Remove Tuesday from vercel.json cron schedule after April 28
+        const today = new Date().toISOString().slice(0, 10)
+        if (today === '2026-04-28') a.push('The Pro Shop just dropped MERCH! Golden Dumbbell Trophy, "I Survived Leg Day" T-Shirt, "Scouted by EP" Gym Towel, Strava Crown Pin, and more. Check out the full collection at https://powerup.eliteprospects.com/shop — flex your gains off the field too!')
+        return a
+      })(),
     })
 
     await sendSlackChannel(message)
