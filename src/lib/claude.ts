@@ -369,6 +369,9 @@ export async function generateChannelSummary(data: {
   goalCompletions: number
   topStreak: { player: string; weeks: number } | null
   recentWorkouts?: string[]
+  earlyCompleters?: string[]
+  challengeInfo?: { bingoItems: string[]; exerciseMinimum: number } | null
+  announcements?: string[]
 }): Promise<string> {
   const client = getClient()
 
@@ -380,6 +383,14 @@ export async function generateChannelSummary(data: {
     ? `\nRecent workout snapshots from participants:\n${data.recentWorkouts.map(w => `- ${w}`).join('\n')}`
     : ''
 
+  const challengeSection = data.challengeInfo
+    ? `\nWEEKLY CHALLENGE (Photo Bingo):
+- This week's bingo items to photograph: ${data.challengeInfo.bingoItems.join(', ')}
+- Minimum ${data.challengeInfo.exerciseMinimum} workouts required to complete the challenge
+- Players must log their workouts AND photograph the bingo items to complete it
+- Challenge page: https://powerup.eliteprospects.com/challenge`
+    : ''
+
   const prompt = `You are a motivational fitness coach posting a ${data.dayLabel} update to a workplace Slack channel for the PowerUp exercise challenge. All participants work at EliteProspects.com (ice hockey database), so hockey references and analogies are welcome when they fit naturally — especially old-school hockey humor (70s/80s era, Slap Shot vibes, wooden sticks, mustaches, bench-clearing brawls).
 
 Stats this week:
@@ -388,26 +399,30 @@ Stats this week:
 - ${data.goalCompletions} players have already completed their weekly goal
 ${data.topStreak ? `- Longest streak: ${data.topStreak.player} with ${data.topStreak.weeks} consecutive goal weeks` : ''}
 
-${highlights}${workoutColor}
+${highlights}${workoutColor}${challengeSection}
 
-Write a short Slack channel post (4-6 lines max). Requirements:
+Write a short Slack channel post (${data.challengeInfo && data.dayLabel === 'Monday' ? '6-10' : '4-6'} lines max). Requirements:
 - Start with a relevant emoji
 - Be motivational and positive — but do NOT start with a label like "Monday Motivation:", "Mid-week Update:", or the day name. Jump straight into the content about the players and their achievements.
 - Highlight standout achievements from the highlights
 - If workout descriptions are provided, weave in specific details about what people are doing (e.g. "Emma crushed a 10km trail run" or "Marcus hit the gym for deadlifts") — this makes the post feel alive and personal
 - Gently encourage those who haven't logged yet (without shaming)
-- The challenge week runs Monday to Sunday. If it's Monday: energize for the new week (7 days ahead). If Wednesday: mid-week push (5 days left including today). If Friday: weekend push — remind people that Saturday and Sunday still count, 3 days left to hit goals
+- The challenge week runs Monday to Sunday. If it's Monday: energize for the new week (7 days ahead)${data.challengeInfo ? '. IMPORTANT: introduce this week\'s Photo Bingo challenge — list the bingo items and explain they need to photograph them plus log at least ' + data.challengeInfo.exerciseMinimum + ' workouts to complete it. Link to https://powerup.eliteprospects.com/challenge' : ''}. If Wednesday: mid-week push (5 days left including today). If Friday: weekend push — remind people that Saturday and Sunday still count, 3 days left to hit goals
+${data.earlyCompleters && data.earlyCompleters.length > 0 ? `- These players already completed their weekly goal with days to spare: ${data.earlyCompleters.join(', ')}. Give them a shout-out and playfully suggest they could raise the bar — maybe set a tougher weekly goal next week since they're clearly crushing it` : ''}
+${data.announcements && data.announcements.length > 0 ? data.announcements.map(a => `- ANNOUNCE: ${a}`).join('\n') : ''}
+- When including URLs, copy them EXACTLY as provided — never modify or rephrase URLs
 - Keep it casual and fun, plain text only (no markdown)`
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 300,
+    max_tokens: data.challengeInfo && data.dayLabel === 'Monday' ? 500 : 300,
     messages: [{ role: 'user', content: prompt }],
   })
 
   const block = message.content.find((b) => b.type === 'text')
   if (!block || block.type !== 'text') return `💪 PowerUp ${data.dayLabel} update: ${data.totalActivities} workouts logged by ${data.activePlayers} players this week!`
-  return block.text.trim()
+  // Fix any mangled powerup URLs (Haiku sometimes garbles long URLs)
+  return block.text.trim().replace(/https?:\/\/powerup\.[a-z]+prospects\.com/g, 'https://powerup.eliteprospects.com')
 }
 
 export async function generateWeeklyRecapDM(data: {

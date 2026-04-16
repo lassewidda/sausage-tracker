@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getLeaderboard, getAllPlayerGoals, getGoalStreaks, getWeekKey } from '@/lib/db'
+import { getLeaderboard, getAllPlayerGoals, getGoalStreaks, getWeekKey, getChallengeView } from '@/lib/db'
 import { generateChannelSummary } from '@/lib/claude'
 import { sendSlackChannel } from '@/lib/slack'
 import postgres from 'postgres'
@@ -96,9 +96,32 @@ export async function GET(request: Request) {
         .slice(0, 6)
     } catch { /* silent */ }
 
+    // Fetch weekly challenge if one exists
+    let challengeInfo: { bingoItems: string[]; exerciseMinimum: number } | null = null
+    try {
+      const view = await getChallengeView(weekKey)
+      if (view.challenge) {
+        challengeInfo = {
+          bingoItems: view.challenge.bingoItems,
+          exerciseMinimum: view.challenge.exerciseMinimum,
+        }
+      }
+    } catch { /* silent */ }
+
     // Determine day label
     const dayOfWeek = new Date().getDay()
     const dayLabel = dayOfWeek === 1 ? 'Monday' : dayOfWeek === 3 ? 'Wednesday' : dayOfWeek === 5 ? 'Friday' : 'mid-week'
+
+    // On Fridays, identify players who already completed their goal (early completers)
+    const earlyCompleters = dayLabel === 'Friday'
+      ? thisWeek
+          .filter(e => {
+            const goal = allGoals.find(g => g.playerName === e.playerName)
+            if (!goal) return false
+            return (e.cardioCount ?? 0) >= goal.cardioTarget && (e.strengthCount ?? 0) >= goal.strengthTarget
+          })
+          .map(e => e.playerName.toUpperCase())
+      : []
 
     const message = await generateChannelSummary({
       dayLabel,
@@ -109,6 +132,11 @@ export async function GET(request: Request) {
       goalCompletions,
       topStreak: topStreak ? { player: topStreak.playerName, weeks: topStreak.totalGoalWeeks } : null,
       recentWorkouts,
+      earlyCompleters,
+      challengeInfo,
+      announcements: weekKey === '2026-W17' && dayLabel === 'Monday'
+        ? ['The Battle Arena is NOW OPEN! Challenge your colleagues to Pokemon-style card battles using hero cards earned from your workouts. Create a challenge at https://powerup.eliteprospects.com/battle — may the strongest cards win!']
+        : [],
     })
 
     await sendSlackChannel(message)
