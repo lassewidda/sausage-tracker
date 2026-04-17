@@ -139,6 +139,7 @@ export async function GET(request: Request) {
         if (weekKey === '2026-W17' && dayLabel === 'Monday') a.push('The Battle Arena is NOW OPEN! Challenge your colleagues to Pokemon-style card battles using hero cards earned from your workouts. Create a challenge at https://powerup.eliteprospects.com/battle — may the strongest cards win!')
         // TODO: Remove Tuesday from vercel.json cron schedule after April 28
         const today = new Date().toISOString().slice(0, 10)
+        if (today === '2026-04-17') a.push("NEW: Puck's Weekly Challenge starts Monday! Clean your camera lenses — you're going to need them. More details dropping Monday at https://powerup.eliteprospects.com/challenge")
         if (today === '2026-04-28') a.push('The Pro Shop just dropped MERCH! Golden Dumbbell Trophy, "I Survived Leg Day" T-Shirt, "Scouted by EP" Gym Towel, Strava Crown Pin, and more. Check out the full collection at https://powerup.eliteprospects.com/shop — flex your gains off the field too!')
         return a
       })(),

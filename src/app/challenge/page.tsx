@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef, useMemo } from 'react'
 import { upload } from '@vercel/blob/client'
 import { Window } from '@/components/amiga/Window'
 import { Button } from '@/components/amiga/Button'
@@ -84,6 +84,32 @@ export default function ChallengePage() {
   const [editingTeamName, setEditingTeamName] = useState(false)
   const [teamNameDraft, setTeamNameDraft] = useState('')
   const [teamNameSaving, setTeamNameSaving] = useState(false)
+  const [nextWeekHasChallenge, setNextWeekHasChallenge] = useState(false)
+  const [countdown, setCountdown] = useState('')
+
+  // Compute next Monday 00:00 Stockholm time for countdown
+  const nextMonday = useMemo(() => {
+    const now = new Date()
+    const day = now.getDay() // 0=Sun, 1=Mon, ...
+    const daysUntilMonday = day === 0 ? 1 : 8 - day
+    const target = new Date(now)
+    target.setDate(target.getDate() + daysUntilMonday)
+    // Set to midnight — we'll compare in Stockholm time
+    target.setHours(0, 0, 0, 0)
+    return target
+  }, [])
+
+  // Get ISO week key for a given date (client-side version of getWeekKey)
+  const getWeekKeyForDate = useCallback((date: Date) => {
+    const d = new Date(date)
+    d.setHours(0, 0, 0, 0)
+    d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7))
+    const week1 = new Date(d.getFullYear(), 0, 4)
+    const weekNum = Math.round(
+      ((d.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7
+    ) + 1
+    return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`
+  }, [])
 
   const fetchChallengeList = useCallback(async () => {
     try {
@@ -99,7 +125,8 @@ export default function ChallengePage() {
         fetch(`/api/challenge${weekParam}`),
         fetch('/api/challenge/leaderboard'),
       ])
-      if (viewRes.ok) setView(await viewRes.json())
+      const viewData = viewRes.ok ? await viewRes.json() : null
+      if (viewData) setView(viewData)
       if (lbRes.ok) {
         const lbData = await lbRes.json()
         if (Array.isArray(lbData)) {
@@ -111,12 +138,25 @@ export default function ChallengePage() {
           setGroupLeaderboard(lbData.groups ?? [])
         }
       }
+      // Check if next week has a challenge when current week doesn't
+      if (!selectedWeek && viewData && !viewData.challenge) {
+        try {
+          const nextWeekKey = getWeekKeyForDate(nextMonday)
+          const nextRes = await fetch(`/api/challenge?weekKey=${encodeURIComponent(nextWeekKey)}`)
+          if (nextRes.ok) {
+            const nextData = await nextRes.json()
+            setNextWeekHasChallenge(!!nextData.challenge)
+          }
+        } catch { /* silent */ }
+      } else {
+        setNextWeekHasChallenge(false)
+      }
     } catch {
       // silent
     } finally {
       setLoading(false)
     }
-  }, [selectedWeek])
+  }, [selectedWeek, getWeekKeyForDate, nextMonday])
 
   useEffect(() => {
     fetchChallengeList()
@@ -128,6 +168,38 @@ export default function ChallengePage() {
     const interval = setInterval(fetchData, 5000)
     return () => clearInterval(interval)
   }, [fetchData])
+
+  // Countdown timer for next week's challenge
+  useEffect(() => {
+    if (!nextWeekHasChallenge) return
+    const tick = () => {
+      // Target: next Monday 00:00 Stockholm time
+      // Get current Stockholm time
+      const nowStr = new Date().toLocaleString('en-US', { timeZone: 'Europe/Stockholm' })
+      const nowStockholm = new Date(nowStr)
+      // Build target Monday in Stockholm
+      const now = new Date()
+      const day = now.getDay()
+      const daysUntil = day === 0 ? 1 : 8 - day
+      const targetDate = new Date(now)
+      targetDate.setDate(targetDate.getDate() + daysUntil)
+      const targetStr = targetDate.toLocaleDateString('sv-SE', { timeZone: 'Europe/Stockholm' })
+      const targetStockholm = new Date(`${targetStr}T00:00:00`)
+      const diff = targetStockholm.getTime() - nowStockholm.getTime()
+      if (diff <= 0) {
+        setCountdown('NOW!')
+        return
+      }
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+      setCountdown(`${days}D ${String(hours).padStart(2, '0')}H ${String(minutes).padStart(2, '0')}M ${String(seconds).padStart(2, '0')}S`)
+    }
+    tick()
+    const interval = setInterval(tick, 1000)
+    return () => clearInterval(interval)
+  }, [nextWeekHasChallenge])
 
   // Check if current challenge is new (unseen) — only for current week tab
   useEffect(() => {
@@ -356,15 +428,49 @@ export default function ChallengePage() {
         </div>
       )}
 
-      <Window title={isCurrentWeek ? 'WEEKLY CHALLENGE' : `CHALLENGE — ${selectedWeek}`}>
+      <Window title={isCurrentWeek ? "PUCK'S CHALLENGE" : `CHALLENGE — ${selectedWeek}`}>
         {!challenge ? (
-          <div style={{ textAlign: 'center', padding: '24px', fontFamily: 'var(--font-pixel)', fontSize: '9px', color: 'var(--amiga-dark-grey)' }}>
-            {isCurrentWeek ? 'NO CHALLENGE SET FOR THIS WEEK.' : 'NO CHALLENGE WAS SET FOR THIS WEEK.'}
-          </div>
+          isCurrentWeek && nextWeekHasChallenge ? (
+            <div style={{ textAlign: 'center', padding: '32px 24px', fontFamily: 'var(--font-pixel)' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/puck.png"
+                alt="Puck"
+                style={{ width: '80px', height: '80px', imageRendering: 'pixelated', marginBottom: '16px' }}
+              />
+              <div style={{ fontSize: '12px', color: 'var(--crt-amber)', marginBottom: '8px', letterSpacing: '1px' }}>
+                PUCK&apos;S WEEKLY CHALLENGE
+              </div>
+              <div style={{ fontSize: '8px', color: 'var(--amiga-dark-grey)', marginBottom: '20px' }}>
+                A NEW CHALLENGE STARTS IN
+              </div>
+              <div style={{
+                fontSize: '16px',
+                color: '#FFD700',
+                letterSpacing: '2px',
+                textShadow: '0 0 8px rgba(255, 215, 0, 0.4)',
+              }}>
+                {countdown}
+              </div>
+              <div style={{ fontSize: '7px', color: 'var(--amiga-dark-grey)', marginTop: '16px' }}>
+                GET YOUR CAMERA READY 📸
+              </div>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '24px', fontFamily: 'var(--font-pixel)', fontSize: '9px', color: 'var(--amiga-dark-grey)' }}>
+              {isCurrentWeek ? 'NO CHALLENGE SET FOR THIS WEEK.' : 'NO CHALLENGE WAS SET FOR THIS WEEK.'}
+            </div>
+          )
         ) : (
           <div className="stack" style={{ gap: '12px' }}>
             {/* Challenge info */}
             <div style={{ textAlign: 'center', fontFamily: 'var(--font-pixel)' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/puck.png"
+                alt="Puck"
+                style={{ width: '48px', height: '48px', imageRendering: 'pixelated', marginBottom: '8px' }}
+              />
               <div style={{ fontSize: '11px', color: 'var(--crt-amber)', marginBottom: '4px' }}>
                 {challenge.weekKey}
               </div>
