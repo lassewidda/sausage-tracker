@@ -404,7 +404,7 @@ ${highlights}${workoutColor}${challengeSection}
 Write a short Slack channel post (${data.challengeInfo && data.dayLabel === 'Monday' ? '6-10' : '4-6'} lines max). Requirements:
 - Start with a relevant emoji
 - Be motivational and positive — but do NOT start with a label like "Monday Motivation:", "Mid-week Update:", or the day name. Jump straight into the content about the players and their achievements.
-- Highlight standout achievements from the highlights
+- The primary goal of the challenge is for each person to complete their own personal weekly goal — everyone who does is equally successful regardless of workout count. Celebrate goal completers as a group, not by singling out who logged the most
 - If workout descriptions are provided, weave in specific details about what people are doing (e.g. "Emma crushed a 10km trail run" or "Marcus hit the gym for deadlifts") — this makes the post feel alive and personal
 - Gently encourage those who haven't logged yet (without shaming)
 - The challenge week runs Monday to Sunday. If it's Monday: energize for the new week (7 days ahead)${data.challengeInfo ? '. IMPORTANT: introduce this week\'s Photo Bingo challenge — list the bingo items and explain they need to photograph them plus log at least ' + data.challengeInfo.exerciseMinimum + ' workouts to complete it. Link to https://powerup.eliteprospects.com/challenge' : ''}. If Wednesday: mid-week push (5 days left including today). If Friday: weekend push — remind people that Saturday and Sunday still count, 3 days left to hit goals

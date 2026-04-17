@@ -53,12 +53,6 @@ export async function GET(request: Request) {
     // Build highlights
     const highlights: string[] = []
 
-    // Players with most workouts this week
-    const sorted = [...thisWeek].sort((a, b) => b.totalItems - a.totalItems)
-    if (sorted.length > 0) {
-      highlights.push(`${sorted[0].playerName.toUpperCase()} leads with ${sorted[0].totalItems} workouts this week`)
-    }
-
     // Players who just completed their goal
     for (const entry of thisWeek) {
       const goal = allGoals.find(g => g.playerName === entry.playerName)
