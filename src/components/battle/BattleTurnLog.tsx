@@ -44,25 +44,25 @@ export function BattleTurnLog({ turns }: Props) {
           ) : turn.itemUsed ? (
             <>
               {' used '}
-              <span style={{ color: '#44DDFF' }}>{turn.itemUsed.replace(/_/g, ' ')}</span>
+              <span style={{ color: '#66EEFF' }}>{turn.itemUsed.replace(/_/g, ' ')}</span>
               {'! '}
-              <span style={{ color: '#88CCFF' }}>{turn.itemEffect}</span>
+              <span style={{ color: '#BBDDFF' }}>{turn.itemEffect}</span>
             </>
           ) : turn.isGuard ? (
             <>
-              <span style={{ color: '#4488FF' }}> raises their guard!</span>
+              <span style={{ color: '#66AAFF' }}> raises their guard!</span>
             </>
           ) : turn.isMiss ? (
             <>
               {' used '}
-              <span style={{ color: 'var(--amiga-orange)' }}>{turn.moveUsed}</span>
+              <span style={{ color: '#FFCC00' }}>{turn.moveUsed}</span>
               {' but '}
               <span style={{ color: '#FFDD00' }}>MISSED!</span>
             </>
           ) : (
             <>
               {' used '}
-              <span style={{ color: 'var(--amiga-orange)' }}>{turn.moveUsed}</span>
+              <span style={{ color: '#FFCC00' }}>{turn.moveUsed}</span>
               {'! '}
               <span style={{ color: turn.isCritical ? '#FF44FF' : '#FF4444' }}>{turn.damageDealt} dmg</span>
               {turn.isCritical && (
@@ -72,7 +72,7 @@ export function BattleTurnLog({ turns }: Props) {
                 <span style={{ color: '#44CC44' }}> (super effective!)</span>
               )}
               {turn.typeMultiplier < 1 && (
-                <span style={{ color: '#888' }}> (not very effective)</span>
+                <span style={{ color: '#BBBBBB' }}> (not very effective)</span>
               )}
             </>
           )}
