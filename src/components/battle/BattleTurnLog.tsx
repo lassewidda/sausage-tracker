@@ -27,6 +27,7 @@ export function BattleTurnLog({ turns }: Props) {
         fontSize: '8px',
         fontFamily: 'var(--font-pixel)',
         lineHeight: '2',
+        background: '#333333',
         overflowWrap: 'anywhere',
         wordBreak: 'break-word',
       }}
