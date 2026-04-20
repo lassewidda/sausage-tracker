@@ -14,12 +14,12 @@ interface LeaderboardProps {
 
 type SortKey = 'goals' | 'total' | 'cardio' | 'strength' | 'challenges'
 
-const SORT_OPTIONS: { key: SortKey; label: string; color: string }[] = [
-  { key: 'goals', label: '🎯 GOALS', color: '#44FF44' },
-  { key: 'total', label: 'TOTAL', color: 'var(--crt-amber)' },
-  { key: 'cardio', label: '🏃 CARDIO', color: '#FF4444' },
-  { key: 'strength', label: '💪 STRENGTH', color: '#4488FF' },
-  { key: 'challenges', label: '🏆 CHALLENGES', color: '#FFD700' },
+const SORT_OPTIONS: { key: SortKey; label: string; color: string; activeBg: string }[] = [
+  { key: 'goals', label: '🎯 GOALS', color: '#44FF44', activeBg: '#227722' },
+  { key: 'total', label: 'TOTAL', color: 'var(--crt-amber)', activeBg: '#885500' },
+  { key: 'cardio', label: '🏃 CARDIO', color: '#FF4444', activeBg: '#AA2222' },
+  { key: 'strength', label: '💪 STRENGTH', color: '#4488FF', activeBg: '#2255AA' },
+  { key: 'challenges', label: '🏆 CHALLENGES', color: '#FFD700', activeBg: '#887700' },
 ]
 
 const MEDALS = ['🥇', '🥈', '🥉']
@@ -70,8 +70,8 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
                   padding: '4px 8px',
                   cursor: 'pointer',
                   border: sortKey === opt.key ? `2px solid ${opt.color}` : '1px solid var(--bevel-shadow)',
-                  background: sortKey === opt.key ? opt.color : 'var(--amiga-black)',
-                  color: sortKey === opt.key ? 'var(--amiga-black)' : 'var(--amiga-grey)',
+                  background: sortKey === opt.key ? opt.activeBg : 'var(--amiga-black)',
+                  color: sortKey === opt.key ? '#FFFFFF' : 'var(--amiga-grey)',
                   textTransform: 'uppercase',
                 }}
               >
