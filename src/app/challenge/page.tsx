@@ -499,7 +499,7 @@ export default function ChallengePage() {
                 </div>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: `repeat(${Math.min(challenge.bingoItems.length, 4)}, 1fr)`,
+                  gridTemplateColumns: `repeat(auto-fill, minmax(140px, 1fr))`,
                   gap: '8px',
                 }}>
                   {challenge.bingoItems.map(item => {
@@ -754,7 +754,7 @@ export default function ChallengePage() {
                     </div>
                     <div style={{
                       display: 'grid',
-                      gridTemplateColumns: `repeat(${Math.min(challenge.bingoItems.length, 4)}, 1fr)`,
+                      gridTemplateColumns: `repeat(auto-fill, minmax(140px, 1fr))`,
                       gap: '8px',
                     }}>
                       {challenge.bingoItems.map(item => {
@@ -989,22 +989,21 @@ export default function ChallengePage() {
                   <ExerciseProgress participant={p} challenge={challenge} />
                 </div>
                 <div style={{
-                  display: 'flex',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
                   gap: '6px',
-                  flexWrap: 'wrap',
                 }}>
                   {challenge.bingoItems.map(item => {
                     const photo = p.photos.find(ph => ph.bingoItem === item)
                     return (
                       <div key={item} style={{
-                        width: '100px',
                         textAlign: 'center',
                       }}>
                         <div
                           onClick={photo ? () => openLightbox(photo.imageUrl, `${p.playerName.toUpperCase()} --- ${item}`) : undefined}
                           style={{
-                            width: '100px',
-                            height: '100px',
+                            width: '100%',
+                            aspectRatio: '1',
                             background: photo ? 'transparent' : 'var(--amiga-black)',
                             border: photo ? '2px solid #00AA00' : '2px solid var(--bevel-shadow)',
                             display: 'flex',
