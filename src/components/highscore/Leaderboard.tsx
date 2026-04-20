@@ -70,8 +70,8 @@ export function Leaderboard({ entries, title, emptyMessage = 'NO SCORES YET' }: 
                   padding: '4px 8px',
                   cursor: 'pointer',
                   border: sortKey === opt.key ? `2px solid ${opt.color}` : '1px solid var(--bevel-shadow)',
-                  background: sortKey === opt.key ? 'var(--amiga-black)' : 'transparent',
-                  color: sortKey === opt.key ? opt.color : 'var(--amiga-dark-grey)',
+                  background: sortKey === opt.key ? opt.color : 'var(--amiga-black)',
+                  color: sortKey === opt.key ? 'var(--amiga-black)' : 'var(--amiga-grey)',
                   textTransform: 'uppercase',
                 }}
               >
