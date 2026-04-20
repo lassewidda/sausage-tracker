@@ -17,6 +17,9 @@
     },
     "src/app/api/cron/weekly-recap/route.ts": {
       "maxDuration": 120
+    },
+    "src/app/api/cron/weekly-snapshot/route.ts": {
+      "maxDuration": 30
     }
   },
   "crons": [
@@ -31,6 +34,10 @@
     {
       "path": "/api/cron/weekly-recap",
       "schedule": "0 17 * * 0"
+    },
+    {
+      "path": "/api/cron/weekly-snapshot",
+      "schedule": "5 22 * * 0"
     }
   ]
 }

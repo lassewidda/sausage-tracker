@@ -329,12 +329,27 @@ async function migrate() {
   `
   await sql`CREATE INDEX IF NOT EXISTS idx_bot_messages_created ON bot_messages(created_at DESC)`
 
+  // Weekly goal snapshots — freeze goal targets + completion at end of each week
+  await sql`
+    CREATE TABLE IF NOT EXISTS weekly_goal_snapshots (
+      player_name TEXT NOT NULL,
+      week_key TEXT NOT NULL,
+      cardio_target INTEGER NOT NULL,
+      strength_target INTEGER NOT NULL,
+      cardio_actual INTEGER NOT NULL DEFAULT 0,
+      strength_actual INTEGER NOT NULL DEFAULT 0,
+      goal_met BOOLEAN NOT NULL DEFAULT false,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (player_name, week_key)
+    )
+  `
+
   // Enable Row Level Security on all tables with permissive policies
   // (no auth in this app — all access is via server-side API routes)
   const tables = [
     'meals', 'weekly_summaries', 'hero_cards', 'battles', 'battle_decks', 'bot_messages',
     'battle_turns', 'battle_stats', 'battle_taunts', 'battle_effects',
-    'player_items', 'player_wallets', 'shop_transactions',
+    'player_items', 'player_wallets', 'shop_transactions', 'weekly_goal_snapshots',
     'weekly_challenges', 'challenge_photos', 'app_config', 'player_goals',
   ]
   for (const table of tables) {

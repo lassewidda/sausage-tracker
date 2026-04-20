@@ -385,7 +385,12 @@ export async function getGoalStreaks(): Promise<GoalStreakEntry[]> {
     return []
   }
 
-  // Get all meals grouped by player, week, and exercise_type
+  // Get snapshots for past weeks (frozen goal completion)
+  const snapshotRows = await sql`
+    SELECT player_name, week_key, goal_met FROM weekly_goal_snapshots
+  `
+
+  // Get all meals grouped by player, week, and exercise_type (for current week + pre-snapshot weeks)
   const mealRows = await sql`
     SELECT player_name, week_key, exercise_type, COUNT(*)::int AS cnt
     FROM meals
@@ -393,7 +398,16 @@ export async function getGoalStreaks(): Promise<GoalStreakEntry[]> {
   `
   await sql.end()
 
-  // Build map: player -> week -> { cardio, strength }
+  // Build snapshot map: player -> week -> goal_met
+  const snapshots = new Map<string, Map<string, boolean>>()
+  for (const row of snapshotRows) {
+    const name = row.player_name as string
+    const week = row.week_key as string
+    if (!snapshots.has(name)) snapshots.set(name, new Map())
+    snapshots.get(name)!.set(week, row.goal_met as boolean)
+  }
+
+  // Build meal counts map: player -> week -> { cardio, strength }
   const weekCounts = new Map<string, Map<string, { cardio: number; strength: number }>>()
   for (const row of mealRows) {
     const name = row.player_name as string
@@ -418,18 +432,38 @@ export async function getGoalStreaks(): Promise<GoalStreakEntry[]> {
     const cardioTarget = goalRow.cardio_target as number
     const strengthTarget = goalRow.strength_target as number
     const playerWeeks = weekCounts.get(playerName)
+    const playerSnapshots = snapshots.get(playerName)
 
     // Skip players with 0/0 targets (they can never meet the goal)
     if (cardioTarget === 0 && strengthTarget === 0) continue
+
+    // Helper: check if goal was met for a given week
+    // Use snapshot if available (frozen), otherwise calculate dynamically
+    const wasGoalMet = (week: string): boolean => {
+      if (week !== currentWeek && playerSnapshots?.has(week)) {
+        return playerSnapshots.get(week)!
+      }
+      // Current week or pre-snapshot weeks: calculate from meal data + current goals
+      const counts = playerWeeks?.get(week) ?? { cardio: 0, strength: 0 }
+      return counts.cardio >= cardioTarget && counts.strength >= strengthTarget
+    }
 
     let streak = 0
     let totalGoalWeeks = 0
     let wk = currentWeek
 
-    // First pass: count total goal weeks across all weeks
+    // First pass: count total goal weeks across all weeks with activity
     if (playerWeeks) {
-      for (const [week, counts] of Array.from(playerWeeks.entries())) {
-        if (counts.cardio >= cardioTarget && counts.strength >= strengthTarget) {
+      for (const [week] of Array.from(playerWeeks.entries())) {
+        if (wasGoalMet(week)) {
+          totalGoalWeeks++
+        }
+      }
+    }
+    // Also count snapshot weeks where goal was met but no meals exist (edge case)
+    if (playerSnapshots) {
+      for (const [week, met] of Array.from(playerSnapshots.entries())) {
+        if (met && !playerWeeks?.has(week)) {
           totalGoalWeeks++
         }
       }
@@ -437,8 +471,7 @@ export async function getGoalStreaks(): Promise<GoalStreakEntry[]> {
 
     // Second pass: count consecutive streak walking backwards
     for (let i = 0; i < 500; i++) {
-      const counts = playerWeeks?.get(wk) ?? { cardio: 0, strength: 0 }
-      const met = counts.cardio >= cardioTarget && counts.strength >= strengthTarget
+      const met = wasGoalMet(wk)
 
       if (met) {
         streak++
