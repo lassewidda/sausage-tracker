@@ -25,11 +25,11 @@ async function postSlack(channel: string, payload: Record<string, unknown>): Pro
 }
 
 export async function sendSlackDM(slackUserId: string, message: string): Promise<{ ok: boolean; error?: string }> {
-  return postSlack(slackUserId, { text: message })
+  return postSlack(slackUserId, { text: message, unfurl_links: false, unfurl_media: false })
 }
 
 export async function sendSlackChannel(message: string): Promise<{ ok: boolean; error?: string; ts?: string }> {
-  return postSlack(POWERUP_CHANNEL, { text: message })
+  return postSlack(POWERUP_CHANNEL, { text: message, unfurl_links: false, unfurl_media: false })
 }
 
 export async function sendSlackReply(channel: string, threadTs: string, message: string, extra?: Record<string, unknown>): Promise<{ ok: boolean; error?: string }> {
@@ -39,6 +39,8 @@ export async function sendSlackReply(channel: string, threadTs: string, message:
 export async function sendSlackChannelWithImage(message: string, imageUrl: string, altText: string): Promise<{ ok: boolean; error?: string }> {
   return postSlack(POWERUP_CHANNEL, {
     text: message,
+    unfurl_links: false,
+    unfurl_media: false,
     blocks: [
       {
         type: 'section',

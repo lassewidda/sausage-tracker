@@ -91,13 +91,21 @@ export async function GET(request: Request) {
     } catch { /* silent */ }
 
     // Fetch weekly challenge if one exists
-    let challengeInfo: { bingoItems: string[]; exerciseMinimum: number } | null = null
+    let challengeInfo: { bingoItems: string[]; exerciseMinimum: number; completedPlayers?: string[]; incompletePlayers?: string[] } | null = null
     try {
       const view = await getChallengeView(weekKey)
       if (view.challenge) {
+        const completedPlayers = view.participants
+          .filter(p => p.isComplete)
+          .map(p => p.playerName.toUpperCase())
+        const incompletePlayers = view.participants
+          .filter(p => !p.isComplete)
+          .map(p => p.playerName.toUpperCase())
         challengeInfo = {
           bingoItems: view.challenge.bingoItems,
           exerciseMinimum: view.challenge.exerciseMinimum,
+          completedPlayers,
+          incompletePlayers,
         }
       }
     } catch { /* silent */ }

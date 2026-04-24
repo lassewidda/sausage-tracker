@@ -370,7 +370,7 @@ export async function generateChannelSummary(data: {
   topStreak: { player: string; weeks: number } | null
   recentWorkouts?: string[]
   earlyCompleters?: string[]
-  challengeInfo?: { bingoItems: string[]; exerciseMinimum: number } | null
+  challengeInfo?: { bingoItems: string[]; exerciseMinimum: number; completedPlayers?: string[]; incompletePlayers?: string[] } | null
   announcements?: string[]
 }): Promise<string> {
   const client = getClient()
@@ -388,7 +388,13 @@ export async function generateChannelSummary(data: {
 - This week's bingo items to photograph: ${data.challengeInfo.bingoItems.join(', ')}
 - Minimum ${data.challengeInfo.exerciseMinimum} workouts required to complete the challenge
 - Players must log their workouts AND photograph the bingo items to complete it
-- Challenge page: https://powerup.eliteprospects.com/challenge`
+- Challenge page: https://powerup.eliteprospects.com/challenge${
+  data.challengeInfo.completedPlayers && data.challengeInfo.completedPlayers.length > 0
+    ? `\n- CHALLENGE COMPLETERS: ${data.challengeInfo.completedPlayers.join(', ')}`
+    : ''}${
+  data.challengeInfo.incompletePlayers && data.challengeInfo.incompletePlayers.length > 0
+    ? `\n- STILL IN PROGRESS: ${data.challengeInfo.incompletePlayers.join(', ')}`
+    : ''}`
     : ''
 
   const prompt = `You are a motivational fitness coach posting a ${data.dayLabel} update to a workplace Slack channel for the PowerUp exercise challenge. All participants work at EliteProspects.com (ice hockey database), so hockey references and analogies are welcome when they fit naturally — especially old-school hockey humor (70s/80s era, Slap Shot vibes, wooden sticks, mustaches, bench-clearing brawls).
@@ -401,7 +407,7 @@ ${data.topStreak ? `- Longest streak: ${data.topStreak.player} with ${data.topSt
 
 ${highlights}${workoutColor}${challengeSection}
 
-Write a short Slack channel post (${data.challengeInfo && data.dayLabel === 'Monday' ? '6-10' : '4-6'} lines max). Requirements:
+Write a short Slack channel post (${data.challengeInfo && (data.dayLabel === 'Monday' || data.dayLabel === 'Friday') ? '6-10' : '4-6'} lines max). Requirements:
 - Start with a relevant emoji
 - Be motivational and positive — but do NOT start with a label like "Monday Motivation:", "Mid-week Update:", or the day name. Jump straight into the content about the players and their achievements.
 - The primary goal of the challenge is for each person to complete their own personal weekly goal — everyone who does is equally successful regardless of workout count. Celebrate goal completers as a group, not by singling out who logged the most
@@ -409,13 +415,15 @@ Write a short Slack channel post (${data.challengeInfo && data.dayLabel === 'Mon
 - Gently encourage those who haven't logged yet (without shaming)
 - The challenge week runs Monday to Sunday. If it's Monday: energize for the new week (7 days ahead)${data.challengeInfo ? '. IMPORTANT: introduce this week\'s Photo Bingo challenge — list the bingo items and explain they need to photograph them plus log at least ' + data.challengeInfo.exerciseMinimum + ' workouts to complete it. Link to https://powerup.eliteprospects.com/challenge' : ''}. If Wednesday: mid-week push (5 days left including today). If Friday: weekend push — remind people that Saturday and Sunday still count, 3 days left to hit goals
 ${data.earlyCompleters && data.earlyCompleters.length > 0 ? `- These players already completed their weekly goal with days to spare: ${data.earlyCompleters.join(', ')}. Give them a shout-out and playfully suggest they could raise the bar — maybe set a tougher weekly goal next week since they're clearly crushing it` : ''}
+${data.challengeInfo && data.dayLabel === 'Friday' ? `- IMPORTANT: Celebrate the Photo Bingo challenge completers by name if any. Encourage those still in progress — it's not too late, they have until Sunday! Link to https://powerup.eliteprospects.com/challenge` : ''}
+${data.dayLabel === 'Friday' ? '- Remind everyone they can battle their friends in the Battle Arena while waiting for next week — challenge a colleague at https://powerup.eliteprospects.com/battle' : ''}
 ${data.announcements && data.announcements.length > 0 ? data.announcements.map(a => `- ANNOUNCE: ${a}`).join('\n') : ''}
 - When including URLs, copy them EXACTLY as provided — never modify or rephrase URLs
 - Keep it casual and fun, plain text only (no markdown)`
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: data.challengeInfo && data.dayLabel === 'Monday' ? 500 : 300,
+    max_tokens: data.challengeInfo && (data.dayLabel === 'Monday' || data.dayLabel === 'Friday') ? 500 : 300,
     messages: [{ role: 'user', content: prompt }],
   })
 
