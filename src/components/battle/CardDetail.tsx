@@ -40,6 +40,24 @@ export function CardDetail({ card, onClose }: Props) {
           animation: 'card-enter 0.3s steps(4)',
         }}
       >
+        {/* Close X — always visible at top */}
+        <button
+          onClick={onClose}
+          style={{
+            alignSelf: 'flex-end',
+            fontFamily: 'var(--font-pixel)',
+            fontSize: '14px',
+            color: '#AAAAAA',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '4px 8px',
+            lineHeight: 1,
+          }}
+        >
+          ✕
+        </button>
+
         {/* Title */}
         <div style={{
           fontFamily: 'var(--font-pixel)',
