@@ -8,6 +8,7 @@ interface Props {
   deck: BattleDeckCard[]
   align?: 'left' | 'right'
   opponentCard?: HeroCard | null
+  onInspect?: (card: HeroCard) => void
 }
 
 const frameColor = '#D4B96B'
@@ -22,7 +23,7 @@ function getMatchupIndicator(card: HeroCard, opponentCard: HeroCard): { color: s
   return null
 }
 
-export function DeckStatusBar({ deck, align = 'left', opponentCard }: Props) {
+export function DeckStatusBar({ deck, align = 'left', opponentCard, onInspect }: Props) {
   return (
     <div style={{
       display: 'flex',
@@ -40,8 +41,9 @@ export function DeckStatusBar({ deck, align = 'left', opponentCard }: Props) {
           : null
 
         return (
-          <div key={dc.id} style={{
+          <div key={dc.id} onClick={() => onInspect && dc.card && onInspect(dc.card)} style={{
             width: '36px',
+            cursor: onInspect ? 'pointer' : 'default',
             background: `linear-gradient(135deg, ${isKo ? '#333' : frameDark}, ${isKo ? '#444' : frameColor}, ${isKo ? '#333' : frameDark})`,
             borderRadius: '4px',
             padding: '2px',

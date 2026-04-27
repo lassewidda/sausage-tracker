@@ -229,8 +229,8 @@ export function BattleArena({ state, playerName, onMove, onUseItem, onSwitch, in
         justifyContent: 'space-between',
         gap: '8px',
       }}>
-        <DeckStatusBar deck={myDeck} align="left" opponentCard={theirActive?.card} />
-        <DeckStatusBar deck={theirDeck} align="right" opponentCard={myActive?.card} />
+        <DeckStatusBar deck={myDeck} align="left" opponentCard={theirActive?.card} onInspect={setInspectedCard} />
+        <DeckStatusBar deck={theirDeck} align="right" opponentCard={myActive?.card} onInspect={setInspectedCard} />
       </div>
 
       {/* Effect badges */}

@@ -67,7 +67,7 @@ export function TauntBubble({ taunts, playerName, challengerName }: Props) {
       style={{
         position: 'absolute',
         [side]: '8px',
-        top: '-8px',
+        top: '4px',
         zIndex: 10,
         animation: current.fadeOut ? 'taunt-fade 2s forwards' : 'taunt-pop 0.3s steps(4)',
         maxWidth: '140px',
