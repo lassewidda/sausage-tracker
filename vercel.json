@@ -19,7 +19,7 @@
       "maxDuration": 120
     },
     "src/app/api/cron/weekly-snapshot/route.ts": {
-      "maxDuration": 30
+      "maxDuration": 120
     }
   },
   "crons": [

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
-import { getWeekKey } from '@/lib/db'
+import { getWeekKey, getHeroCard, getPlayerDeck, insertHeroCard, getPlayerAllTimeStats } from '@/lib/db'
+import { generateHeroCard } from '@/lib/claude'
+import theme from '@/theme'
 import postgres from 'postgres'
 
 export const dynamic = 'force-dynamic'
@@ -76,8 +78,62 @@ export async function GET(request: Request) {
       snapshotCount++
     }
 
+    // Auto-generate hero cards for players who have starter cards AND logged at least 1 workout this week
+    const battlePlayers = await sql`
+      SELECT DISTINCT hc.player_name FROM hero_cards hc
+      WHERE hc.week_key LIKE 'STARTER%'
+        AND hc.player_name NOT IN ('test3', 'lars2')
+        AND EXISTS (
+          SELECT 1 FROM meals m
+          WHERE m.player_name = hc.player_name AND m.week_key = ${weekKey}
+        )
+    `
     await sql.end()
-    return NextResponse.json({ ok: true, weekKey, snapshotCount })
+
+    let cardsGenerated = 0
+    for (const row of battlePlayers) {
+      const playerName = row.player_name as string
+      try {
+        const existingCard = await getHeroCard(playerName, weekKey)
+        if (existingCard) continue
+
+        const allTimeStats = await getPlayerAllTimeStats(playerName)
+        if (allTimeStats.mealCount === 0) continue
+
+        const existingCards = await getPlayerDeck(playerName)
+        const generated = await generateHeroCard({
+          playerName,
+          totalItems: allTimeStats.totalItems,
+          totalGrams: allTimeStats.totalGrams,
+          mealCount: allTimeStats.mealCount,
+          maxInOneMeal: allTimeStats.maxInOneMeal,
+          activeWeeks: allTimeStats.activeWeeks,
+          chainLength: allTimeStats.chainLength,
+          recentMeals: allTimeStats.recentMeals,
+          existingTitles: existingCards.map(c => c.heroTitle),
+          existingTypes: existingCards.map(c => c.heroType),
+        })
+        await insertHeroCard({
+          playerName,
+          heroTitle: generated.heroTitle || theme.fallbackCardTitle,
+          heroType: generated.heroType || theme.fallbackCardType,
+          hp: generated.hp || 100,
+          attack: generated.attack || 50,
+          defense: generated.defense || 50,
+          speed: generated.speed || 50,
+          specialMoves: Array.isArray(generated.specialMoves) ? generated.specialMoves : theme.fallbackCardMoves,
+          weakness: generated.weakness || 'Rest days',
+          catchphrase: generated.catchphrase || 'No pain, no gain!',
+          flavorText: generated.flavorText || 'A mighty warrior of the fitness arts.',
+          weekKey,
+        })
+        cardsGenerated++
+      } catch (cardErr) {
+        console.error(`Hero card generation failed for ${playerName}:`, cardErr)
+      }
+    }
+
+    return NextResponse.json({ ok: true, weekKey, snapshotCount, cardsGenerated })
   } catch (error) {
     console.error('Weekly snapshot cron error:', error)
     await sql.end()
