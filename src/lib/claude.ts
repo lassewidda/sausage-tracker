@@ -384,7 +384,7 @@ export async function generateChannelSummary(data: {
     : ''
 
   const challengeSection = data.challengeInfo
-    ? `\nWEEKLY CHALLENGE (Photo Bingo):
+    ? `\nPUCK'S WEEKLY CHALLENGE (Photo Bingo):
 - This week's bingo items to photograph: ${data.challengeInfo.bingoItems.join(', ')}
 - Minimum ${data.challengeInfo.exerciseMinimum} workouts required to complete the challenge
 - Players must log their workouts AND photograph the bingo items to complete it
@@ -413,7 +413,7 @@ Write a short Slack channel post (${data.challengeInfo && (data.dayLabel === 'Mo
 - The primary goal of the challenge is for each person to complete their own personal weekly goal — everyone who does is equally successful regardless of workout count. Celebrate goal completers as a group, not by singling out who logged the most
 - If workout descriptions are provided, weave in specific details about what people are doing (e.g. "Emma crushed a 10km trail run" or "Marcus hit the gym for deadlifts") — this makes the post feel alive and personal
 - Gently encourage those who haven't logged yet (without shaming)
-- The challenge week runs Monday to Sunday. If it's Monday: energize for the new week (7 days ahead)${data.challengeInfo ? '. IMPORTANT: introduce this week\'s Photo Bingo challenge — list the bingo items and explain they need to photograph them plus log at least ' + data.challengeInfo.exerciseMinimum + ' workouts to complete it. Link to https://powerup.eliteprospects.com/challenge' : ''}. If Wednesday: mid-week push (5 days left including today). If Friday: weekend push — remind people that Saturday and Sunday still count, 3 days left to hit goals
+- The challenge week runs Monday to Sunday. If it's Monday: energize for the new week (7 days ahead)${data.challengeInfo ? '. IMPORTANT: Mention this week\'s Puck\'s Challenge (Photo Bingo) — list the bingo items and remind them to photograph them plus log at least ' + data.challengeInfo.exerciseMinimum + ' workouts to complete it. Do NOT say "NEW" — this is a recurring weekly challenge. Link to https://powerup.eliteprospects.com/challenge' : ''}. If Wednesday: mid-week push (5 days left including today). If Friday: weekend push — remind people that Saturday and Sunday still count, 3 days left to hit goals
 ${data.earlyCompleters && data.earlyCompleters.length > 0 ? `- These players already completed their weekly goal with days to spare: ${data.earlyCompleters.join(', ')}. Give them a shout-out and playfully suggest they could raise the bar — maybe set a tougher weekly goal next week since they're clearly crushing it` : ''}
 ${data.challengeInfo && data.dayLabel === 'Friday' ? `- IMPORTANT: Celebrate the Photo Bingo challenge completers by name if any. Encourage those still in progress — it's not too late, they have until Sunday! Link to https://powerup.eliteprospects.com/challenge` : ''}
 ${data.dayLabel === 'Friday' ? '- Remind everyone they can battle their friends in the Battle Arena while waiting for next week — challenge a colleague at https://powerup.eliteprospects.com/battle' : ''}
