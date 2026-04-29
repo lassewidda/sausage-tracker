@@ -430,7 +430,19 @@ ${data.announcements && data.announcements.length > 0 ? data.announcements.map(a
   const block = message.content.find((b) => b.type === 'text')
   if (!block || block.type !== 'text') return `💪 PowerUp ${data.dayLabel} update: ${data.totalActivities} workouts logged by ${data.activePlayers} players this week!`
   // Fix any mangled powerup URLs (Haiku sometimes garbles long URLs)
-  return block.text.trim().replace(/https?:\/\/powerup\.[a-z]+prospects\.com/g, 'https://powerup.eliteprospects.com')
+  const correctDomain = 'https://powerup.eliteprospects.com'
+  let text = block.text.trim()
+    .replace(/https?:\/\/powerup\.[a-z.]+\.com/g, correctDomain)
+  // Ensure URLs have a space before any non-URL trailing characters (e.g. em dashes, letters)
+  // Known paths: /shop, /challenge, /battle, /battle/*, /player/*
+  const urlPaths = ['shop', 'challenge', 'battle', 'highscore', 'feed', 'gallery', 'progress', 'invite']
+  for (const path of urlPaths) {
+    const pattern = new RegExp(`(${correctDomain.replace(/\//g, '\\/')}\\/${path})([^\\s.,;!?)}\\\]"'\\n/])`, 'g')
+    text = text.replace(pattern, '$1 $2')
+  }
+  // Also handle bare domain with no path
+  text = text.replace(new RegExp(`(${correctDomain.replace(/\//g, '\\/')})([^\\s.,;!?)}\\\]"'\\n/])`, 'g'), '$1 $2')
+  return text
 }
 
 export async function generateWeeklyRecapDM(data: {
