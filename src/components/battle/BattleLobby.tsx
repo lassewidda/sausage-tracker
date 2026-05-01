@@ -575,6 +575,15 @@ export function BattleLobby() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {activeBattles.map((b) => {
                 const opponent = b.challenger === name ? b.opponent : b.challenger
+                const youAreReady = b.challenger === name ? b.challengerReady : b.opponentReady
+                let yourTurn: boolean | null = null
+                if (b.status === 'selecting') {
+                  yourTurn = !youAreReady
+                } else if (b.status === 'battling') {
+                  yourTurn = b.turnPlayer === name
+                }
+                const turnLabel = yourTurn === true ? 'YOUR TURN' : yourTurn === false ? 'THEIR TURN' : null
+                const turnColor = yourTurn === true ? 'var(--crt-amber)' : '#888'
                 return (
                   <div key={b.id} style={{
                     display: 'flex',
@@ -582,13 +591,24 @@ export function BattleLobby() {
                     alignItems: 'center',
                     padding: '6px',
                     background: 'var(--amiga-dark-grey)',
+                    gap: '6px',
                   }}>
                     <span style={{
                       fontFamily: 'var(--font-pixel)',
                       fontSize: '9px',
                       color: 'var(--amiga-white)',
+                      flex: 1,
+                      minWidth: 0,
                     }}>
-                      VS {opponent?.toUpperCase()} — {b.status.toUpperCase()}
+                      VS {opponent?.toUpperCase()}
+                      {turnLabel && (
+                        <span
+                          className={yourTurn ? 'amiga-blink' : undefined}
+                          style={{ color: turnColor, marginLeft: '6px', fontSize: '8px' }}
+                        >
+                          — {turnLabel}
+                        </span>
+                      )}
                     </span>
                     <button
                       className="amiga-btn"
