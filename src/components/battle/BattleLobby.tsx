@@ -583,14 +583,15 @@ export function BattleLobby() {
                   yourTurn = b.turnPlayer === name
                 }
                 const turnLabel = yourTurn === true ? 'YOUR TURN' : yourTurn === false ? 'THEIR TURN' : null
-                const turnColor = yourTurn === true ? 'var(--crt-amber)' : '#888'
+                const turnColor = yourTurn === true ? 'var(--crt-amber)' : '#FFAA66'
                 return (
                   <div key={b.id} style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     padding: '6px',
-                    background: 'var(--amiga-dark-grey)',
+                    background: '#0a0a0a',
+                    border: '1px solid #222',
                     gap: '6px',
                   }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1, minWidth: 0 }}>
@@ -654,8 +655,8 @@ export function BattleLobby() {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '6px',
-                  background: 'var(--amiga-dark-grey)',
-                  border: b.targetOpponent === name ? '1px solid var(--crt-amber)' : 'none',
+                  background: '#0a0a0a',
+                  border: b.targetOpponent === name ? '1px solid var(--crt-amber)' : '1px solid #222',
                 }}>
                   <span style={{
                     fontFamily: 'var(--font-pixel)',
