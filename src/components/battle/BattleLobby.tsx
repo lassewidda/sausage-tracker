@@ -593,23 +593,27 @@ export function BattleLobby() {
                     background: 'var(--amiga-dark-grey)',
                     gap: '6px',
                   }}>
-                    <span style={{
-                      fontFamily: 'var(--font-pixel)',
-                      fontSize: '9px',
-                      color: 'var(--amiga-white)',
-                      flex: 1,
-                      minWidth: 0,
-                    }}>
-                      VS {opponent?.toUpperCase()}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1, minWidth: 0 }}>
+                      <span style={{
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: '9px',
+                        color: 'var(--amiga-white)',
+                      }}>
+                        VS {opponent?.toUpperCase()}
+                      </span>
                       {turnLabel && (
                         <span
                           className={yourTurn ? 'amiga-blink' : undefined}
-                          style={{ color: turnColor, marginLeft: '6px', fontSize: '8px' }}
+                          style={{
+                            fontFamily: 'var(--font-pixel)',
+                            color: turnColor,
+                            fontSize: '9px',
+                          }}
                         >
-                          — {turnLabel}
+                          {turnLabel}
                         </span>
                       )}
-                    </span>
+                    </div>
                     <button
                       className="amiga-btn"
                       onClick={() => router.push(`/battle/${b.id}`)}
