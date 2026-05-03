@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import Link from 'next/link'
 import { JerryMode } from '@/components/ui/JerryMode'
 import { NameSetter } from '@/components/ui/NameSetter'
@@ -15,6 +15,13 @@ import './globals.css'
 export const metadata: Metadata = {
   title: theme.strings.metaTitle,
   description: theme.strings.metaDescription,
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 const themeVars = {

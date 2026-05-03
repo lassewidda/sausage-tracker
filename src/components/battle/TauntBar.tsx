@@ -113,7 +113,7 @@ export function TauntBar({ battleId, playerName }: Props) {
                 borderRadius: '6px',
                 padding: '8px 10px',
                 fontFamily: 'var(--font-pixel)',
-                fontSize: '10px',
+                fontSize: '16px',
                 color: '#ccc',
                 outline: 'none',
                 minHeight: '40px',
