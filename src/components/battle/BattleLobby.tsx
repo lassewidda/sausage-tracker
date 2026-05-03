@@ -225,6 +225,136 @@ export function BattleLobby() {
         </Link>
       </div>
 
+      {/* Active battles */}
+      {activeBattles.length > 0 && (
+        <div className="amiga-window">
+          <div className="amiga-window__titlebar">
+            <span className="amiga-window__gadget">&#9632;</span>
+            <span className="amiga-window__title">YOUR ACTIVE BATTLES</span>
+          </div>
+          <div className="amiga-window__body">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {activeBattles.map((b) => {
+                const opponent = b.challenger === name ? b.opponent : b.challenger
+                const youAreReady = b.challenger === name ? b.challengerReady : b.opponentReady
+                let yourTurn: boolean | null = null
+                if (b.status === 'selecting') {
+                  yourTurn = !youAreReady
+                } else if (b.status === 'battling') {
+                  yourTurn = b.turnPlayer === name
+                }
+                const turnLabel = yourTurn === true ? 'YOUR TURN' : yourTurn === false ? 'THEIR TURN' : null
+                const turnColor = yourTurn === true ? 'var(--crt-amber)' : '#FFAA66'
+                return (
+                  <div key={b.id} style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '6px',
+                    background: '#0a0a0a',
+                    border: '1px solid #222',
+                    gap: '6px',
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1, minWidth: 0 }}>
+                      <span style={{
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: '9px',
+                        color: 'var(--amiga-white)',
+                      }}>
+                        VS {opponent?.toUpperCase()}
+                      </span>
+                      {turnLabel && (
+                        <span
+                          className={yourTurn ? 'amiga-blink' : undefined}
+                          style={{
+                            fontFamily: 'var(--font-pixel)',
+                            color: turnColor,
+                            fontSize: '9px',
+                          }}
+                        >
+                          {turnLabel}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      className="amiga-btn"
+                      onClick={() => router.push(`/battle/${b.id}`)}
+                      style={{ fontSize: '8px' }}
+                    >
+                      CONTINUE
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Open challenges */}
+      <div className="amiga-window">
+        <div className="amiga-window__titlebar">
+          <span className="amiga-window__gadget">&#9632;</span>
+          <span className="amiga-window__title">OPEN CHALLENGES</span>
+        </div>
+        <div className="amiga-window__body">
+          {openBattles.length === 0 ? (
+            <div style={{
+              fontFamily: 'var(--font-pixel)',
+              fontSize: '9px',
+              color: 'var(--amiga-dark-grey)',
+              textAlign: 'center',
+              padding: '16px',
+            }}>
+              NO OPEN CHALLENGES. CREATE ONE!
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {openBattles.map((b) => (
+                <div key={b.id} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '6px',
+                  background: '#0a0a0a',
+                  border: b.targetOpponent === name ? '1px solid var(--crt-amber)' : '1px solid #222',
+                }}>
+                  <span style={{
+                    fontFamily: 'var(--font-pixel)',
+                    fontSize: '9px',
+                    color: 'var(--crt-amber)',
+                  }}>
+                    {b.challenger.toUpperCase()} WANTS TO BATTLE!
+                    {b.targetOpponent === name && (
+                      <span style={{ color: '#FF4444', marginLeft: '6px' }}>⚔️ FOR YOU</span>
+                    )}
+                  </span>
+                  {b.challenger !== name && (
+                    <button
+                      className="amiga-btn amiga-btn--primary"
+                      onClick={() => joinChallenge(b.id)}
+                      disabled={loading}
+                      style={{ fontSize: '8px' }}
+                    >
+                      JOIN
+                    </button>
+                  )}
+                  {b.challenger === name && (
+                    <span style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: '8px',
+                      color: 'var(--amiga-grey)',
+                    }} className="amiga-blink">
+                      WAITING...
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* New card available */}
       {hasMeals && !deck.some(c => c.weekKey === getCurrentWeekKey()) && (
         <div
@@ -562,136 +692,6 @@ export function BattleLobby() {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Active battles */}
-      {activeBattles.length > 0 && (
-        <div className="amiga-window">
-          <div className="amiga-window__titlebar">
-            <span className="amiga-window__gadget">&#9632;</span>
-            <span className="amiga-window__title">YOUR ACTIVE BATTLES</span>
-          </div>
-          <div className="amiga-window__body">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {activeBattles.map((b) => {
-                const opponent = b.challenger === name ? b.opponent : b.challenger
-                const youAreReady = b.challenger === name ? b.challengerReady : b.opponentReady
-                let yourTurn: boolean | null = null
-                if (b.status === 'selecting') {
-                  yourTurn = !youAreReady
-                } else if (b.status === 'battling') {
-                  yourTurn = b.turnPlayer === name
-                }
-                const turnLabel = yourTurn === true ? 'YOUR TURN' : yourTurn === false ? 'THEIR TURN' : null
-                const turnColor = yourTurn === true ? 'var(--crt-amber)' : '#FFAA66'
-                return (
-                  <div key={b.id} style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '6px',
-                    background: '#0a0a0a',
-                    border: '1px solid #222',
-                    gap: '6px',
-                  }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1, minWidth: 0 }}>
-                      <span style={{
-                        fontFamily: 'var(--font-pixel)',
-                        fontSize: '9px',
-                        color: 'var(--amiga-white)',
-                      }}>
-                        VS {opponent?.toUpperCase()}
-                      </span>
-                      {turnLabel && (
-                        <span
-                          className={yourTurn ? 'amiga-blink' : undefined}
-                          style={{
-                            fontFamily: 'var(--font-pixel)',
-                            color: turnColor,
-                            fontSize: '9px',
-                          }}
-                        >
-                          {turnLabel}
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      className="amiga-btn"
-                      onClick={() => router.push(`/battle/${b.id}`)}
-                      style={{ fontSize: '8px' }}
-                    >
-                      CONTINUE
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Open challenges */}
-      <div className="amiga-window">
-        <div className="amiga-window__titlebar">
-          <span className="amiga-window__gadget">&#9632;</span>
-          <span className="amiga-window__title">OPEN CHALLENGES</span>
-        </div>
-        <div className="amiga-window__body">
-          {openBattles.length === 0 ? (
-            <div style={{
-              fontFamily: 'var(--font-pixel)',
-              fontSize: '9px',
-              color: 'var(--amiga-dark-grey)',
-              textAlign: 'center',
-              padding: '16px',
-            }}>
-              NO OPEN CHALLENGES. CREATE ONE!
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {openBattles.map((b) => (
-                <div key={b.id} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '6px',
-                  background: '#0a0a0a',
-                  border: b.targetOpponent === name ? '1px solid var(--crt-amber)' : '1px solid #222',
-                }}>
-                  <span style={{
-                    fontFamily: 'var(--font-pixel)',
-                    fontSize: '9px',
-                    color: 'var(--crt-amber)',
-                  }}>
-                    {b.challenger.toUpperCase()} WANTS TO BATTLE!
-                    {b.targetOpponent === name && (
-                      <span style={{ color: '#FF4444', marginLeft: '6px' }}>⚔️ FOR YOU</span>
-                    )}
-                  </span>
-                  {b.challenger !== name && (
-                    <button
-                      className="amiga-btn amiga-btn--primary"
-                      onClick={() => joinChallenge(b.id)}
-                      disabled={loading}
-                      style={{ fontSize: '8px' }}
-                    >
-                      JOIN
-                    </button>
-                  )}
-                  {b.challenger === name && (
-                    <span style={{
-                      fontFamily: 'var(--font-pixel)',
-                      fontSize: '8px',
-                      color: 'var(--amiga-grey)',
-                    }} className="amiga-blink">
-                      WAITING...
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
 
       {selectedCard && (
