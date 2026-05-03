@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getLeaderboard, getAllPlayerGoals, getGoalStreaks, getWeekKey, getChallengeView } from '@/lib/db'
 import { generateChannelSummary } from '@/lib/claude'
-import { sendSlackChannel } from '@/lib/slack'
+import { sendSlackChannel, sendSlackChannelWithImage } from '@/lib/slack'
 import postgres from 'postgres'
 
 export const dynamic = 'force-dynamic'
@@ -152,7 +152,13 @@ export async function GET(request: Request) {
       })(),
     })
 
-    await sendSlackChannel(message)
+    const today = new Date().toISOString().slice(0, 10)
+    if (today === '2026-05-04') {
+      const muralUrl = 'https://dl.dropbox.com/scl/fi/69p6db5grfoqk17khh16z/Gemini_Generated_Image_hd1363hd1363hd13.png?rlkey=aydzei8d5cu1z27bwf1i8kaie'
+      await sendSlackChannelWithImage(message, muralUrl, 'Mural depicting Puck — inspiration for this week\'s challenge')
+    } else {
+      await sendSlackChannel(message)
+    }
 
     return NextResponse.json({ ok: true, message, weekKey })
   } catch (error) {
