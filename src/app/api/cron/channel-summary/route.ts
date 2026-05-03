@@ -144,6 +144,10 @@ export async function GET(request: Request) {
         if (today === '2026-04-17') a.push("NEW: Puck's Weekly Challenge starts Monday! Clean your camera lenses — you're going to need them. More details dropping Monday at https://powerup.eliteprospects.com/challenge")
         if (today === '2026-04-28') a.push('The Pro Shop just dropped MERCH! Golden Dumbbell Trophy, "I Survived Leg Day" T-Shirt, "Scouted by EP" Gym Towel, Strava Crown Pin, and more. Check out the full collection at https://powerup.eliteprospects.com/shop — flex your gains off the field too!')
         if (today === '2026-04-27') a.push('Battle Arena players have received a brand new hero card based on last week\'s performance! Check your deck at https://powerup.eliteprospects.com/battle — if you haven\'t tried the Battle Arena yet, click BATTLE in the menu to get your starter card pack and join the fun!')
+        if (today === '2026-05-04') {
+          a.push('Battle Arena players just got a fresh hero card based on last week\'s performance — open your deck at https://powerup.eliteprospects.com/battle to see what dropped. Not in the Arena yet? Hit BATTLE in the menu to grab your starter pack.')
+          a.push('Heads up — Puck\'s Challenge is tougher this week: you need 5 workouts (any combo of strength or cardio) on top of all 4 bingo photos to complete it.')
+        }
         return a
       })(),
     })
