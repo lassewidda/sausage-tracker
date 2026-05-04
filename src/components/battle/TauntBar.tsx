@@ -35,6 +35,10 @@ export function TauntBar({ battleId, playerName }: Props) {
       borderRadius: '4px',
       border: '1px solid #333',
       overflow: 'hidden',
+      width: '100%',
+      maxWidth: '100%',
+      minWidth: 0,
+      boxSizing: 'border-box',
     }}>
       {/* Toggle header */}
       <button
@@ -98,7 +102,7 @@ export function TauntBar({ battleId, playerName }: Props) {
           </div>
 
           {/* Custom text input */}
-          <div style={{ display: 'flex', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: '6px', minWidth: 0 }}>
             <input
               type="text"
               value={text}
@@ -106,8 +110,11 @@ export function TauntBar({ battleId, playerName }: Props) {
               onKeyDown={(e) => { if (e.key === 'Enter') send(text) }}
               placeholder="TYPE A TAUNT..."
               disabled={cooldown}
+              size={1}
               style={{
                 flex: 1,
+                minWidth: 0,
+                width: '100%',
                 background: '#0a0a0a',
                 border: '1px solid #444',
                 borderRadius: '6px',
@@ -117,6 +124,7 @@ export function TauntBar({ battleId, playerName }: Props) {
                 color: '#ccc',
                 outline: 'none',
                 minHeight: '40px',
+                boxSizing: 'border-box',
               }}
             />
             <button
