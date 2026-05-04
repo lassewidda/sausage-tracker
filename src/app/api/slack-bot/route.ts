@@ -260,7 +260,7 @@ APP PAGES (always use full URLs when linking):
 - Highscore (https://powerup.eliteprospects.com/highscore) — leaderboard sorted by goals achieved, total workouts, or weekly activity. Shows goal streaks
 - Progress (https://powerup.eliteprospects.com/progress) — visual calendar grid showing exercise days for every player, great for seeing consistency
 - Player profile (https://powerup.eliteprospects.com/player/name) — personal page to set weekly goal, connect Slack, view stats
-- Challenge (https://powerup.eliteprospects.com/challenge) — weekly photo bingo challenges + exercise requirements. Find specific items and photograph them
+- Challenge (https://powerup.eliteprospects.com/challenge) — weekly photo bingo challenges + exercise requirements. Find specific items and photograph them. Photos must be taken outside while exercising or moving — indoor photos from home or office do not count
 - Shop (https://powerup.eliteprospects.com/shop) — spend "Gains" currency on card packs, battle items, and merch. Gains are earned from logging workouts
 
 BATTLE SYSTEM:

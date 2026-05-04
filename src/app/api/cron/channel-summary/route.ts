@@ -148,6 +148,10 @@ export async function GET(request: Request) {
           a.push('Battle Arena players just got a fresh hero card based on last week\'s performance — open your deck at https://powerup.eliteprospects.com/battle to see what dropped. Not in the Arena yet? Hit BATTLE in the menu to grab your starter pack.')
           a.push('Heads up — Puck\'s Challenge is tougher this week: you need 5 workouts (any combo of strength or cardio) on top of all 4 bingo photos to complete it.')
         }
+        if (today === '2026-05-06') {
+          a.push('Friendly reminder for everyone still working on Puck\'s Challenge: the bingo photos must be taken OUTSIDE while you\'re exercising or moving — snapping a sticker on your fridge or a poster in the kitchen does not count. Lace up, head out, and finish the card at https://powerup.eliteprospects.com/challenge')
+          a.push('Every workout you log earns you Gains — and the Pro Shop is loaded. Card packs, battle items, and merch (Golden Dumbbell Trophy, "I Survived Leg Day" T-Shirt, Strava Crown Pin and more) are waiting at https://powerup.eliteprospects.com/shop')
+        }
         return a
       })(),
     })

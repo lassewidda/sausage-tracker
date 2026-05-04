@@ -455,6 +455,9 @@ export default function ChallengePage() {
               <div style={{ fontSize: '7px', color: 'var(--amiga-dark-grey)', marginTop: '16px' }}>
                 GET YOUR CAMERA READY 📸
               </div>
+              <div style={{ fontSize: '7px', color: 'var(--amiga-dark-grey)', marginTop: '6px', lineHeight: 1.6 }}>
+                📍 SNAP YOUR PHOTOS OUTSIDE WHILE EXERCISING OR MOVING — NOT FROM HOME
+              </div>
             </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '24px', fontFamily: 'var(--font-pixel)', fontSize: '9px', color: 'var(--amiga-dark-grey)' }}>
@@ -476,6 +479,9 @@ export default function ChallengePage() {
               </div>
               <div style={{ fontSize: '7px', color: 'var(--amiga-dark-grey)' }}>
                 <ChallengeRequirementLabel challenge={challenge} />
+              </div>
+              <div style={{ fontSize: '7px', color: 'var(--crt-amber)', marginTop: '8px', lineHeight: 1.6, padding: '0 8px' }}>
+                📍 PHOTOS MUST BE TAKEN OUTSIDE WHILE EXERCISING OR MOVING. INDOOR PHOTOS DO NOT COUNT.
               </div>
             </div>
 
