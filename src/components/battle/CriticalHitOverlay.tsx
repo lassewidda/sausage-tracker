@@ -11,9 +11,13 @@ export function CriticalHitOverlay({ turns }: Props) {
   const [visible, setVisible] = useState(false)
   const [attacker, setAttacker] = useState('')
   const [animKey, setAnimKey] = useState(0)
-  const seenCount = useRef(0)
+  const seenCount = useRef<number | null>(null)
 
   useEffect(() => {
+    if (seenCount.current === null) {
+      seenCount.current = turns.length
+      return
+    }
     if (turns.length > seenCount.current) {
       const newTurns = turns.slice(seenCount.current)
       seenCount.current = turns.length
