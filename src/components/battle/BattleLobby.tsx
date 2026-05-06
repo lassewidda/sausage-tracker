@@ -242,6 +242,8 @@ export function BattleLobby() {
                   yourTurn = !youAreReady
                 } else if (b.status === 'battling') {
                   yourTurn = b.turnPlayer === name
+                } else if (b.status === 'awaiting_switch') {
+                  yourTurn = b.switchPlayer === name
                 }
                 const turnLabel = yourTurn === true ? 'YOUR TURN' : yourTurn === false ? 'THEIR TURN' : null
                 const turnColor = yourTurn === true ? 'var(--crt-amber)' : '#FFAA66'

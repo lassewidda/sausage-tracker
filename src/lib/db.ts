@@ -1081,7 +1081,7 @@ export async function getPlayerBattles(playerName: string): Promise<Battle[]> {
   const rows = await sql`
     SELECT * FROM battles
     WHERE (challenger = ${playerName} OR opponent = ${playerName})
-      AND status IN ('selecting', 'battling')
+      AND status IN ('selecting', 'battling', 'awaiting_switch')
     ORDER BY updated_at DESC
   `
   await sql.end()
