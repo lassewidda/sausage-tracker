@@ -3,11 +3,18 @@ import { writeFileSync, mkdirSync } from 'fs'
 import { join } from 'path'
 
 // Get recent commits (last 7 days, max 15)
-const raw = execFileSync('git', ['log', '--format=%ad|%s', '--date=short', '--since=7 days ago', '-15'], {
-  encoding: 'utf-8',
-}).trim()
+let raw = ''
+try {
+  raw = execFileSync('git', ['log', '--format=%ad|%s', '--date=short', '--since=7 days ago', '-15'], {
+    encoding: 'utf-8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+  }).trim()
+} catch {
+  // No git history available (e.g. Vercel CLI deploys ship without .git)
+}
 
 if (!raw) {
+  mkdirSync(join(process.cwd(), 'src', 'generated'), { recursive: true })
   writeFileSync(
     join(process.cwd(), 'src', 'generated', 'changelog.ts'),
     'export const CHANGELOG = "No recent updates."\n',
