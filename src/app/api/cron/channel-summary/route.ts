@@ -152,6 +152,10 @@ export async function GET(request: Request) {
           a.push('Friendly reminder for everyone still working on Puck\'s Challenge: the bingo photos must be taken OUTSIDE while you\'re exercising or moving — snapping a sticker on your fridge or a poster in the kitchen does not count. Lace up, head out, and finish the card at https://powerup.eliteprospects.com/challenge')
           a.push('Every workout you log earns you Gains — and the Pro Shop is loaded. Card packs, battle items, and merch (Golden Dumbbell Trophy, "I Survived Leg Day" T-Shirt, Strava Crown Pin and more) are waiting at https://powerup.eliteprospects.com/shop')
         }
+        if (today === '2026-05-11') {
+          a.push('This week is RECHARGE WEEK — no Puck\'s Challenge. Use the breather to rest, stretch, sleep well, and stack a few solid workouts so you arrive sharp.')
+          a.push('Puck\'s Challenge SECOND PERIOD kicks off Monday 2026-05-25. New bingo card, new theme, fresh start — get the camera charged and the legs ready.')
+        }
         return a
       })(),
     })
