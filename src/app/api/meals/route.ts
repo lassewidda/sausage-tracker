@@ -152,26 +152,34 @@ export async function POST(request: Request): Promise<NextResponse> {
         }
       } catch { /* silent */ }
 
-      // Weekly challenge completion channel notification — disabled for now
-      // try {
-      //   const weekKey = getWeekKey()
-      //   const view = await getChallengeView(weekKey)
-      //   if (view.challenge) {
-      //     const participant = view.participants.find(p => p.playerName === normalizedName.toLowerCase())
-      //     if (participant?.isComplete) {
-      //       const ch = view.challenge
-      //       if (ch.exerciseRequirements) {
-      //         const typeCounts = participant.exerciseTypeCounts ?? {}
-      //         const justMet = Object.entries(ch.exerciseRequirements).some(
-      //           ([type, req]) => (typeCounts[type] ?? 0) === (req as number) && type === exerciseType
-      //         )
-      //         if (justMet) {
-      //           sendSlackChannel(`🏆 ${normalizedName.toUpperCase()} completed the weekly challenge!`).catch(() => {})
-      //         }
-      //       }
-      //     }
-      //   }
-      // } catch { /* silent */ }
+      // Weekly challenge completion channel notification — fires only on the
+      // workout that flips this player from incomplete to complete (photo
+      // route handles the photo-side transition).
+      try {
+        const weekKey = getWeekKey()
+        const view = await getChallengeView(weekKey)
+        const ch = view.challenge
+        const participant = view.participants.find(p => p.playerName === normalizedName.toLowerCase())
+        if (ch && participant?.isComplete) {
+          // Compute previous exercise state by subtracting this workout
+          const prevTypeCounts = { ...(participant.exerciseTypeCounts ?? {}) }
+          prevTypeCounts[exerciseType] = (prevTypeCounts[exerciseType] ?? 1) - 1
+          const prevExerciseCount = participant.exerciseCount - 1
+          let wasExerciseMet: boolean
+          if (ch.exerciseRequirements) {
+            wasExerciseMet = Object.entries(ch.exerciseRequirements).every(
+              ([type, req]) => (prevTypeCounts[type] ?? 0) >= (req as number)
+            )
+          } else {
+            wasExerciseMet = prevExerciseCount >= ch.exerciseMinimum
+          }
+          // allBingoDone unchanged by a workout — only photo uploads change it
+          const wasComplete = wasExerciseMet && participant.completedBingoItems.length === ch.bingoItems.length
+          if (!wasComplete) {
+            sendSlackChannel(`🏆 ${normalizedName.toUpperCase()} completed the weekly challenge!`).catch(() => {})
+          }
+        }
+      } catch { /* silent */ }
 
       // Check for milestone DMs (non-blocking, sends at most one DM) — skip on first workout
       if (!isFirstWorkout) {

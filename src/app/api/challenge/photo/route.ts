@@ -23,6 +23,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid bingo item for this challenge' }, { status: 400 })
   }
 
+  // Detect whether this is a new bingo item for the player (not a re-upload),
+  // so completion notifications only fire on the true transition.
+  const viewBefore = await getChallengeView(wk)
+  const participantBefore = viewBefore.participants.find(p => p.playerName === playerName.toLowerCase())
+  const isNewBingoItem = !participantBefore?.completedBingoItems.includes(bingoItem)
+
   let photo
   try {
     photo = await upsertChallengePhoto(
@@ -64,18 +70,22 @@ export async function POST(req: NextRequest) {
       `${playerName} - ${bingoItem}`
     ).catch(() => {})
 
-    // Check if this completed the challenge for the player/team
-    const view = await getChallengeView(wk)
-    if (challenge.challengeMode === 'group' && challenge.teams) {
-      const team = challenge.teams.find(t => t.members.includes(playerName.toLowerCase()))
-      const teamProgress = view.teamProgress?.find(tp => tp.team.name === team?.name)
-      if (teamProgress?.isComplete) {
-        sendSlackChannel(`🏆 Team ${team!.name} completed the weekly challenge!`).catch(() => {})
-      }
-    } else {
-      const participant = view.participants.find(p => p.playerName === playerName.toLowerCase())
-      if (participant?.isComplete) {
-        sendSlackChannel(`🏆 ${playerName.toUpperCase()} completed the weekly challenge!`).catch(() => {})
+    // Fire completion notification only when this upload is the transition
+    // (a new bingo item that brings the player/team across the line).
+    if (isNewBingoItem) {
+      const view = await getChallengeView(wk)
+      if (challenge.challengeMode === 'group' && challenge.teams) {
+        const team = challenge.teams.find(t => t.members.includes(playerName.toLowerCase()))
+        const teamProgress = view.teamProgress?.find(tp => tp.team.name === team?.name)
+        const teamProgressBefore = viewBefore.teamProgress?.find(tp => tp.team.name === team?.name)
+        if (teamProgress?.isComplete && !teamProgressBefore?.isComplete) {
+          sendSlackChannel(`🏆 Team ${team!.name} completed the weekly challenge!`).catch(() => {})
+        }
+      } else {
+        const participant = view.participants.find(p => p.playerName === playerName.toLowerCase())
+        if (participant?.isComplete && !participantBefore?.isComplete) {
+          sendSlackChannel(`🏆 ${playerName.toUpperCase()} completed the weekly challenge!`).catch(() => {})
+        }
       }
     }
   } catch { /* silent */ }
