@@ -154,7 +154,7 @@ export async function GET(request: Request) {
         }
         if (today === '2026-05-11') {
           a.push('This week is RECHARGE WEEK — no Puck\'s Challenge. Use the breather to rest, stretch, sleep well, and stack a few solid workouts so you arrive sharp.')
-          a.push('Puck\'s Challenge SECOND PERIOD kicks off Monday 2026-05-25. New bingo card, new theme, fresh start — get the camera charged and the legs ready.')
+          a.push('Puck\'s Challenge SECOND PERIOD kicks off Monday 2026-05-18. New bingo card, new theme, fresh start — get the camera charged and the legs ready.')
         }
         return a
       })(),
