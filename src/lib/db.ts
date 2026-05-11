@@ -1088,6 +1088,34 @@ export async function getPlayerBattles(playerName: string): Promise<Battle[]> {
   return rows.map(rowToBattle)
 }
 
+export async function hasReminderSinceActivity(
+  battleId: string,
+  tier: number,
+  battleUpdatedAt: Date,
+): Promise<boolean> {
+  const sql = getDb()
+  const rows = await sql`
+    SELECT 1 FROM battle_reminders
+    WHERE battle_id = ${battleId} AND tier = ${tier} AND sent_at > ${battleUpdatedAt}
+    LIMIT 1
+  `
+  await sql.end()
+  return rows.length > 0
+}
+
+export async function recordBattleReminder(
+  battleId: string,
+  tier: number,
+  playerName: string,
+): Promise<void> {
+  const sql = getDb()
+  await sql`
+    INSERT INTO battle_reminders (battle_id, tier, player_name)
+    VALUES (${battleId}, ${tier}, ${playerName})
+  `
+  await sql.end()
+}
+
 export async function saveBattleSummary(battleId: string, summary: string): Promise<void> {
   const sql = getDb()
   await sql`UPDATE battles SET summary = ${summary} WHERE id = ${battleId}`

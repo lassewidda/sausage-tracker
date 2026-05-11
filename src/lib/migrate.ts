@@ -344,6 +344,20 @@ async function migrate() {
     )
   `
 
+  // Battle reminder log — one row per DM nudge sent. The cron uses
+  // sent_at > battles.updated_at to dedupe within a stall and reset
+  // tier escalation as soon as the player acts.
+  await sql`
+    CREATE TABLE IF NOT EXISTS battle_reminders (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      battle_id UUID NOT NULL REFERENCES battles(id) ON DELETE CASCADE,
+      tier SMALLINT NOT NULL,
+      player_name TEXT NOT NULL,
+      sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+  await sql`CREATE INDEX IF NOT EXISTS idx_battle_reminders_battle_tier ON battle_reminders(battle_id, tier)`
+
   // Enable Row Level Security on all tables with permissive policies
   // (no auth in this app — all access is via server-side API routes)
   const tables = [
@@ -351,6 +365,7 @@ async function migrate() {
     'battle_turns', 'battle_stats', 'battle_taunts', 'battle_effects',
     'player_items', 'player_wallets', 'shop_transactions', 'weekly_goal_snapshots',
     'weekly_challenges', 'challenge_photos', 'app_config', 'player_goals',
+    'battle_reminders',
   ]
   for (const table of tables) {
     await sql`SELECT set_config('app.current_table', ${table}, true)`

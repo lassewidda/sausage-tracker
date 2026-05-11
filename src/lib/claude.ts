@@ -360,6 +360,58 @@ ${data.workoutDescription ? '- Weave in a reference to their actual workout (e.g
   return block.text.trim()
 }
 
+export async function generateBattleNudge(data: {
+  playerName: string
+  opponent: string
+  daysIdle: number
+  tier: 1 | 2 | 3
+  status: 'selecting' | 'battling' | 'awaiting_switch'
+}): Promise<string> {
+  const action = data.status === 'awaiting_switch'
+    ? 'pick a replacement card after their last one was knocked out'
+    : data.status === 'selecting'
+      ? 'choose their 4-card deck'
+      : 'take their next turn'
+
+  const toneByTier: Record<1 | 2 | 3, string> = {
+    1: 'Light and playful — a friendly poke, not a guilt trip. Hint that the opponent is starting to check the clock.',
+    2: 'Firmer. Call out the day count. The opponent has been waiting a while; time to step up.',
+    3: 'Final-warning energy — playful but pointed. This is the last DM they will get for this battle. Light roast is fine.',
+  }
+
+  const prompt = `You are Puck, a fun trash-talking buddy for the PowerUp workplace exercise app at EliteProspects.com (ice hockey database). Old-school hockey humor (70s/80s, Slap Shot vibes) is welcome but not forced.
+
+${data.playerName.toUpperCase()} owes a move in their PowerUp Battle vs ${data.opponent.toUpperCase()}. They need to ${action}. The battle has been waiting on them for ${data.daysIdle} day${data.daysIdle === 1 ? '' : 's'}.
+
+Tone: ${toneByTier[data.tier]}
+
+Write a single Slack DM. Requirements:
+- Max 2 short sentences. No greeting like "Hey" or "Yo" — jump straight in.
+- Mention the opponent's name and that the battle is waiting.
+- 1 emoji max, optional.
+- Do NOT include any URL — it will be appended afterwards.
+- Plain text, no markdown.`
+
+  try {
+    const client = getClient()
+    const message = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 120,
+      messages: [{ role: 'user', content: prompt }],
+    })
+    const block = message.content.find((b) => b.type === 'text')
+    if (block && block.type === 'text') return block.text.trim()
+  } catch { /* fall through to default */ }
+
+  // Fallback if Haiku is unavailable
+  const fallback: Record<1 | 2 | 3, string> = {
+    1: `Your battle vs ${data.opponent.toUpperCase()} is sitting on you. Take your turn before they fall asleep at the bench.`,
+    2: `${data.daysIdle} days and ${data.opponent.toUpperCase()} is still on the bench waiting. Drop the gloves and take your turn.`,
+    3: `Last call — ${data.opponent.toUpperCase()} has been waiting ${data.daysIdle} days. Take your turn or this battle is going to grow moss.`,
+  }
+  return fallback[data.tier]
+}
+
 export async function generateChannelSummary(data: {
   dayLabel: string
   totalActivities: number
