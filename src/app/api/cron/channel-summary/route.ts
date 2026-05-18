@@ -183,6 +183,7 @@ export async function GET(request: Request) {
           a.push('The bingo card has 5 items and each teammate can only claim HALF (3 items max per person in a pair, 2 in the trio) — you HAVE to share the load. The five items: A statue, Your shadow doing something, A GROUP-selfie mid-workout, Something yellow growing wild, An insect.')
           a.push('Exercise minimum: 4 workouts of any type per person — both teammates must hit it for the pair to complete the challenge.')
           a.push('Note on the GROUP-selfie: since pairs are spread across cities, a screenshot from a digital walk meeting together also counts. Get on a call, both of you moving, take a screen capture.')
+          a.push('Note on "Something yellow growing WILD": it must be growing in the wild — a dandelion in a field, rapeseed by the roadside, forsythia in a park. A planted flower in a pot on your balcony or windowsill does NOT count. Get out there and find it.')
         }
         return a
       })(),
