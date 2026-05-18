@@ -91,7 +91,15 @@ export async function GET(request: Request) {
     } catch { /* silent */ }
 
     // Fetch weekly challenge if one exists
-    let challengeInfo: { bingoItems: string[]; exerciseMinimum: number; completedPlayers?: string[]; incompletePlayers?: string[] } | null = null
+    let challengeInfo: {
+      bingoItems: string[]
+      exerciseMinimum: number
+      completedPlayers?: string[]
+      incompletePlayers?: string[]
+      isGroupMode?: boolean
+      completedTeams?: { name: string; members: string[] }[]
+      incompleteTeams?: { name: string; members: string[]; bingoDone: number; bingoTotal: number }[]
+    } | null = null
     try {
       const view = await getChallengeView(weekKey)
       if (view.challenge) {
@@ -101,11 +109,25 @@ export async function GET(request: Request) {
         const incompletePlayers = view.participants
           .filter(p => !p.isComplete)
           .map(p => p.playerName.toUpperCase())
+        const isGroupMode = view.challenge.challengeMode === 'group'
+        const completedTeams = view.teamProgress?.filter(tp => tp.isComplete).map(tp => ({
+          name: tp.team.name,
+          members: tp.team.members.map(m => m.toUpperCase()),
+        }))
+        const incompleteTeams = view.teamProgress?.filter(tp => !tp.isComplete).map(tp => ({
+          name: tp.team.name,
+          members: tp.team.members.map(m => m.toUpperCase()),
+          bingoDone: tp.completedBingoItems.length,
+          bingoTotal: view.challenge!.bingoItems.length,
+        }))
         challengeInfo = {
           bingoItems: view.challenge.bingoItems,
           exerciseMinimum: view.challenge.exerciseMinimum,
           completedPlayers,
           incompletePlayers,
+          isGroupMode,
+          completedTeams,
+          incompleteTeams,
         }
       }
     } catch { /* silent */ }
@@ -155,6 +177,12 @@ export async function GET(request: Request) {
         if (today === '2026-05-11') {
           a.push('This week is RECHARGE WEEK — no Puck\'s Challenge. Use the breather to rest, stretch, sleep well, and stack a few solid workouts so you arrive sharp.')
           a.push('Puck\'s Challenge SECOND PERIOD kicks off Monday 2026-05-18. New bingo card, new theme, fresh start — get the camera charged and the legs ready.')
+        }
+        if (today === '2026-05-18') {
+          a.push('Puck\'s Challenge SECOND PERIOD is LIVE this week (last week was the Recharge break). New twist: this is a PAIR CHALLENGE — colleagues have been paired up and your team completes the bingo card TOGETHER. Check who you\'re paired with at https://powerup.eliteprospects.com/challenge')
+          a.push('The bingo card has 5 items and each teammate can only claim HALF (3 items max per person in a pair, 2 in the trio) — you HAVE to share the load. The five items: A statue, Your shadow doing something, A GROUP-selfie mid-workout, Something yellow growing wild, An insect.')
+          a.push('Exercise minimum: 4 workouts of any type per person — both teammates must hit it for the pair to complete the challenge.')
+          a.push('Note on the GROUP-selfie: since pairs are spread across cities, a screenshot from a digital walk meeting together also counts. Get on a call, both of you moving, take a screen capture.')
         }
         return a
       })(),

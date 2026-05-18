@@ -422,7 +422,15 @@ export async function generateChannelSummary(data: {
   topStreak: { player: string; weeks: number } | null
   recentWorkouts?: string[]
   earlyCompleters?: string[]
-  challengeInfo?: { bingoItems: string[]; exerciseMinimum: number; completedPlayers?: string[]; incompletePlayers?: string[] } | null
+  challengeInfo?: {
+    bingoItems: string[]
+    exerciseMinimum: number
+    completedPlayers?: string[]
+    incompletePlayers?: string[]
+    isGroupMode?: boolean
+    completedTeams?: { name: string; members: string[] }[]
+    incompleteTeams?: { name: string; members: string[]; bingoDone: number; bingoTotal: number }[]
+  } | null
   announcements?: string[]
 }): Promise<string> {
   const client = getClient()
@@ -439,13 +447,19 @@ export async function generateChannelSummary(data: {
     ? `\nPUCK'S WEEKLY CHALLENGE (Photo Bingo):
 - This week's bingo items to photograph: ${data.challengeInfo.bingoItems.join(', ')}
 - Minimum ${data.challengeInfo.exerciseMinimum} workouts required to complete the challenge
-- Players must log their workouts AND photograph the bingo items to complete it
+- ${data.challengeInfo.isGroupMode ? 'GROUP MODE: this is a PAIR/TEAM challenge — teammates split the bingo card and ALL members must hit the workout minimum for the team to complete' : 'Players must log their workouts AND photograph the bingo items to complete it'}
 - Photos MUST be taken OUTSIDE while exercising or moving — indoor photos from home or office do not count
 - Challenge page: https://powerup.eliteprospects.com/challenge${
-  data.challengeInfo.completedPlayers && data.challengeInfo.completedPlayers.length > 0
+  data.challengeInfo.isGroupMode && data.challengeInfo.completedTeams && data.challengeInfo.completedTeams.length > 0
+    ? `\n- TEAMS COMPLETE: ${data.challengeInfo.completedTeams.map(t => `${t.name} (${t.members.join(' & ')})`).join('; ')}`
+    : ''}${
+  data.challengeInfo.isGroupMode && data.challengeInfo.incompleteTeams && data.challengeInfo.incompleteTeams.length > 0
+    ? `\n- TEAMS IN PROGRESS: ${data.challengeInfo.incompleteTeams.map(t => `${t.name} (${t.members.join(' & ')}) — ${t.bingoDone}/${t.bingoTotal} bingo items`).join('; ')}`
+    : ''}${
+  !data.challengeInfo.isGroupMode && data.challengeInfo.completedPlayers && data.challengeInfo.completedPlayers.length > 0
     ? `\n- CHALLENGE COMPLETERS: ${data.challengeInfo.completedPlayers.join(', ')}`
     : ''}${
-  data.challengeInfo.incompletePlayers && data.challengeInfo.incompletePlayers.length > 0
+  !data.challengeInfo.isGroupMode && data.challengeInfo.incompletePlayers && data.challengeInfo.incompletePlayers.length > 0
     ? `\n- STILL IN PROGRESS: ${data.challengeInfo.incompletePlayers.join(', ')}`
     : ''}`
     : ''
@@ -468,7 +482,9 @@ Write a short Slack channel post (${data.challengeInfo && (data.dayLabel === 'Mo
 - Gently encourage those who haven't logged yet (without shaming)
 - The challenge week runs Monday to Sunday. If it's Monday: energize for the new week (7 days ahead)${data.challengeInfo ? '. IMPORTANT: Mention this week\'s Puck\'s Challenge (Photo Bingo) — list the bingo items and remind them to photograph them plus log at least ' + data.challengeInfo.exerciseMinimum + ' workouts to complete it. Stress that the photos must be taken OUTSIDE while exercising or moving — not from inside the house or office. Do NOT say "NEW" — this is a recurring weekly challenge. Link to https://powerup.eliteprospects.com/challenge' : ''}. If Wednesday: mid-week push (5 days left including today). If Friday: weekend push — remind people that Saturday and Sunday still count, 3 days left to hit goals
 ${data.earlyCompleters && data.earlyCompleters.length > 0 ? `- These players already completed their weekly goal with days to spare: ${data.earlyCompleters.join(', ')}. Give them a shout-out and playfully suggest they could raise the bar — maybe set a tougher weekly goal next week since they're clearly crushing it` : ''}
-${data.challengeInfo && data.dayLabel === 'Friday' ? `- IMPORTANT: Celebrate the Photo Bingo challenge completers by name if any. Encourage those still in progress — it's not too late, they have until Sunday! Remind them the bingo photos must be taken OUTSIDE while exercising or moving — not from indoors. Link to https://powerup.eliteprospects.com/challenge` : ''}
+${data.challengeInfo && data.dayLabel === 'Friday' ? (data.challengeInfo.isGroupMode
+  ? `- IMPORTANT: This is a TEAM challenge. Celebrate any TEAMS that completed by name (use the team name, not just members). Encourage teams still in progress with their bingo count — it's not too late, they have until Sunday! Link to https://powerup.eliteprospects.com/challenge`
+  : `- IMPORTANT: Celebrate the Photo Bingo challenge completers by name if any. Encourage those still in progress — it's not too late, they have until Sunday! Remind them the bingo photos must be taken OUTSIDE while exercising or moving — not from indoors. Link to https://powerup.eliteprospects.com/challenge`) : ''}
 ${data.dayLabel === 'Friday' ? '- Remind everyone they can battle their friends in the Battle Arena while waiting for next week — challenge a colleague at https://powerup.eliteprospects.com/battle' : ''}
 ${data.announcements && data.announcements.length > 0 ? data.announcements.map(a => `- ANNOUNCE: ${a}`).join('\n') : ''}
 - When including URLs, copy them EXACTLY as provided — never modify or rephrase URLs
