@@ -293,6 +293,71 @@ export function BattleLobby() {
         </div>
       )}
 
+      {/* Create challenge */}
+      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '400px' }}>
+          <button
+            className="amiga-btn amiga-btn--primary amiga-btn--large"
+            onClick={() => createChallenge()}
+            disabled={loading}
+            style={{ width: '100%' }}
+          >
+            OPEN CHALLENGE
+          </button>
+          <button
+            className="amiga-btn amiga-btn--large"
+            onClick={openOpponentPicker}
+            disabled={loading}
+            style={{ width: '100%', background: '#0a0a0a', color: 'var(--crt-amber)', border: '1px solid var(--crt-amber)' }}
+          >
+            ⚔️ CHALLENGE PLAYER
+          </button>
+        </div>
+        {showOpponentPicker && (
+          <div className="amiga-window" style={{ width: '100%', maxWidth: '400px' }}>
+            <div className="amiga-window__titlebar">
+              <span className="amiga-window__gadget" style={{ cursor: 'pointer' }} onClick={() => setShowOpponentPicker(false)}>&#9632;</span>
+              <span className="amiga-window__title">CHOOSE OPPONENT</span>
+            </div>
+            <div className="amiga-window__body" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+              {loadingPlayers ? (
+                <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '9px', color: 'var(--amiga-grey)', textAlign: 'center', padding: '12px' }}>
+                  LOADING...
+                </div>
+              ) : players.length === 0 ? (
+                <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '9px', color: 'var(--amiga-grey)', textAlign: 'center', padding: '12px' }}>
+                  NO OTHER PLAYERS FOUND
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {players.map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => createChallenge(p)}
+                      disabled={loading}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: '9px',
+                        padding: '6px 10px',
+                        background: '#0a0a0a',
+                        color: '#FFFFFF',
+                        border: '1px solid var(--bevel-shadow)',
+                        cursor: 'pointer',
+                        borderRadius: '2px',
+                      }}
+                    >
+                      ⚔️ {p.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Open challenges */}
       <div className="amiga-window">
         <div className="amiga-window__titlebar">
@@ -629,71 +694,6 @@ export function BattleLobby() {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Create challenge */}
-      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%', maxWidth: '400px' }}>
-          <button
-            className="amiga-btn amiga-btn--primary amiga-btn--large"
-            onClick={() => createChallenge()}
-            disabled={loading}
-            style={{ width: '100%' }}
-          >
-            OPEN CHALLENGE
-          </button>
-          <button
-            className="amiga-btn amiga-btn--large"
-            onClick={openOpponentPicker}
-            disabled={loading}
-            style={{ width: '100%', background: '#0a0a0a', color: 'var(--crt-amber)', border: '1px solid var(--crt-amber)' }}
-          >
-            ⚔️ CHALLENGE PLAYER
-          </button>
-        </div>
-        {showOpponentPicker && (
-          <div className="amiga-window" style={{ width: '100%', maxWidth: '400px' }}>
-            <div className="amiga-window__titlebar">
-              <span className="amiga-window__gadget" style={{ cursor: 'pointer' }} onClick={() => setShowOpponentPicker(false)}>&#9632;</span>
-              <span className="amiga-window__title">CHOOSE OPPONENT</span>
-            </div>
-            <div className="amiga-window__body" style={{ maxHeight: '200px', overflowY: 'auto' }}>
-              {loadingPlayers ? (
-                <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '9px', color: 'var(--amiga-grey)', textAlign: 'center', padding: '12px' }}>
-                  LOADING...
-                </div>
-              ) : players.length === 0 ? (
-                <div style={{ fontFamily: 'var(--font-pixel)', fontSize: '9px', color: 'var(--amiga-grey)', textAlign: 'center', padding: '12px' }}>
-                  NO OTHER PLAYERS FOUND
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {players.map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => createChallenge(p)}
-                      disabled={loading}
-                      style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        fontFamily: 'var(--font-pixel)',
-                        fontSize: '9px',
-                        padding: '6px 10px',
-                        background: '#0a0a0a',
-                        color: '#FFFFFF',
-                        border: '1px solid var(--bevel-shadow)',
-                        cursor: 'pointer',
-                        borderRadius: '2px',
-                      }}
-                    >
-                      ⚔️ {p.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {selectedCard && (
