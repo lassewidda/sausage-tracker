@@ -2109,6 +2109,19 @@ export async function upsertChallengePhoto(
       await sql.end()
       throw new Error('A teammate already submitted this item')
     }
+
+    // Soft cap: each member can claim at most ceil(bingoItems / teamSize) items.
+    // Forces collaboration so one player can't sweep the whole card.
+    const memberCap = Math.ceil(challenge.bingoItems.length / playerTeam.members.length)
+    const ownClaims = await sql`
+      SELECT bingo_item FROM challenge_photos
+      WHERE challenge_id = ${challengeId} AND player_name = ${playerName.toLowerCase()}
+    `
+    const alreadyClaimed = new Set(ownClaims.map(r => r.bingo_item as string))
+    if (!alreadyClaimed.has(bingoItem) && alreadyClaimed.size >= memberCap) {
+      await sql.end()
+      throw new Error(`You've already claimed ${memberCap} items — let your teammate take the rest`)
+    }
   }
 
   const rows = await sql`
