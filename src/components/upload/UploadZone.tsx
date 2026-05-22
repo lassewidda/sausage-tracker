@@ -77,9 +77,15 @@ export function UploadZone() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       analysis = await res.json()
     } catch (err) {
-      setState({ phase: 'idle', error: 'ANALYSIS FAILED. YOU CAN TRY AGAIN.' })
       console.error('Analyze error:', err)
-      return
+      analysis = {
+        count: 1,
+        description: '',
+        confidence: 'low',
+        detectedTypes: [],
+        weightPerItem: 0,
+        failed: true,
+      }
     }
 
     setState({ phase: 'confirming', preview, blobUrl, blobPath, analysis })

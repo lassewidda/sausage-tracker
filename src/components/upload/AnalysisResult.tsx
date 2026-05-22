@@ -60,11 +60,13 @@ export function AnalysisResult({
 
       {/* AI detection badge */}
       <div className="row row--center">
-        <div className="amiga-badge">
-          {IS_EXERCISE
+        <div className="amiga-badge" style={analysis.failed ? { background: '#AA6600' } : undefined}>
+          {analysis.failed
+            ? 'AI UNAVAILABLE — PICK TYPE BELOW'
+            : IS_EXERCISE
             ? `AI DETECTED: ${exerciseType.toUpperCase()} (${analysis.confidence} CONFIDENCE)`
             : theme.strings.aiDetectedLabel(analysis.count, analysis.confidence)}
-          {!IS_EXERCISE && analysis.weightPerItem > 0 && (
+          {!analysis.failed && !IS_EXERCISE && analysis.weightPerItem > 0 && (
             <>&nbsp;&mdash;&nbsp;~{analysis.weightPerItem}G/{theme.strings.itemName.toUpperCase()}</>
           )}
         </div>

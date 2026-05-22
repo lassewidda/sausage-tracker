@@ -37,6 +37,7 @@ export interface AnalysisResult {
   detectedTypes: string[]
   weightPerItem: number
   exerciseType?: string
+  failed?: boolean
 }
 
 export interface WeekGroup {
