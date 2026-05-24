@@ -48,6 +48,10 @@
       "schedule": "0 8 * * *"
     },
     {
+      "path": "/api/cron/battle-walkover",
+      "schedule": "15 8 * * *"
+    },
+    {
       "path": "/api/cron/monday-post",
       "schedule": "59 6 * * 1"
     }

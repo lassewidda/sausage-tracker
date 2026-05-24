@@ -1779,6 +1779,50 @@ export async function switchCard(battleId: string, playerName: string, deckCardI
   await sql.end()
 }
 
+// Mark a stale battle as a walkover for the non-stalled player. Returns
+// { winner, loser } on success, or null if the battle can't be resolved this
+// way (no clear stalled player, missing opponent, already finished, etc.).
+// Mirrors the finalization done in submitMove/switchCard so ELO and summary
+// stay consistent across natural and forced wins.
+export async function declareBattleWalkover(battleId: string): Promise<{ winner: string; loser: string } | null> {
+  const sql = getDb()
+  try {
+    const rows = await sql`SELECT * FROM battles WHERE id = ${battleId}`
+    if (rows.length === 0) return null
+    const b = rows[0]
+    const status = b.status as string
+    if (status === 'finished' || status === 'waiting') return null
+    if (!b.opponent) return null
+
+    let loser: string | null = null
+    if (status === 'battling') loser = (b.turn_player as string | null) ?? null
+    else if (status === 'awaiting_switch') loser = (b.switch_player as string | null) ?? null
+    else if (status === 'selecting') {
+      const cReady = b.challenger_ready as boolean
+      const oReady = b.opponent_ready as boolean
+      if (!cReady && oReady) loser = b.challenger as string
+      else if (cReady && !oReady) loser = b.opponent as string | null
+      // both unready: no clean WO target — skip
+    }
+    if (!loser) return null
+
+    const winner = loser === b.challenger ? (b.opponent as string) : (b.challenger as string)
+
+    await sql`
+      UPDATE battles
+      SET status = 'finished',
+          winner = ${winner},
+          summary = 'Walkover — opponent did not respond within 10 days.',
+          updated_at = NOW()
+      WHERE id = ${battleId}
+    `
+    await updateBattleStatsInternal(sql, winner, loser)
+    return { winner, loser }
+  } finally {
+    await sql.end()
+  }
+}
+
 async function updateBattleStatsInternal(sql: ReturnType<typeof getDb>, winner: string, loser: string) {
   // Ensure rows exist
   await sql`INSERT INTO battle_stats (player_name) VALUES (${winner}) ON CONFLICT DO NOTHING`
