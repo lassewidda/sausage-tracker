@@ -2015,6 +2015,7 @@ function rowToChallenge(row: any): WeeklyChallenge {
     exerciseRequirements: reqs,
     challengeMode: (row.challenge_mode as string) ?? 'individual',
     teams,
+    rescueEnabled: row.rescue_enabled === true,
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
   } as WeeklyChallenge
 }
@@ -2038,14 +2039,15 @@ export async function upsertChallenge(
   exerciseRequirements?: Record<string, number> | null,
   challengeMode: 'individual' | 'group' = 'individual',
   teams?: Team[] | null,
+  rescueEnabled: boolean = false,
 ): Promise<WeeklyChallenge> {
   const sql = getDb()
   const reqJson = exerciseRequirements ? JSON.stringify(exerciseRequirements) : null
   const teamsJson = teams ? JSON.stringify(teams.map(t => ({ ...t, members: t.members.map(m => m.toLowerCase()) }))) : null
   const rows = await sql`
-    INSERT INTO weekly_challenges (week_key, bingo_items, exercise_minimum, exercise_requirements, challenge_mode, teams)
-    VALUES (${weekKey}, ${bingoItems}, ${exerciseMinimum}, ${reqJson}::jsonb, ${challengeMode}, ${teamsJson}::jsonb)
-    ON CONFLICT (week_key) DO UPDATE SET bingo_items = ${bingoItems}, exercise_minimum = ${exerciseMinimum}, exercise_requirements = ${reqJson}::jsonb, challenge_mode = ${challengeMode}, teams = ${teamsJson}::jsonb
+    INSERT INTO weekly_challenges (week_key, bingo_items, exercise_minimum, exercise_requirements, challenge_mode, teams, rescue_enabled)
+    VALUES (${weekKey}, ${bingoItems}, ${exerciseMinimum}, ${reqJson}::jsonb, ${challengeMode}, ${teamsJson}::jsonb, ${rescueEnabled})
+    ON CONFLICT (week_key) DO UPDATE SET bingo_items = ${bingoItems}, exercise_minimum = ${exerciseMinimum}, exercise_requirements = ${reqJson}::jsonb, challenge_mode = ${challengeMode}, teams = ${teamsJson}::jsonb, rescue_enabled = ${rescueEnabled}
     RETURNING *
   `
   await sql.end()
@@ -2142,6 +2144,55 @@ export async function deleteChallengePhoto(id: string, playerName: string): Prom
   `
   await sql.end()
   return rows.length > 0 ? (rows[0].blob_path as string) : null
+}
+
+// Evaluate whether a team meets the exercise requirement, applying the
+// "carry credit" rescue rule for total-minimum challenges:
+//   - each member must have count >= min - 1 (floor)
+//   - each member with count >= min + 1 can donate 1 extra to one teammate
+//   - team is met iff donations cover all deficits
+// Per-type challenges (exerciseRequirements set) use strict per-type checking
+// with no carry credit.
+export function evaluateTeamExercise(
+  members: string[],
+  getCount: (name: string) => number,
+  getTypes: (name: string) => Record<string, number>,
+  challenge: { exerciseMinimum: number; exerciseRequirements?: Record<string, number> | null; rescueEnabled?: boolean },
+): { met: boolean; rescues: { donor: string; recipient: string }[] } {
+  if (challenge.exerciseRequirements) {
+    const met = members.every(m => {
+      const types = getTypes(m)
+      return Object.entries(challenge.exerciseRequirements!).every(
+        ([t, req]) => (types[t] ?? 0) >= (req as number)
+      )
+    })
+    return { met, rescues: [] }
+  }
+  const min = challenge.exerciseMinimum
+  const sorted = [...members].sort()
+  const counts = new Map(sorted.map(m => [m, getCount(m)]))
+  if (!challenge.rescueEnabled) {
+    const met = sorted.every(m => (counts.get(m) ?? 0) >= min)
+    return { met, rescues: [] }
+  }
+  const floor = Math.max(0, min - 1)
+  if (sorted.some(m => (counts.get(m) ?? 0) < floor)) {
+    return { met: false, rescues: [] }
+  }
+  const recipients: string[] = []
+  const donors: string[] = []
+  for (const m of sorted) {
+    const c = counts.get(m)!
+    if (c < min) recipients.push(m)
+    else if (c >= min + 1) donors.push(m)
+  }
+  const rescues: { donor: string; recipient: string }[] = []
+  for (const recipient of recipients) {
+    const donor = donors.shift()
+    if (!donor) return { met: false, rescues: [] }
+    rescues.push({ donor, recipient })
+  }
+  return { met: true, rescues }
 }
 
 export async function getChallengeView(weekKey: string): Promise<ChallengeView> {
@@ -2242,26 +2293,24 @@ export async function getChallengeView(weekKey: string): Promise<ChallengeView> 
       const completedBingoItems = Array.from(new Set(teamPhotos.map(p => p.bingoItem)))
       const memberProgress = participants.filter(p => team.members.includes(p.playerName.toLowerCase()))
 
-      // Team complete: all bingo items done AND every member met exercise requirements
+      // Team complete: all bingo items done AND every member met exercise
+      // requirements (with carry-credit rescue applied for total-minimum mode).
       const allBingoDone = challenge.bingoItems.every(item => completedBingoItems.includes(item))
-      const allMembersExerciseMet = team.members.every(memberName => {
-        const mp = participants.find(p => p.playerName === memberName)
-        if (!mp) return false
-        if (challenge.exerciseRequirements) {
-          const playerTypes = mp.exerciseTypeCounts ?? {}
-          return Object.entries(challenge.exerciseRequirements).every(
-            ([type, required]) => (playerTypes[type] ?? 0) >= (required as number)
-          )
-        }
-        return mp.exerciseCount >= challenge.exerciseMinimum
-      })
+      const ev = evaluateTeamExercise(
+        team.members,
+        m => participants.find(p => p.playerName === m)?.exerciseCount ?? 0,
+        m => participants.find(p => p.playerName === m)?.exerciseTypeCounts ?? {},
+        challenge,
+      )
 
       return {
         team,
         photos: teamPhotos,
         completedBingoItems,
         memberProgress,
-        isComplete: allBingoDone && allMembersExerciseMet,
+        isComplete: allBingoDone && ev.met,
+        rescueUsed: allBingoDone && ev.met && ev.rescues.length > 0,
+        rescues: allBingoDone && ev.met ? ev.rescues : [],
       }
     })
 
@@ -2399,17 +2448,14 @@ export async function getGroupChallengeLeaderboard(): Promise<GroupLeaderboardEn
       const completedBingoItems = Array.from(new Set(teamPhotos.map(p => p.bingoItem)))
       const allBingoDone = challenge.bingoItems.every(item => completedBingoItems.includes(item))
 
-      const allMembersExerciseMet = team.members.every(memberName => {
-        if (challenge.exerciseRequirements) {
-          const playerTypes = weekTypes.get(memberName) ?? {}
-          return Object.entries(challenge.exerciseRequirements).every(
-            ([type, required]) => (playerTypes[type] ?? 0) >= (required as number)
-          )
-        }
-        return (weekExercise.get(memberName) ?? 0) >= challenge.exerciseMinimum
-      })
+      const ev = evaluateTeamExercise(
+        team.members,
+        m => weekExercise.get(m) ?? 0,
+        m => weekTypes.get(m) ?? {},
+        challenge,
+      )
 
-      if (allBingoDone && allMembersExerciseMet) {
+      if (allBingoDone && ev.met) {
         teamCompletionCount.set(team.name, (teamCompletionCount.get(team.name) ?? 0) + 1)
       }
     }

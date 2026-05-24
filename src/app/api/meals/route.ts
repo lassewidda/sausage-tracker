@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { insertMeal, getAllMeals, groupByWeek, addPlayerItem, getPlayerGoal, getWeekKey, getChallengeView, getPlayerMealCount, getSlackUserId } from '@/lib/db'
+import { insertMeal, getAllMeals, groupByWeek, addPlayerItem, getPlayerGoal, getWeekKey, getChallengeView, getPlayerMealCount, getSlackUserId, evaluateTeamExercise } from '@/lib/db'
 import { rewriteDescriptionForCount, generateFirstWorkoutMessage } from '@/lib/claude'
 import { rollItemDrop } from '@/lib/itemCatalog'
 import { sendSlackChannel, sendSlackDM, sendWorkoutToThread } from '@/lib/slack'
@@ -153,30 +153,62 @@ export async function POST(request: Request): Promise<NextResponse> {
       } catch { /* silent */ }
 
       // Weekly challenge completion channel notification — fires only on the
-      // workout that flips this player from incomplete to complete (photo
-      // route handles the photo-side transition).
+      // workout that flips this player (or their team) from incomplete to
+      // complete (photo route handles the photo-side transition).
       try {
         const weekKey = getWeekKey()
         const view = await getChallengeView(weekKey)
         const ch = view.challenge
-        const participant = view.participants.find(p => p.playerName === normalizedName.toLowerCase())
-        if (ch && participant?.isComplete) {
-          // Compute previous exercise state by subtracting this workout
-          const prevTypeCounts = { ...(participant.exerciseTypeCounts ?? {}) }
-          prevTypeCounts[exerciseType] = (prevTypeCounts[exerciseType] ?? 1) - 1
-          const prevExerciseCount = participant.exerciseCount - 1
-          let wasExerciseMet: boolean
-          if (ch.exerciseRequirements) {
-            wasExerciseMet = Object.entries(ch.exerciseRequirements).every(
-              ([type, req]) => (prevTypeCounts[type] ?? 0) >= (req as number)
+        if (ch && ch.challengeMode === 'group' && ch.teams) {
+          // Team mode: check if this workout flipped the team from incomplete to complete.
+          // The only thing a workout can change is the current player's exercise-met state.
+          const team = ch.teams.find(t => t.members.includes(normalizedName.toLowerCase()))
+          const teamProgress = view.teamProgress?.find(tp => tp.team.name === team?.name)
+          if (team && teamProgress?.isComplete) {
+            const allBingoDone = ch.bingoItems.every(item => teamProgress.completedBingoItems.includes(item))
+            const wasEv = evaluateTeamExercise(
+              team.members,
+              m => {
+                const mp = teamProgress.memberProgress.find(p => p.playerName === m)
+                const cur = mp?.exerciseCount ?? 0
+                return m === normalizedName.toLowerCase() ? cur - 1 : cur
+              },
+              m => {
+                const mp = teamProgress.memberProgress.find(p => p.playerName === m)
+                const types = { ...(mp?.exerciseTypeCounts ?? {}) }
+                if (m === normalizedName.toLowerCase()) {
+                  types[exerciseType] = (types[exerciseType] ?? 1) - 1
+                }
+                return types
+              },
+              ch,
             )
-          } else {
-            wasExerciseMet = prevExerciseCount >= ch.exerciseMinimum
+            const wasComplete = allBingoDone && wasEv.met
+            if (!wasComplete) {
+              const tag = teamProgress.rescueUsed ? ' (rescue path used)' : ''
+              sendSlackChannel(`🏆 Team ${team.name} completed the weekly challenge!${tag}`).catch(() => {})
+            }
           }
-          // allBingoDone unchanged by a workout — only photo uploads change it
-          const wasComplete = wasExerciseMet && participant.completedBingoItems.length === ch.bingoItems.length
-          if (!wasComplete) {
-            sendSlackChannel(`🏆 ${normalizedName.toUpperCase()} completed the weekly challenge!`).catch(() => {})
+        } else {
+          const participant = view.participants.find(p => p.playerName === normalizedName.toLowerCase())
+          if (ch && participant?.isComplete) {
+            // Compute previous exercise state by subtracting this workout
+            const prevTypeCounts = { ...(participant.exerciseTypeCounts ?? {}) }
+            prevTypeCounts[exerciseType] = (prevTypeCounts[exerciseType] ?? 1) - 1
+            const prevExerciseCount = participant.exerciseCount - 1
+            let wasExerciseMet: boolean
+            if (ch.exerciseRequirements) {
+              wasExerciseMet = Object.entries(ch.exerciseRequirements).every(
+                ([type, req]) => (prevTypeCounts[type] ?? 0) >= (req as number)
+              )
+            } else {
+              wasExerciseMet = prevExerciseCount >= ch.exerciseMinimum
+            }
+            // allBingoDone unchanged by a workout — only photo uploads change it
+            const wasComplete = wasExerciseMet && participant.completedBingoItems.length === ch.bingoItems.length
+            if (!wasComplete) {
+              sendSlackChannel(`🏆 ${normalizedName.toUpperCase()} completed the weekly challenge!`).catch(() => {})
+            }
           }
         }
       } catch { /* silent */ }

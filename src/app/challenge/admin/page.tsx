@@ -33,6 +33,7 @@ export default function ChallengeAdminPage() {
   const [strengthReq, setStrengthReq] = useState(0)
   const [challengeMode, setChallengeMode] = useState<'individual' | 'group'>('individual')
   const [teams, setTeams] = useState<Array<{ name: string; members: string[] }>>([])
+  const [rescueEnabled, setRescueEnabled] = useState(false)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [allPlayers, setAllPlayers] = useState<string[]>([])
@@ -134,6 +135,7 @@ export default function ChallengeAdminPage() {
             name: t.name.trim(),
             members: t.members.map(m => m.trim().toLowerCase()).filter(Boolean),
           })).filter(t => t.name && t.members.length > 0) : null,
+          rescueEnabled: challengeMode === 'group' ? rescueEnabled : false,
         }),
       })
 
@@ -183,6 +185,7 @@ export default function ChallengeAdminPage() {
     }
     setChallengeMode(challenge.challengeMode ?? 'individual')
     setTeams(challenge.teams ?? [])
+    setRescueEnabled(Boolean(challenge.rescueEnabled))
     setMessage(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -427,6 +430,37 @@ export default function ChallengeAdminPage() {
               </button>
             </div>
           </div>
+
+          {/* Rescue toggle (group mode) */}
+          {challengeMode === 'group' && (
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '8px',
+                color: 'var(--crt-amber)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+              }}>
+                <input
+                  type="checkbox"
+                  checked={rescueEnabled}
+                  onChange={e => setRescueEnabled(e.target.checked)}
+                />
+                ENABLE RESCUE PATH (CARRY CREDIT)
+              </label>
+              <div style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: '6px',
+                color: 'var(--amiga-dark-grey)',
+                marginTop: '4px',
+                lineHeight: 1.5,
+              }}>
+                A teammate with 1+ EXTRA workout can credit 1 to a partner BELOW the minimum (capped at 1 per donor). Floor: every member needs at least (MIN − 1) on their own.
+              </div>
+            </div>
+          )}
 
           {/* Team editor (group mode) */}
           {challengeMode === 'group' && (

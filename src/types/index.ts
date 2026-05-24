@@ -215,6 +215,7 @@ export interface WeeklyChallenge {
   exerciseRequirements?: Record<string, number> | null
   challengeMode: 'individual' | 'group'
   teams: Team[] | null
+  rescueEnabled: boolean
   createdAt: string
 }
 
@@ -243,6 +244,8 @@ export interface TeamProgress {
   completedBingoItems: string[]
   memberProgress: ChallengeParticipant[]
   isComplete: boolean
+  rescueUsed: boolean
+  rescues: { donor: string; recipient: string }[]
 }
 
 export interface ChallengeView {

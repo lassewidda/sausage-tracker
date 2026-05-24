@@ -79,7 +79,8 @@ export async function POST(req: NextRequest) {
         const teamProgress = view.teamProgress?.find(tp => tp.team.name === team?.name)
         const teamProgressBefore = viewBefore.teamProgress?.find(tp => tp.team.name === team?.name)
         if (teamProgress?.isComplete && !teamProgressBefore?.isComplete) {
-          sendSlackChannel(`🏆 Team ${team!.name} completed the weekly challenge!`).catch(() => {})
+          const tag = teamProgress.rescueUsed ? ' (rescue path used)' : ''
+          sendSlackChannel(`🏆 Team ${team!.name} completed the weekly challenge!${tag}`).catch(() => {})
         }
       } else {
         const participant = view.participants.find(p => p.playerName === playerName.toLowerCase())

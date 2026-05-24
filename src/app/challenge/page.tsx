@@ -889,21 +889,29 @@ export default function ChallengePage() {
                           }
                           const exerciseCount = mp?.exerciseCount ?? 0
                           const met = exerciseCount >= challenge.exerciseMinimum
+                          const rescuedBy = myTeamProgress?.rescues.find(r => r.recipient === memberName)?.donor
                           return (
                             <div key={memberName} style={{
                               fontFamily: 'var(--font-pixel)',
                               fontSize: '7px',
-                              color: met ? '#00CC00' : 'var(--crt-amber)',
+                              color: met ? '#00CC00' : rescuedBy ? 'var(--crt-amber)' : 'var(--crt-amber)',
                               padding: '2px 0',
                               textTransform: 'uppercase',
                             }}>
                               {memberName}: {exerciseCount}/{challenge.exerciseMinimum} EXERCISES {met && '\u2713'}
+                              {rescuedBy && (
+                                <span style={{ color: 'var(--amiga-orange)', marginLeft: '6px' }}>
+                                  \ud83c\udd98 RESCUED BY {rescuedBy}
+                                </span>
+                              )}
                             </div>
                           )
                         })}
                       </div>
                       {(() => {
+                        const rescuedSet = new Set(myTeamProgress?.rescues.map(r => r.recipient) ?? [])
                         const readyCount = myTeam.members.filter(memberName => {
+                          if (rescuedSet.has(memberName)) return true
                           const mp = participants.find(p => p.playerName === memberName)
                           if (!mp) return false
                           const reqs = challenge.exerciseRequirements
@@ -940,6 +948,11 @@ export default function ChallengePage() {
                         textShadow: '0 0 8px rgba(255, 215, 0, 0.5)',
                       }}>
                         TEAM CHALLENGE COMPLETE!
+                        {myTeamProgress.rescueUsed && (
+                          <div style={{ marginTop: '4px', fontSize: '8px', color: 'var(--crt-amber)' }}>
+                            🆘 RESCUE PATH USED
+                          </div>
+                        )}
                       </div>
                     )}
                   </>
@@ -1087,7 +1100,7 @@ export default function ChallengePage() {
                       fontSize: '7px',
                       color: '#FFD700',
                     }}>
-                      COMPLETE
+                      {tp.rescueUsed ? '🆘 COMPLETE' : 'COMPLETE'}
                     </span>
                   )}
                 </div>
@@ -1187,14 +1200,16 @@ export default function ChallengePage() {
                     }
                     const exerciseCount = mp?.exerciseCount ?? 0
                     const met = exerciseCount >= challenge.exerciseMinimum
+                    const rescuedBy = tp.rescues.find(r => r.recipient === memberName)?.donor
                     return (
                       <div key={memberName} style={{
                         fontFamily: 'var(--font-pixel)',
                         fontSize: '6px',
-                        color: met ? '#00CC00' : 'var(--amiga-dark-grey)',
+                        color: met ? '#00CC00' : rescuedBy ? 'var(--amiga-orange)' : 'var(--amiga-dark-grey)',
                         textTransform: 'uppercase',
                       }}>
                         {memberName}: {exerciseCount}/{challenge.exerciseMinimum} {met && '\u2713'}
+                        {rescuedBy && <span style={{ marginLeft: '6px' }}>\ud83c\udd98 RESCUED BY {rescuedBy}</span>}
                       </div>
                     )
                   })}

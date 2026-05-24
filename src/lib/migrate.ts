@@ -293,6 +293,9 @@ async function migrate() {
   await sql`ALTER TABLE weekly_challenges ADD COLUMN IF NOT EXISTS challenge_mode TEXT NOT NULL DEFAULT 'individual'`
   await sql`ALTER TABLE weekly_challenges ADD COLUMN IF NOT EXISTS teams JSONB`
 
+  // Carry-credit rescue path: opt-in per challenge
+  await sql`ALTER TABLE weekly_challenges ADD COLUMN IF NOT EXISTS rescue_enabled BOOLEAN NOT NULL DEFAULT false`
+
   // Battle tactics: miss tracking
   await sql`ALTER TABLE battle_turns ADD COLUMN IF NOT EXISTS is_miss BOOLEAN NOT NULL DEFAULT false`
 
