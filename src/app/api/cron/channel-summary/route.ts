@@ -98,7 +98,14 @@ export async function GET(request: Request) {
       incompletePlayers?: string[]
       isGroupMode?: boolean
       completedTeams?: { name: string; members: string[] }[]
-      incompleteTeams?: { name: string; members: string[]; bingoDone: number; bingoTotal: number }[]
+      incompleteTeams?: {
+        name: string
+        members: string[]
+        bingoDone: number
+        bingoTotal: number
+        totalWorkouts: number
+        membersExerciseStatus: { name: string; workouts: number; exerciseMet: boolean }[]
+      }[]
     } | null = null
     try {
       const view = await getChallengeView(weekKey)
@@ -110,16 +117,38 @@ export async function GET(request: Request) {
           .filter(p => !p.isComplete)
           .map(p => p.playerName.toUpperCase())
         const isGroupMode = view.challenge.challengeMode === 'group'
+        const exerciseReqs = view.challenge.exerciseRequirements
+        const exerciseMinimum = view.challenge.exerciseMinimum
+        const memberExerciseMet = (m: { exerciseCount: number; exerciseTypeCounts?: Record<string, number> }) => {
+          if (exerciseReqs) {
+            const types = m.exerciseTypeCounts ?? {}
+            return Object.entries(exerciseReqs).every(([type, required]) => (types[type] ?? 0) >= (required as number))
+          }
+          return m.exerciseCount >= exerciseMinimum
+        }
         const completedTeams = view.teamProgress?.filter(tp => tp.isComplete).map(tp => ({
           name: tp.team.name,
           members: tp.team.members.map(m => m.toUpperCase()),
         }))
-        const incompleteTeams = view.teamProgress?.filter(tp => !tp.isComplete).map(tp => ({
-          name: tp.team.name,
-          members: tp.team.members.map(m => m.toUpperCase()),
-          bingoDone: tp.completedBingoItems.length,
-          bingoTotal: view.challenge!.bingoItems.length,
-        }))
+        const incompleteTeams = view.teamProgress?.filter(tp => !tp.isComplete).map(tp => {
+          const totalWorkouts = tp.memberProgress.reduce((sum, m) => sum + m.exerciseCount, 0)
+          const membersExerciseStatus = tp.team.members.map(memberName => {
+            const mp = tp.memberProgress.find(p => p.playerName === memberName)
+            return {
+              name: memberName.toUpperCase(),
+              workouts: mp?.exerciseCount ?? 0,
+              exerciseMet: mp ? memberExerciseMet(mp) : false,
+            }
+          })
+          return {
+            name: tp.team.name,
+            members: tp.team.members.map(m => m.toUpperCase()),
+            bingoDone: tp.completedBingoItems.length,
+            bingoTotal: view.challenge!.bingoItems.length,
+            totalWorkouts,
+            membersExerciseStatus,
+          }
+        })
         challengeInfo = {
           bingoItems: view.challenge.bingoItems,
           exerciseMinimum: view.challenge.exerciseMinimum,
@@ -185,6 +214,8 @@ export async function GET(request: Request) {
           a.push('Note on the GROUP-selfie: since pairs are spread across cities, a screenshot from a digital walk meeting together also counts. Get on a call, both of you moving, take a screen capture.')
           a.push('Note on "Something yellow growing WILD": it must be growing in the wild — a dandelion in a field, rapeseed by the roadside, forsythia in a park. A planted flower in a pot on your balcony or windowsill does NOT count. Get out there and find it.')
         }
+        // 2026-05-25 (W22 launch): hand-written post fires at 06:59 UTC via
+        // /api/cron/monday-post instead — keep the LLM summary stats-only.
         return a
       })(),
     })
