@@ -2382,11 +2382,16 @@ export async function getChallengeLeaderboard(): Promise<ChallengeLeaderboardEnt
   // Get all photos grouped by challenge
   const allPhotos = await sql`SELECT * FROM challenge_photos`
 
-  // Get exercise counts per player per week
+  // Get exercise counts per player per week (total + per-type)
   const exerciseRows = await sql`
-    SELECT player_name, week_key, SUM(item_count)::int AS exercise_count
-    FROM meals
+    SELECT player_name, week_key, COUNT(*)::int AS exercise_count
+    FROM meals WHERE exercise_type IS NOT NULL AND exercise_type <> 'photo'
     GROUP BY player_name, week_key
+  `
+  const typeRows = await sql`
+    SELECT player_name, week_key, exercise_type, COUNT(*)::int AS type_count
+    FROM meals WHERE exercise_type IS NOT NULL AND exercise_type <> 'photo'
+    GROUP BY player_name, week_key, exercise_type
   `
 
   await sql.end()
@@ -2399,16 +2404,49 @@ export async function getChallengeLeaderboard(): Promise<ChallengeLeaderboardEnt
     if (!exerciseMap.has(wk)) exerciseMap.set(wk, new Map())
     exerciseMap.get(wk)!.set(pn, row.exercise_count as number)
   }
+  const typeCountMap = new Map<string, Map<string, Record<string, number>>>()
+  for (const row of typeRows) {
+    const wk = row.week_key as string
+    const pn = row.player_name as string
+    if (!typeCountMap.has(wk)) typeCountMap.set(wk, new Map())
+    const weekMap = typeCountMap.get(wk)!
+    if (!weekMap.has(pn)) weekMap.set(pn, {})
+    weekMap.get(pn)![row.exercise_type as string] = row.type_count as number
+  }
 
-  // For each challenge, determine which players completed it
+  // For each challenge, determine which players completed it.
+  // Group-mode challenges credit every member of a completing team (since no
+  // single player photographs the whole bingo card themselves under the
+  // per-member share cap).
   const completionCount = new Map<string, number>()
 
   for (const ch of challenges) {
     const challenge = rowToChallenge(ch)
     const challengePhotos = allPhotos.filter((p: any) => p.challenge_id === challenge.id).map(rowToChallengePhoto)
     const weekExercise = exerciseMap.get(challenge.weekKey) ?? new Map()
+    const weekTypes = typeCountMap.get(challenge.weekKey) ?? new Map()
 
-    // Find all players who have any involvement
+    if (challenge.challengeMode === 'group' && challenge.teams) {
+      for (const team of challenge.teams) {
+        const teamPhotos = challengePhotos.filter(p => team.members.includes(p.playerName.toLowerCase()))
+        const completedBingoItems = Array.from(new Set(teamPhotos.map(p => p.bingoItem)))
+        const allBingoDone = challenge.bingoItems.every(item => completedBingoItems.includes(item))
+        if (!allBingoDone) continue
+        const ev = evaluateTeamExercise(
+          team.members,
+          m => weekExercise.get(m) ?? 0,
+          m => weekTypes.get(m) ?? {},
+          challenge,
+        )
+        if (!ev.met) continue
+        for (const member of team.members) {
+          completionCount.set(member, (completionCount.get(member) ?? 0) + 1)
+        }
+      }
+      continue
+    }
+
+    // Individual mode: per-player bingo + per-player exercise.
     const playerSet = new Set<string>()
     for (const p of challengePhotos) playerSet.add(p.playerName)
     Array.from(weekExercise.keys()).forEach(name => playerSet.add(name))

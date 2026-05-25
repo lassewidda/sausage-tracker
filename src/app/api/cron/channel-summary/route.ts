@@ -97,6 +97,7 @@ export async function GET(request: Request) {
       completedPlayers?: string[]
       incompletePlayers?: string[]
       isGroupMode?: boolean
+      rescueEnabled?: boolean
       completedTeams?: { name: string; members: string[] }[]
       incompleteTeams?: {
         name: string
@@ -155,6 +156,7 @@ export async function GET(request: Request) {
           completedPlayers,
           incompletePlayers,
           isGroupMode,
+          rescueEnabled: Boolean(view.challenge.rescueEnabled),
           completedTeams,
           incompleteTeams,
         }

@@ -428,8 +428,16 @@ export async function generateChannelSummary(data: {
     completedPlayers?: string[]
     incompletePlayers?: string[]
     isGroupMode?: boolean
+    rescueEnabled?: boolean
     completedTeams?: { name: string; members: string[] }[]
-    incompleteTeams?: { name: string; members: string[]; bingoDone: number; bingoTotal: number }[]
+    incompleteTeams?: {
+      name: string
+      members: string[]
+      bingoDone: number
+      bingoTotal: number
+      totalWorkouts?: number
+      membersExerciseStatus?: { name: string; workouts: number; exerciseMet: boolean }[]
+    }[]
   } | null
   announcements?: string[]
 }): Promise<string> {
@@ -443,6 +451,21 @@ export async function generateChannelSummary(data: {
     ? `\nRecent workout snapshots from participants:\n${data.recentWorkouts.map(w => `- ${w}`).join('\n')}`
     : ''
 
+  const incompleteTeamLines = data.challengeInfo?.isGroupMode && data.challengeInfo.incompleteTeams && data.challengeInfo.incompleteTeams.length > 0
+    ? data.challengeInfo.incompleteTeams
+        .slice()
+        .sort((a, b) => b.bingoDone - a.bingoDone || (b.totalWorkouts ?? 0) - (a.totalWorkouts ?? 0))
+        .slice(0, 6)
+        .map(t => {
+          const memberStatus = t.membersExerciseStatus && t.membersExerciseStatus.length > 0
+            ? t.membersExerciseStatus.map(m => `${m.name} ${m.workouts}${m.exerciseMet ? '✓' : '✗'}`).join(' / ')
+            : t.members.join(' & ')
+          const totalWk = t.totalWorkouts !== undefined ? `, ${t.totalWorkouts} team workouts` : ''
+          return `  • ${t.name} (${t.members.join(' & ')}): bingo ${t.bingoDone}/${t.bingoTotal}${totalWk} — per-member: ${memberStatus}`
+        })
+        .join('\n')
+    : ''
+
   const challengeSection = data.challengeInfo
     ? `\nPUCK'S WEEKLY CHALLENGE (Photo Bingo):
 - This week's bingo items to photograph: ${data.challengeInfo.bingoItems.join(', ')}
@@ -453,8 +476,8 @@ export async function generateChannelSummary(data: {
   data.challengeInfo.isGroupMode && data.challengeInfo.completedTeams && data.challengeInfo.completedTeams.length > 0
     ? `\n- TEAMS COMPLETE: ${data.challengeInfo.completedTeams.map(t => `${t.name} (${t.members.join(' & ')})`).join('; ')}`
     : ''}${
-  data.challengeInfo.isGroupMode && data.challengeInfo.incompleteTeams && data.challengeInfo.incompleteTeams.length > 0
-    ? `\n- TEAMS IN PROGRESS: ${data.challengeInfo.incompleteTeams.map(t => `${t.name} (${t.members.join(' & ')}) — ${t.bingoDone}/${t.bingoTotal} bingo items`).join('; ')}`
+  incompleteTeamLines
+    ? `\n- TEAMS IN PROGRESS (top by bingo progress, ✓ = met workout target, ✗ = still short):\n${incompleteTeamLines}`
     : ''}${
   !data.challengeInfo.isGroupMode && data.challengeInfo.completedPlayers && data.challengeInfo.completedPlayers.length > 0
     ? `\n- CHALLENGE COMPLETERS: ${data.challengeInfo.completedPlayers.join(', ')}`
@@ -474,7 +497,7 @@ ${data.topStreak ? `- Longest streak: ${data.topStreak.player} with ${data.topSt
 
 ${highlights}${workoutColor}${challengeSection}
 
-Write a short Slack channel post (${data.challengeInfo && (data.dayLabel === 'Monday' || data.dayLabel === 'Friday') ? '6-10' : '4-6'} lines max). Requirements:
+Write a short Slack channel post (${data.challengeInfo && (data.dayLabel === 'Monday' || data.dayLabel === 'Friday' || (data.dayLabel === 'Wednesday' && data.challengeInfo.isGroupMode)) ? '6-10' : '4-6'} lines max). Requirements:
 - Start with a relevant emoji
 - Be motivational and positive — but do NOT start with a label like "Monday Motivation:", "Mid-week Update:", or the day name. Jump straight into the content about the players and their achievements.
 - The primary goal of the challenge is for each person to complete their own personal weekly goal — everyone who does is equally successful regardless of workout count. Celebrate goal completers as a group, not by singling out who logged the most
@@ -482,17 +505,23 @@ Write a short Slack channel post (${data.challengeInfo && (data.dayLabel === 'Mo
 - Gently encourage those who haven't logged yet (without shaming)
 - The challenge week runs Monday to Sunday. If it's Monday: energize for the new week (7 days ahead)${data.challengeInfo ? '. IMPORTANT: Mention this week\'s Puck\'s Challenge (Photo Bingo) — list the bingo items and remind them to photograph them plus log at least ' + data.challengeInfo.exerciseMinimum + ' workouts to complete it. Stress that the photos must be taken OUTSIDE while exercising or moving — not from inside the house or office. Do NOT say "NEW" — this is a recurring weekly challenge. Link to https://powerup.eliteprospects.com/challenge' : ''}. If Wednesday: mid-week push (5 days left including today). If Friday: weekend push — remind people that Saturday and Sunday still count, 3 days left to hit goals
 ${data.earlyCompleters && data.earlyCompleters.length > 0 ? `- These players already completed their weekly goal with days to spare: ${data.earlyCompleters.join(', ')}. Give them a shout-out and playfully suggest they could raise the bar — maybe set a tougher weekly goal next week since they're clearly crushing it` : ''}
+${data.challengeInfo?.isGroupMode ? `- IMPORTANT — TEAM CHALLENGE FRAMING (applies every day, not just Friday): make the TEAMS the main characters of this post. Mention 1–3 teams by NAME with a one-liner about their current standing — bingo count, total team workouts, or which linemate is carrying the line vs. skating short-handed. Use the per-member ✓/✗ status from TEAMS IN PROGRESS to call out specific dynamics (e.g. "ICE WOLVES are 4/5 on the bingo card but JONAS is still skating short-handed on workouts"). Individual shout-outs are still welcome but the team frame leads. NEVER shame a teammate who's behind — frame it as "the linemate they're back-checking for" or "needs to lace up and join the rush".` : ''}
+${data.challengeInfo?.isGroupMode ? `- TEAM SPORT REMINDER (every group-mode day): explicitly say this is a TEAM SPORT, not a solo grind — grinding workouts alone does not get the team across the line. Tell pairs to DM each other today: divide the bingo card, plan photos, nudge a quiet linemate. The win comes from coordinating, not from one player carrying.` : ''}
+${data.challengeInfo?.isGroupMode && data.challengeInfo.rescueEnabled ? `- RESCUE PILL is ON this week: if a partner ends the week one workout short of the minimum, a teammate's extra workouts can rescue them (one rescue per donor, every member still needs at least minimum-1 on their own). Mention it briefly on Wed/Fri as a backstop — frame it as "the rescue pill is in the kit, but you still need to lace up".` : ''}
+${data.challengeInfo?.isGroupMode && data.dayLabel === 'Monday' ? `- Monday + group mode: drop the puck on the new week by announcing the lineups Slap-Shot style. Name the teams taking the ice, hype the matchups, set the tone — wooden sticks, mustaches, no helmets energy.` : ''}
+${data.challengeInfo?.isGroupMode && data.dayLabel === 'Wednesday' ? `- Wednesday + group mode: mid-period check-in. Lead with team standings (1-3 named teams). Rib (lightly) any team trailing on bingo or with a teammate skating short-handed on workouts, and tip the cap to the team in the lead. Two periods left to play. Push pairs to DM each other TODAY if they haven't yet — Wednesday is the day to course-correct.` : ''}
 ${data.challengeInfo && data.dayLabel === 'Friday' ? (data.challengeInfo.isGroupMode
-  ? `- IMPORTANT: This is a TEAM challenge. Celebrate any TEAMS that completed by name (use the team name, not just members). Encourage teams still in progress with their bingo count — it's not too late, they have until Sunday! Link to https://powerup.eliteprospects.com/challenge`
+  ? `- IMPORTANT (Friday + group mode): celebrate any TEAMS that completed by NAME (use the team name as the headline, not just members). For teams still in progress, point at their bingo count and total workouts and call it like the third period — drop the gloves, three days left, no team gets left on the bench. Remind teams with a struggling teammate to back-check for their linemate over the weekend — text them, suggest a workout together, share the load. Link to https://powerup.eliteprospects.com/challenge`
   : `- IMPORTANT: Celebrate the Photo Bingo challenge completers by name if any. Encourage those still in progress — it's not too late, they have until Sunday! Remind them the bingo photos must be taken OUTSIDE while exercising or moving — not from indoors. Link to https://powerup.eliteprospects.com/challenge`) : ''}
 ${data.dayLabel === 'Friday' ? '- Remind everyone they can battle their friends in the Battle Arena while waiting for next week — challenge a colleague at https://powerup.eliteprospects.com/battle' : ''}
 ${data.announcements && data.announcements.length > 0 ? data.announcements.map(a => `- ANNOUNCE: ${a}`).join('\n') : ''}
 - When including URLs, copy them EXACTLY as provided — never modify or rephrase URLs
+- Hockey voice: lean into old-school 70s/80s Slap-Shot vibes — linemates, the bench, back-checking, drop-the-gloves, wooden sticks, bushy mustaches, no-helmets era. Keep it light and inclusive — never shame anyone.
 - Keep it casual and fun, plain text only (no markdown)`
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: data.challengeInfo && (data.dayLabel === 'Monday' || data.dayLabel === 'Friday') ? 500 : 300,
+    max_tokens: data.challengeInfo && (data.dayLabel === 'Monday' || data.dayLabel === 'Friday' || (data.dayLabel === 'Wednesday' && data.challengeInfo.isGroupMode)) ? 500 : 300,
     messages: [{ role: 'user', content: prompt }],
   })
 
