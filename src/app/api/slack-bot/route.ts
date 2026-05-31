@@ -1,11 +1,17 @@
-import { NextResponse } from 'next/server'
-import { getPlayerGoal, getWeekKey, getGoalStreaks, getAllPlayerGoals, getLeaderboard } from '@/lib/db'
-import { sendSlackReply } from '@/lib/slack'
-import Anthropic from '@anthropic-ai/sdk'
-import postgres from 'postgres'
-import { CHANGELOG } from '@/generated/changelog'
+import { NextResponse } from "next/server";
+import {
+  getPlayerGoal,
+  getWeekKey,
+  getGoalStreaks,
+  getAllPlayerGoals,
+  getLeaderboard,
+} from "@/lib/db";
+import { sendSlackReply } from "@/lib/slack";
+import Anthropic from "@anthropic-ai/sdk";
+import postgres from "postgres";
+import { CHANGELOG } from "@/generated/changelog";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 function getDb() {
   return postgres(process.env.DATABASE_URL!, {
@@ -13,229 +19,263 @@ function getDb() {
     ssl: { rejectUnauthorized: false },
     idle_timeout: 20,
     connect_timeout: 10,
-  })
+  });
 }
 
 // Slack sends a challenge on initial setup — must respond with the challenge value
 // Also handles app_mention events
 export async function POST(request: Request) {
-  const body = await request.json()
+  const body = await request.json();
 
   // Slack URL verification challenge
-  if (body.type === 'url_verification') {
-    return NextResponse.json({ challenge: body.challenge })
+  if (body.type === "url_verification") {
+    return NextResponse.json({ challenge: body.challenge });
   }
 
   // Ignore retries (Slack resends if no 200 within 3s)
-  if (request.headers.get('x-slack-retry-num')) {
-    return NextResponse.json({ ok: true })
+  if (request.headers.get("x-slack-retry-num")) {
+    return NextResponse.json({ ok: true });
   }
 
   // Handle app_mention events, DMs, and thread replies
   // Await fully before responding (Vercel kills functions after response)
   // Slack may retry if we take >3s, but we ignore retries above
-  const event = body.event
-  const eventType = event?.type
-  const isAppMention = eventType === 'app_mention'
-  const isDM = eventType === 'message' && event?.channel_type === 'im' && !event?.bot_id
-  const textLower = (event?.text || '').toLowerCase()
-  const mentionsPuck = textLower.includes('puck')
-  const isThreadReply = eventType === 'message' && event?.thread_ts && !event?.bot_id && event?.channel_type !== 'im' && mentionsPuck
+  const event = body.event;
+  const eventType = event?.type;
+  const isAppMention = eventType === "app_mention";
+  const isDM = eventType === "message" && event?.channel_type === "im" && !event?.bot_id;
+  const textLower = (event?.text || "").toLowerCase();
+  const mentionsPuck = textLower.includes("puck");
+  const isThreadReply =
+    eventType === "message" &&
+    event?.thread_ts &&
+    !event?.bot_id &&
+    event?.channel_type !== "im" &&
+    mentionsPuck;
 
   if (isAppMention || isDM || isThreadReply) {
     try {
-      await handleMention(event)
+      await handleMention(event);
     } catch (err) {
-      console.error('Bot mention error:', err)
+      console.error("Bot mention error:", err);
     }
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true });
   }
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true });
 }
 
 async function handleMention(event: {
-  text: string
-  user: string
-  channel: string
-  ts: string
-  thread_ts?: string
+  text: string;
+  user: string;
+  channel: string;
+  ts: string;
+  thread_ts?: string;
 }) {
-  const { text, user: slackUserId, channel, ts, thread_ts } = event
+  const { text, user: slackUserId, channel, ts, thread_ts } = event;
 
   // Strip the bot mention from the text
-  const question = text.replace(/<@[A-Z0-9]+>/g, '').trim()
+  const question = text.replace(/<@[A-Z0-9]+>/g, "").trim();
   if (!question) {
-    await sendSlackReply(channel, thread_ts || ts, "Hey! Ask me anything about the PowerUp exercise challenge and I'll help out 💪")
-    return
+    await sendSlackReply(
+      channel,
+      thread_ts || ts,
+      "Hey! Ask me anything about the PowerUp exercise challenge and I'll help out 💪",
+    );
+    return;
   }
 
   // Look up the player by Slack ID
-  const sql = getDb()
-  let playerContext = ''
+  const sql = getDb();
+  let playerContext = "";
   try {
-    const weekKey = getWeekKey()
+    const weekKey = getWeekKey();
 
     // Find player name from Slack ID
     const playerRows = await sql`
       SELECT player_name, cardio_target, strength_target, fun_fact FROM player_goals WHERE slack_user_id = ${slackUserId}
-    `
+    `;
 
     if (playerRows.length > 0) {
-      const playerName = playerRows[0].player_name as string
-      const cardioTarget = playerRows[0].cardio_target as number
-      const strengthTarget = playerRows[0].strength_target as number
+      const playerName = playerRows[0].player_name as string;
+      const cardioTarget = playerRows[0].cardio_target as number;
+      const strengthTarget = playerRows[0].strength_target as number;
 
-      // Get their current week stats
+      // Get their current week stats. Photo-bingo uploads share the meals
+      // table but are not workouts — exclude them from the totals.
       const weekStats = await sql`
         SELECT
           COUNT(*) FILTER (WHERE exercise_type = 'cardio')::int AS cardio,
           COUNT(*) FILTER (WHERE exercise_type = 'strength')::int AS strength,
-          COUNT(*)::int AS total
+          COUNT(*) FILTER (WHERE exercise_type IS NULL OR exercise_type <> 'photo')::int AS total
         FROM meals WHERE player_name = ${playerName} AND week_key = ${weekKey}
-      `
+      `;
 
-      const cardio = weekStats[0]?.cardio as number ?? 0
-      const strength = weekStats[0]?.strength as number ?? 0
-      const total = weekStats[0]?.total as number ?? 0
+      const cardio = (weekStats[0]?.cardio as number) ?? 0;
+      const strength = (weekStats[0]?.strength as number) ?? 0;
+      const total = (weekStats[0]?.total as number) ?? 0;
 
-      // Get total all-time
+      // Get total all-time (excluding photos)
       const allTimeStats = await sql`
-        SELECT COUNT(*)::int AS total FROM meals WHERE player_name = ${playerName}
-      `
-      const allTimeTotal = allTimeStats[0]?.total as number ?? 0
+        SELECT COUNT(*)::int AS total FROM meals
+        WHERE player_name = ${playerName} AND (exercise_type IS NULL OR exercise_type <> 'photo')
+      `;
+      const allTimeTotal = (allTimeStats[0]?.total as number) ?? 0;
 
-      const funFact = playerRows[0].fun_fact as string | null
+      const funFact = playerRows[0].fun_fact as string | null;
 
       playerContext = `
 The person asking is: ${playerName.toUpperCase()}
 Their weekly goal: ${cardioTarget} cardio + ${strengthTarget} strength sessions
 This week so far: ${cardio} cardio, ${strength} strength (${total} total)
 Cardio remaining: ${Math.max(0, cardioTarget - cardio)}, Strength remaining: ${Math.max(0, strengthTarget - strength)}
-Goal met this week: ${cardio >= cardioTarget && strength >= strengthTarget ? 'YES' : 'NOT YET'}
-All-time total workouts: ${allTimeTotal}${funFact ? `\nFun fact: ${funFact}` : ''}`
+Goal met this week: ${cardio >= cardioTarget && strength >= strengthTarget ? "YES" : "NOT YET"}
+All-time total workouts: ${allTimeTotal}${funFact ? `\nFun fact: ${funFact}` : ""}`;
     }
   } catch {
     // Continue without player context
   } finally {
-    await sql.end()
+    await sql.end();
   }
 
   // Look up mentioned player in the question (supports full names, first names, and aliases from fun_fact)
-  let mentionedPlayerContext = ''
+  let mentionedPlayerContext = "";
   try {
-    const sql3 = getDb()
-    const allPlayersWithFacts = await sql3`SELECT player_name, cardio_target, strength_target, fun_fact FROM player_goals`
-    await sql3.end()
+    const sql3 = getDb();
+    const allPlayersWithFacts =
+      await sql3`SELECT player_name, cardio_target, strength_target, fun_fact FROM player_goals`;
+    await sql3.end();
 
-    const questionLower = question.toLowerCase()
+    const questionLower = question.toLowerCase();
 
     // Build match candidates: full name, first name, and "aka" aliases from fun_fact
-    type PlayerMatch = { name: string; playerName: string; cardioTarget: number; strengthTarget: number; funFact: string | null }
-    const candidates: PlayerMatch[] = []
+    type PlayerMatch = {
+      name: string;
+      playerName: string;
+      cardioTarget: number;
+      strengthTarget: number;
+      funFact: string | null;
+    };
+    const candidates: PlayerMatch[] = [];
     for (const row of allPlayersWithFacts) {
-      const playerName = row.player_name as string
-      const base = { playerName, cardioTarget: row.cardio_target as number, strengthTarget: row.strength_target as number, funFact: row.fun_fact as string | null }
+      const playerName = row.player_name as string;
+      const base = {
+        playerName,
+        cardioTarget: row.cardio_target as number,
+        strengthTarget: row.strength_target as number,
+        funFact: row.fun_fact as string | null,
+      };
 
       // Full name
-      candidates.push({ ...base, name: playerName })
+      candidates.push({ ...base, name: playerName });
 
       // First name (only if multi-word name to avoid matching common words)
-      const firstName = playerName.split(' ')[0]
-      if (playerName.includes(' ')) {
-        candidates.push({ ...base, name: firstName })
+      const firstName = playerName.split(" ")[0];
+      if (playerName.includes(" ")) {
+        candidates.push({ ...base, name: firstName });
       }
 
       // Extract "aka X" aliases from fun_fact
-      const funFact = row.fun_fact as string | null
+      const funFact = row.fun_fact as string | null;
       if (funFact) {
-        const akaMatch = funFact.match(/[Aa]ka\s+([^,.]+)/g)
+        const akaMatch = funFact.match(/[Aa]ka\s+([^,.]+)/g);
         if (akaMatch) {
           for (const m of akaMatch) {
-            const alias = m.replace(/[Aa]ka\s+/, '').trim()
-            if (alias.length >= 2) candidates.push({ ...base, name: alias.toLowerCase() })
+            const alias = m.replace(/[Aa]ka\s+/, "").trim();
+            if (alias.length >= 2) candidates.push({ ...base, name: alias.toLowerCase() });
           }
         }
       }
     }
 
     // Sort by name length descending so longer names match first (e.g. "ed palumbo" before "ed")
-    candidates.sort((a, b) => b.name.length - a.name.length)
+    candidates.sort((a, b) => b.name.length - a.name.length);
 
     // Find first match as a whole word (avoid matching "ed" inside "logged")
-    const mentioned = candidates.find(c => {
-      const pattern = new RegExp(`\\b${c.name.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`)
-      return pattern.test(questionLower)
-    })
+    const mentioned = candidates.find((c) => {
+      const pattern = new RegExp(
+        `\\b${c.name.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+      );
+      return pattern.test(questionLower);
+    });
 
     if (mentioned) {
-      const sql2 = getDb()
+      const sql2 = getDb();
       try {
-        const weekKey = getWeekKey()
+        const weekKey = getWeekKey();
         const [weekStats, allTimeStats] = await Promise.all([
           sql2`
             SELECT
               COUNT(*) FILTER (WHERE exercise_type = 'cardio')::int AS cardio,
               COUNT(*) FILTER (WHERE exercise_type = 'strength')::int AS strength,
-              COUNT(*)::int AS total
+              COUNT(*) FILTER (WHERE exercise_type IS NULL OR exercise_type <> 'photo')::int AS total
             FROM meals WHERE player_name = ${mentioned.playerName} AND week_key = ${weekKey}
           `,
-          sql2`SELECT COUNT(*)::int AS total FROM meals WHERE player_name = ${mentioned.playerName}`,
-        ])
-        await sql2.end()
+          sql2`SELECT COUNT(*)::int AS total FROM meals
+                WHERE player_name = ${mentioned.playerName}
+                  AND (exercise_type IS NULL OR exercise_type <> 'photo')`,
+        ]);
+        await sql2.end();
 
-        const cardio = weekStats[0]?.cardio as number ?? 0
-        const strength = weekStats[0]?.strength as number ?? 0
-        const total = weekStats[0]?.total as number ?? 0
-        const allTime = allTimeStats[0]?.total as number ?? 0
+        const cardio = (weekStats[0]?.cardio as number) ?? 0;
+        const strength = (weekStats[0]?.strength as number) ?? 0;
+        const total = (weekStats[0]?.total as number) ?? 0;
+        const allTime = (allTimeStats[0]?.total as number) ?? 0;
 
         mentionedPlayerContext = `
 ABOUT THE MENTIONED PLAYER (${mentioned.playerName.toUpperCase()}):
 Weekly goal: ${mentioned.cardioTarget} cardio + ${mentioned.strengthTarget} strength sessions
 This week: ${cardio} cardio, ${strength} strength (${total} total)
-Goal met this week: ${cardio >= mentioned.cardioTarget && strength >= mentioned.strengthTarget ? 'YES' : 'NOT YET'}
-All-time total workouts: ${allTime}${mentioned.funFact ? `\nFun fact: ${mentioned.funFact}` : ''}`
+Goal met this week: ${cardio >= mentioned.cardioTarget && strength >= mentioned.strengthTarget ? "YES" : "NOT YET"}
+All-time total workouts: ${allTime}${mentioned.funFact ? `\nFun fact: ${mentioned.funFact}` : ""}`;
       } catch {
-        await sql2.end().catch(() => {})
+        await sql2.end().catch(() => {});
       }
     }
-  } catch { /* silent */ }
+  } catch {
+    /* silent */
+  }
 
   // Get total participant count
-  let totalPlayers = 0
+  let totalPlayers = 0;
   try {
-    const goals = await getAllPlayerGoals()
-    totalPlayers = goals.filter(g => g.cardioTarget > 0 || g.strengthTarget > 0).length
-  } catch { /* silent */ }
+    const goals = await getAllPlayerGoals();
+    totalPlayers = goals.filter((g) => g.cardioTarget > 0 || g.strengthTarget > 0).length;
+  } catch {
+    /* silent */
+  }
 
   // Get leaderboard for standings context
-  let standingsContext = ''
+  let standingsContext = "";
   try {
-    const leaderboard = await getLeaderboard()
+    const leaderboard = await getLeaderboard();
     if (leaderboard.allTime.length > 0) {
-      const lines = leaderboard.allTime.map(e =>
-        `#${e.rank} ${e.playerName.toUpperCase()} — ${e.totalItems} workouts (${e.cardioCount ?? 0} cardio, ${e.strengthCount ?? 0} strength)${e.goalWeeks ? `, ${e.goalWeeks} weekly goals hit` : ''}`
-      )
-      standingsContext = `\nCURRENT STANDINGS (all-time):\n${lines.join('\n')}`
+      const lines = leaderboard.allTime.map(
+        (e) =>
+          `#${e.rank} ${e.playerName.toUpperCase()} — ${e.totalItems} workouts (${e.cardioCount ?? 0} cardio, ${e.strengthCount ?? 0} strength)${e.goalWeeks ? `, ${e.goalWeeks} weekly goals hit` : ""}`,
+      );
+      standingsContext = `\nCURRENT STANDINGS (all-time):\n${lines.join("\n")}`;
 
       // Add this-week standings
       if (leaderboard.thisWeek.length > 0) {
-        const weekLines = leaderboard.thisWeek.map(e =>
-          `#${e.rank} ${e.playerName.toUpperCase()} — ${e.totalItems} workouts this week`
-        )
-        standingsContext += `\n\nTHIS WEEK'S STANDINGS:\n${weekLines.join('\n')}`
+        const weekLines = leaderboard.thisWeek.map(
+          (e) => `#${e.rank} ${e.playerName.toUpperCase()} — ${e.totalItems} workouts this week`,
+        );
+        standingsContext += `\n\nTHIS WEEK'S STANDINGS:\n${weekLines.join("\n")}`;
       }
     }
-  } catch { /* silent */ }
+  } catch {
+    /* silent */
+  }
 
-  const challengeStarted = Date.now() >= new Date('2026-04-13T00:00:00').getTime()
+  const challengeStarted = Date.now() >= new Date("2026-04-13T00:00:00").getTime();
 
   const systemPrompt = `You are Puck, a friendly and knowledgeable bot for the PowerUp workplace exercise challenge. Answer questions helpfully and concisely.
 
 THE CHALLENGE:
 - PowerUp is a workplace exercise challenge where colleagues log workouts and try to hit personal weekly goals
 - Challenge starts April 13th, currently ${totalPlayers} participants
-- ${challengeStarted ? 'The challenge is LIVE — workouts are being logged!' : 'The challenge has NOT started yet — no one can log workouts until April 13th. When asked about a player, focus on their goals and ambitions, not their workout stats (which will be zero).'}
+- ${challengeStarted ? "The challenge is LIVE — workouts are being logged!" : "The challenge has NOT started yet — no one can log workouts until April 13th. When asked about a player, focus on their goals and ambitions, not their workout stats (which will be zero)."}
 - Each participant sets a personal weekly goal (mix of cardio + strength sessions, minimum 3 total per week)
 - The week resets every Monday
 - The #powerup Slack channel has group updates and shoutouts
@@ -291,7 +331,7 @@ CHALLENGE PLAYER TO BATTLE:
 - From the battle lobby, click "CHALLENGE PLAYER" to pick a specific opponent
 - They get a Slack DM notification with a direct link
 - Or create an "OPEN CHALLENGE" for anyone to join
-${playerContext ? `\nABOUT THE PERSON ASKING:\n${playerContext}` : ''}
+${playerContext ? `\nABOUT THE PERSON ASKING:\n${playerContext}` : ""}
 ${mentionedPlayerContext}${standingsContext}
 
 RECENT APP UPDATES (from git history):
@@ -312,41 +352,48 @@ RESPONSE RULES:
 - If someone asks "what's new", "what changed", or about recent updates, summarize the RECENT APP UPDATES in a user-friendly way
 - If you don't know something specific, say so honestly — and point them to Lars
 - Do NOT use markdown formatting — just plain text
-- Use 1 emoji max per response`
+- Use 1 emoji max per response`;
 
   try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 200,
       system: systemPrompt,
-      messages: [{ role: 'user', content: question }],
-    })
+      messages: [{ role: "user", content: question }],
+    });
 
-    const block = message.content.find(b => b.type === 'text')
-    let reply = block?.type === 'text' ? block.text.trim() : "Sorry, I couldn't process that. Try asking again!"
+    const block = message.content.find((b) => b.type === "text");
+    let reply =
+      block?.type === "text"
+        ? block.text.trim()
+        : "Sorry, I couldn't process that. Try asking again!";
 
     // Convert #powerup mentions to clickable Slack channel links
-    reply = reply.replace(/#powerup/gi, '<#C0AQ2VASTBR>')
+    reply = reply.replace(/#powerup/gi, "<#C0AQ2VASTBR>");
 
-    await sendSlackReply(channel, thread_ts || ts, reply)
+    await sendSlackReply(channel, thread_ts || ts, reply);
 
     // Log the interaction
-    logBotMessage(slackUserId, question, reply).catch(() => {})
+    logBotMessage(slackUserId, question, reply).catch(() => {});
   } catch (err) {
-    console.error('Claude API error in bot:', err)
-    await sendSlackReply(channel, thread_ts || ts, "Oops, something went wrong on my end. Try again in a moment!")
+    console.error("Claude API error in bot:", err);
+    await sendSlackReply(
+      channel,
+      thread_ts || ts,
+      "Oops, something went wrong on my end. Try again in a moment!",
+    );
   }
 }
 
 async function logBotMessage(slackUserId: string, question: string, reply: string) {
-  const sql = getDb()
+  const sql = getDb();
   try {
     await sql`
       INSERT INTO bot_messages (slack_user_id, question, reply)
       VALUES (${slackUserId}, ${question}, ${reply})
-    `
+    `;
   } finally {
-    await sql.end()
+    await sql.end();
   }
 }
