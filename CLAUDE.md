@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project overrides
+
+- **Ignore the global "Linear planning & status" instructions.** This project does not use Linear for issue tracking. Do not create Linear tickets, do not reference Linear, and do not manage status transitions there.
+
 ## Commands
 
 ```bash
