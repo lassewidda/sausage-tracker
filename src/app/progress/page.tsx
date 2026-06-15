@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Window } from '@/components/amiga/Window'
 import { useName } from '@/lib/useName'
+import { generateDateRange } from '@/lib/progressDates'
 
 interface ProgressData {
   configured: boolean
@@ -12,17 +13,6 @@ interface ProgressData {
 }
 
 type DayStatus = 'exercised' | 'missed' | 'future'
-
-function generateDateRange(start: string, end: string): string[] {
-  const dates: string[] = []
-  const current = new Date(start + 'T00:00:00')
-  const endDate = new Date(end + 'T00:00:00')
-  while (current <= endDate) {
-    dates.push(current.toISOString().split('T')[0])
-    current.setDate(current.getDate() + 1)
-  }
-  return dates
-}
 
 function formatDateRange(start: string, end: string): string {
   const s = new Date(start + 'T00:00:00')
