@@ -10,6 +10,13 @@ function getDb() {
   })
 }
 
+// Highscore freeze — the Spring Challenge wrapped up on 2026-06-15. Exercises
+// logged from that day onward (Europe/Stockholm, UTC+2) are excluded from every
+// highscore view (all-time + this-week leaderboards, streak chains, goal streaks)
+// so the final standings stay frozen. Compared against the meals.created_at
+// timestamptz; the offset makes the boundary unambiguous regardless of server TZ.
+export const HIGHSCORE_FREEZE_AT = '2026-06-15 00:00:00+02'
+
 export function getWeekKey(date: Date = new Date()): string {
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
@@ -157,6 +164,7 @@ export async function getLeaderboard(): Promise<Leaderboard> {
         COUNT(*) FILTER (WHERE exercise_type = 'cardio')::int AS cardio_count,
         COUNT(*) FILTER (WHERE exercise_type = 'strength')::int AS strength_count
       FROM meals
+      WHERE created_at < ${HIGHSCORE_FREEZE_AT}::timestamptz
       GROUP BY player_name
       ORDER BY total DESC
     `,
@@ -168,6 +176,7 @@ export async function getLeaderboard(): Promise<Leaderboard> {
         COUNT(*) FILTER (WHERE exercise_type = 'strength')::int AS strength_count
       FROM meals
       WHERE week_key = ${weekKey}
+        AND created_at < ${HIGHSCORE_FREEZE_AT}::timestamptz
       GROUP BY player_name
       ORDER BY total DESC
     `,
@@ -245,6 +254,7 @@ export async function getChains(): Promise<ChainEntry[]> {
   const rows = await sql`
     SELECT player_name, week_key, SUM(item_count)::int AS week_total
     FROM meals
+    WHERE created_at < ${HIGHSCORE_FREEZE_AT}::timestamptz
     GROUP BY player_name, week_key
   `
   await sql.end()
@@ -394,6 +404,7 @@ export async function getGoalStreaks(): Promise<GoalStreakEntry[]> {
   const mealRows = await sql`
     SELECT player_name, week_key, exercise_type, COUNT(*)::int AS cnt
     FROM meals
+    WHERE created_at < ${HIGHSCORE_FREEZE_AT}::timestamptz
     GROUP BY player_name, week_key, exercise_type
   `
   await sql.end()
